@@ -22,6 +22,7 @@ Inside your `flake.nix`, add:
 
   # ... rest of the flake
 }
+```
 
 # Example `nixCats` Configuration
 
