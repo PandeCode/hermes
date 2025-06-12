@@ -316,10 +316,8 @@
     # The get function is to prevent errors when querying subcategories.
 
     # see :help nixCats.flake.outputs.packageDefinitions
-    packageDefinitions = {
-      # the name here is the name of the package
-      # and also the default command name for it.
-      nixCats = {
+    packageDefinitions = 
+    let defaultPkgDef = {
         pkgs,
         name,
         ...
@@ -334,13 +332,13 @@
           # or, whatever you named the package definition in the packageDefinitions set.
           # WARNING: MAKE SURE THESE DONT CONFLICT WITH OTHER INSTALLED PACKAGES ON YOUR PATH
           # That would result in a failed build, as nixos and home manager modules validate for collisions on your path
-          aliases = ["vim" "vimcat"];
+          aliases = [];
 
           # explained below in the `regularCats` package's definition
           # OR see :help nixCats.flake.outputs.settings for all of the settings available
           wrapRc = true;
           configDirName = "nixCats-nvim";
-          # neovim-unwrapped = inputs.neovim-nightly-overlay.packages.${pkgs.system}.neovim;
+          neovim-unwrapped = inputs.neovim-nightly-overlay.packages.${pkgs.system}.neovim;
           hosts.python3.enable = true;
           hosts.node.enable = true;
         };
@@ -376,7 +374,12 @@
             # or inherit nixpkgs;
           };
         };
-      };
+      };  in {
+      nvim = defaultPkgDef;
+      nvim-rs = defaultPkgDef;
+      nvim-cpp = defaultPkgDef;
+      nvim-go = defaultPkgDef;
+      nvim-web = defaultPkgDef;
       regularCats = {pkgs, ...} @ misc: {
         settings = {
           suffix-path = true;
@@ -438,7 +441,7 @@
       };
     };
 
-    defaultPackageName = "nixCats";
+    defaultPackageName = "nvim";
     # I did not here, but you might want to create a package named nvim.
     # defaultPackageName is also passed to utils.mkNixosModules and utils.mkHomeModules
     # and it controls the name of the top level option set.
@@ -495,7 +498,6 @@
       };
     })
     // (let
-      # we also export a nixos module to allow reconfiguration from configuration.nix
       nixosModule = utils.mkNixosModules {
         moduleNamespace = [defaultPackageName];
         inherit
@@ -508,7 +510,6 @@
           nixpkgs
           ;
       };
-      # and the same for home manager
       homeModule = utils.mkHomeModules {
         moduleNamespace = [defaultPackageName];
         inherit
