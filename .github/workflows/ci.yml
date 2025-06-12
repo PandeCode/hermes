@@ -31,4 +31,4 @@ jobs:
         run: nix build --accept-flake-config
 
       - name: Check devShell
-        run: nix develop --command echo OK
+        run: nix develop --accept-flake-config --command echo OK
