@@ -138,6 +138,8 @@
             lzextras
             vim-repeat
             plenary-nvim
+
+            vim-wakatime
           ];
           extra = [
             oil-nvim
