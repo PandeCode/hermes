@@ -4,6 +4,7 @@
   description = "hermes";
 
   nixConfig = {
+    substituters = [ "https://aseipp-nix-cache.global.ssl.fastly.net" ];
     extra-substituters = [
       "https://charon.cachix.org"
       "https://nix-community.cachix.org"
@@ -105,6 +106,7 @@
         # per nvim package you export
         debug = with pkgs; {
           go = [delve];
+
         };
         go = with pkgs; [
           gopls
@@ -114,6 +116,7 @@
         ];
         # and easily check if they are included in lua
         format = with pkgs; [
+            stylua
         ];
         neonixdev = {
           # also you can do this.
@@ -123,11 +126,11 @@
       };
 
       # This is for plugins that will load at startup without using packadd:
-      startupPlugins = {
-        debug = with pkgs.vimPlugins; [
+      startupPlugins = with pkgs.vimPlugins;{
+        debug =  [
           nvim-nio
         ];
-        general = with pkgs.vimPlugins; {
+        general =  {
           # you can make subcategories!!!
           # (always isnt a special name, just the one I chose for this subcategory)
           always = [
@@ -135,27 +138,12 @@
             lzextras
             vim-repeat
             plenary-nvim
-            nvim-notify
           ];
           extra = [
             oil-nvim
             nvim-web-devicons
           ];
-        };
-        # You can retreive information from the
-        # packageDefinitions of the package this was packaged with.
-        # :help nixCats.flake.outputs.categoryDefinitions.scheme
-        themer = with pkgs.vimPlugins; (
-          builtins.getAttr (categories.colorscheme or "onedark") {
-            # Theme switcher without creating a new category
-            "onedark" = onedark-nvim;
-            "catppuccin" = catppuccin-nvim;
-            "catppuccin-mocha" = catppuccin-nvim;
-            "tokyonight" = tokyonight-nvim;
-            "tokyonight-day" = tokyonight-nvim;
-          }
-        );
-        # This is obviously a fairly basic usecase for this, but still nice.
+                 };
       };
 
       # not loaded automatically at startup.
@@ -163,8 +151,8 @@
       # or a tool for organizing this like lze or lz.n!
       # to get the name packadd expects, use the
       # `:NixCats pawsible` command to see them all
-      optionalPlugins = {
-        debug = with pkgs.vimPlugins; {
+      optionalPlugins =with pkgs.vimPlugins; {
+        debug = {
           # it is possible to add default values.
           # there is nothing special about the word "default"
           # but we have turned this subcategory into a default value
@@ -176,27 +164,27 @@
           ];
           go = [nvim-dap-go];
         };
-        lint = with pkgs.vimPlugins; [
+        lint = [
           nvim-lint
         ];
-        format = with pkgs.vimPlugins; [
+        format = [
           conform-nvim
         ];
-        markdown = with pkgs.vimPlugins; [
+        markdown = [
           markdown-preview-nvim
         ];
-        neonixdev = with pkgs.vimPlugins; [
+        neonixdev = [
           lazydev-nvim
         ];
         general = {
-          blink = with pkgs.vimPlugins; [
+          blink = [
             luasnip
             cmp-cmdline
             blink-cmp
             blink-compat
             colorful-menu-nvim
           ];
-          treesitter = with pkgs.vimPlugins; [
+          treesitter = [
             nvim-treesitter-textobjects
             nvim-treesitter.withAllGrammars
             # This is for if you only want some of the grammars
@@ -207,31 +195,23 @@
             #   ]
             # ))
           ];
-          telescope = with pkgs.vimPlugins; [
-            telescope-fzf-native-nvim
-            telescope-ui-select-nvim
-            telescope-nvim
-          ];
-          always = with pkgs.vimPlugins; [
+
+          always = [
             nvim-lspconfig
             lualine-nvim
             gitsigns-nvim
             vim-sleuth
             vim-fugitive
             vim-rhubarb
-            nvim-surround
           ];
-          extra = with pkgs.vimPlugins; [
+          extra = [
             fidget-nvim
-            # lualine-lsp-progress
-            which-key-nvim
-            comment-nvim
             undotree
-            indent-blankline-nvim
             vim-startuptime
-            # If it was included in your flake inputs as plugins-hlargs,
-            # this would be how to add that plugin in your config.
-            # pkgs.neovimPlugins.hlargs
+
+           snacks-nvim
+           mini-nvim
+           avante-nvim
           ];
         };
       };
@@ -316,7 +296,7 @@
     # The get function is to prevent errors when querying subcategories.
 
     # see :help nixCats.flake.outputs.packageDefinitions
-    packageDefinitions = 
+    packageDefinitions =
     let defaultPkgDef = {
         pkgs,
         name,
@@ -362,8 +342,6 @@
           lspDebugMode = false;
           # you could also pass something else:
           # see :help nixCats
-          themer = true;
-          colorscheme = "onedark";
         };
         extra = {
           # to keep the categories table from being filled with non category things that you want to pass
@@ -411,8 +389,6 @@
           test = true;
           # go = true; # <- disabled but you could enable it with override or module on install
           lspDebugMode = false;
-          themer = true;
-          colorscheme = "catppuccin";
         };
         extra = {
           # nixCats.extra("path.to.val") will perform vim.tbl_get(nixCats.extra, "path" "to" "val")

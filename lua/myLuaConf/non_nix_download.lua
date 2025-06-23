@@ -28,7 +28,6 @@ require('nixCatsUtils.catPacker').setup({
   { 'nvim-tree/nvim-web-devicons', },
   { 'nvim-lua/plenary.nvim', },
   { 'tpope/vim-repeat', },
-  { 'rcarriga/nvim-notify', },
 
   { 'nvim-treesitter/nvim-treesitter-textobjects', opt = true, },
   { 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate', opt = true, },
@@ -71,12 +70,8 @@ require('nixCatsUtils.catPacker').setup({
   { 'tpope/vim-fugitive', opt = true, },
   { 'tpope/vim-rhubarb', opt = true, },
   { 'tpope/vim-sleuth', opt = true, },
-  { 'folke/which-key.nvim', opt = true, },
   { 'lewis6991/gitsigns.nvim', opt = true, },
   { 'nvim-lualine/lualine.nvim', opt = true, },
-  { 'lukas-reineke/indent-blankline.nvim', opt = true, },
-  { 'numToStr/Comment.nvim', opt = true, as = "comment.nvim", },
-  { 'kylechui/nvim-surround', opt = true, },
   {
     "iamcco/markdown-preview.nvim",
     build = ":call mkdp#util#install()",
