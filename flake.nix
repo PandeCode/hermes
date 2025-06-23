@@ -6,12 +6,12 @@
   nixConfig = {
     substituters = [ "https://aseipp-nix-cache.global.ssl.fastly.net" ];
     extra-substituters = [
-      "https://charon.cachix.org"
       "https://nix-community.cachix.org"
+      "https://charon.cachix.org"
     ];
     extra-trusted-public-keys = [
-      "charon.cachix.org-1:epdetEs1ll8oi8DT8OG2jEA4whj3FDbqgPFvapEPbY8="
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "charon.cachix.org-1:epdetEs1ll8oi8DT8OG2jEA4whj3FDbqgPFvapEPbY8="
     ];
   };
 
