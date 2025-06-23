@@ -200,7 +200,7 @@
 
           always = [
             nvim-lspconfig
-            lualine-nvim
+            # lualine-nvim
             gitsigns-nvim
             vim-sleuth
             vim-fugitive
@@ -211,9 +211,9 @@
             undotree
             vim-startuptime
 
-           snacks-nvim
-           mini-nvim
-           avante-nvim
+           # snacks-nvim
+           # mini-nvim
+           # avante-nvim
           ];
         };
       };
@@ -320,7 +320,7 @@
           # OR see :help nixCats.flake.outputs.settings for all of the settings available
           wrapRc = true;
           configDirName = "nixCats-nvim";
-          neovim-unwrapped = inputs.neovim-nightly-overlay.packages.${pkgs.system}.neovim;
+          neovim-unwrapped = pkgs.neovim-unwrapped; # inputs.neovim-nightly-overlay.packages.${pkgs.system}.neovim;
           hosts.python3.enable = true;
           hosts.node.enable = true;
         };
