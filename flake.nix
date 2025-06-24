@@ -4,7 +4,9 @@
   description = "hermes";
 
   nixConfig = {
-    substituters = [ "https://aseipp-nix-cache.global.ssl.fastly.net" "https://cache.nixos.org" ];
+    substituters = [ "https://aseipp-nix-cache.global.ssl.fastly.net" 
+    # "https://cache.nixos.org"
+    ];
     trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" ];
     extra-substituters = [
       "https://nix-community.cachix.org"
@@ -118,6 +120,7 @@
         # and easily check if they are included in lua
         format = with pkgs; [
             stylua
+            alejandra
         ];
         neonixdev = {
           # also you can do this.
