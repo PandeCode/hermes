@@ -6,7 +6,7 @@ return {
         { "<leader>fr",      function() Snacks.picker.grep() end,    desc = "Grep" },
         { "<leader><space>", function() Snacks.picker.smart() end,   desc = "Smart Find Files" },
         { "<leader>,",       function() Snacks.picker.buffers() end, desc = "Buffers" },
-        { "<leader>nh",      function() Snacks.notifier.hide() end, desc = "Notifier Hide" }
+        { "<leader>nh",      function() Snacks.notifier.hide() end, desc = "Notifier Hide" },
         { "<leader>nh",      function() Snacks.notifier.show_history() end, desc = "Notifier Show" }
     },
 

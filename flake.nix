@@ -4,7 +4,7 @@
   description = "hermes";
 
   nixConfig = {
-    substituters = [ #"https://aseipp-nix-cache.global.ssl.fastly.net" 
+    substituters = [ #"https://aseipp-nix-cache.global.ssl.fastly.net"
      "https://cache.nixos.org"
     ];
     trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" ];
@@ -91,42 +91,37 @@
       # provide when you build the package using this builder function.
       # see :help nixCats.flake.outputs.packageDefinitions for info on that section.
 
-      # lspsAndRuntimeDeps:
-      # this section is for dependencies that should be available
-      # at RUN TIME for plugins. Will be available to PATH within neovim terminal
-      # this includes LSPs
-      lspsAndRuntimeDeps = {
+      lspsAndRuntimeDeps = with pkgs; {
         # some categories of stuff.
-        general = with pkgs; [
+        general =  [
           universal-ctags
           ripgrep
           fd
         ];
         # these names are arbitrary.
-        lint = with pkgs; [
+        lint =  [
         ];
         # but you can choose which ones you want
         # per nvim package you export
-        debug = with pkgs; {
+        debug =  {
           go = [delve];
-
         };
-        go = with pkgs; [
+        go =  [
           gopls
           gotools
           go-tools
           gccgo
         ];
+        web =  [
+            prettier
+            eslint
+];
         # and easily check if they are included in lua
-        format = with pkgs; [
+        format =  [
             stylua
             alejandra
         ];
-        neonixdev = {
-          # also you can do this.
-          inherit (pkgs) nix-doc lua-language-server nixd;
-          # and each will be its own sub category
-        };
+        neonixdev = [ nix-doc lua-language-server nixd ];
       };
 
       # This is for plugins that will load at startup without using packadd:
@@ -204,7 +199,7 @@
 
           always = [
             nvim-lspconfig
-            # lualine-nvim
+            lualine-nvim
             gitsigns-nvim
             vim-sleuth
             vim-fugitive

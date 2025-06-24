@@ -72,6 +72,13 @@ require('lze').load {
   { import = "myLuaConf.plugins.completion", },
 
   {
+      "conform",
+      after = function()
+      end
+  },
+
+
+  {
     "markdown-preview.nvim",
     -- NOTE: for_cat is a custom handler that just sets enabled value for us,
     -- based on result of nixCats('cat.name') and allows us to set a different default if we wish

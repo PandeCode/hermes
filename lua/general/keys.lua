@@ -46,6 +46,8 @@ local keymaps = {
 	{ a, "<A-x>", "<c-x>", noremap }, -- decreament
 	{ n, "L", "$" },
 	{ n, "H", "^" },
+	{ v, "L", "$" },
+	{ v, "H", "^" },
 	{ n, "Q", "" }, -- Disable visual mode
 
 	{ n, "<Home>", "(col('.') == matchend(getline('.'), '^\\s*')+1 ? '0' : '^')", noremap_expr },
