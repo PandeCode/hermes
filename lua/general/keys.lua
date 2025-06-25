@@ -8,9 +8,9 @@ local v = "v"
 local c = "c"
 local x = "x"
 local silent = { silent = true }
-local noremap =  { noremap = true }
+local noremap = { noremap = true }
 local noremap_expr = { noremap = true, expr = true }
-local noremap_silent =  { silent = true, noremap = true }
+local noremap_silent = { silent = true, noremap = true }
 
 local keymaps = {
 	{ n, "<LEADER>yf", "<CMD>!yew-fmt --edition 2018 %<CR>", noremap_silent },
@@ -142,14 +142,14 @@ vim.keymap.set("x", "A", function()
 	return vim.fn.mode() == "V" and "$<C-v>A" or "A"
 end, { expr = true })
 
-vim.cmd [[
+vim.cmd([[
 noremap Y "+y
 nnoremap YY "+yy
 nnoremap / /\v
 vnoremap / /\v
 
 cnoremap w!! execute 'silent! write !sudo tee % >/dev/null' <bar> edit!
-]]
+]])
 
 for _, value in pairs(keymaps) do
 	vim.keymap.set(value[1], value[2], value[3], value[4] or {})

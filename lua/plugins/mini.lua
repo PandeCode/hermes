@@ -32,7 +32,7 @@ return {
 
 			local ts_input = require("mini.surround").gen_spec.input.treesitter
 
-			require("mini.surround").setup {
+			require("mini.surround").setup({
 				mappings = {
 					add = "ys",
 					delete = "ds",
@@ -49,11 +49,11 @@ return {
 				search_method = "cover_or_next",
 				custom_surroundings = {
 					f = {
-						input = ts_input { outer = "@call.outer", inner = "@call.inner" },
+						input = ts_input({ outer = "@call.outer", inner = "@call.inner" }),
 					},
 
 					b = {
-						input = ts_input { outer = "@block.out", inner = "@block.inner" },
+						input = ts_input({ outer = "@block.out", inner = "@block.inner" }),
 					},
 
 					-- Make `)` insert parts with spaces. `input` pattern stays the same.
@@ -62,18 +62,18 @@ return {
 					-- Use function to compute surrounding info
 					["*"] = {
 						input = function()
-							local n_star = MiniSurround.user_input "Number of * to find"
+							local n_star = MiniSurround.user_input("Number of * to find")
 							local many_star = string.rep("%*", tonumber(n_star) or 1)
 							return { many_star .. "().-()" .. many_star }
 						end,
 						output = function()
-							local n_star = MiniSurround.user_input "Number of * to output"
+							local n_star = MiniSurround.user_input("Number of * to output")
 							local many_star = string.rep("*", tonumber(n_star) or 1)
 							return { left = many_star, right = many_star }
 						end,
 					},
 				},
-			}
+			})
 
 			-- Remap adding surrounding to Visual mode selection
 			vim.keymap.del("x", "ys")
@@ -82,8 +82,8 @@ return {
 			-- Make special mapping for "add surrounding for line"
 			vim.keymap.set("n", "yss", "ys_", { remap = true })
 
-			local hipatterns = require "mini.hipatterns"
-			hipatterns.setup {
+			local hipatterns = require("mini.hipatterns")
+			hipatterns.setup({
 				highlighters = {
 					fixme = { pattern = "%f[%w]()FIXME()%f[%W]", group = "MiniHipatternsFixme" },
 					error = { pattern = "%f[%w]()ERROR()%f[%W]", group = "MiniHipatternsFixme" },
@@ -97,10 +97,10 @@ return {
 
 					hex_color = hipatterns.gen_highlighter.hex_color(),
 				},
-			}
+			})
 
-			local miniclue = require "mini.clue"
-			miniclue.setup {
+			local miniclue = require("mini.clue")
+			miniclue.setup({
 				triggers = {
 
 					-- Leader triggers
@@ -143,7 +143,7 @@ return {
 					miniclue.gen_clues.windows(),
 					miniclue.gen_clues.z(),
 				},
-			}
+			})
 		end,
 	},
 }

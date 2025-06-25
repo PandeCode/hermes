@@ -4,10 +4,12 @@
   description = "hermes";
 
   nixConfig = {
-    substituters = [ #"https://aseipp-nix-cache.global.ssl.fastly.net"
-     "https://cache.nixos.org"
+    substituters = [
+      #"https://aseipp-nix-cache.global.ssl.fastly.net"
+      "https://cache.nixos.org"
     ];
-    trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" ];
+
+    trusted-public-keys = ["cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="];
     extra-substituters = [
       "https://nix-community.cachix.org"
       "https://charon.cachix.org"
@@ -93,43 +95,39 @@
 
       lspsAndRuntimeDeps = with pkgs; {
         # some categories of stuff.
-        general =  [
+        general = [
           universal-ctags
           ripgrep
           fd
+
+          prettier
+          eslint
+          stylua
+          alejandra
         ];
-        # these names are arbitrary.
-        lint =  [
-        ];
-        # but you can choose which ones you want
-        # per nvim package you export
-        debug =  {
+        debug = {
           go = [delve];
         };
-        go =  [
+        go = [
           gopls
           gotools
           go-tools
           gccgo
         ];
-        web =  [
-            prettier
-            eslint
-];
-        # and easily check if they are included in lua
-        format =  [
-            stylua
-            alejandra
+
+        neonixdev = [
+          nix-doc
+          lua-language-server
+          nixd
         ];
-        neonixdev = [ nix-doc lua-language-server nixd ];
       };
 
       # This is for plugins that will load at startup without using packadd:
-      startupPlugins = with pkgs.vimPlugins;{
-        debug =  [
+      startupPlugins = with pkgs.vimPlugins; {
+        debug = [
           nvim-nio
         ];
-        general =  {
+        general = {
           # you can make subcategories!!!
           # (always isnt a special name, just the one I chose for this subcategory)
           always = [
@@ -138,13 +136,14 @@
             vim-repeat
             plenary-nvim
 
-            # vim-wakatime
-          ];
-          extra = [
+            conform-nvim
+
+            vim-wakatime
+
             oil-nvim
             nvim-web-devicons
           ];
-                 };
+        };
       };
 
       # not loaded automatically at startup.
@@ -152,7 +151,7 @@
       # or a tool for organizing this like lze or lz.n!
       # to get the name packadd expects, use the
       # `:NixCats pawsible` command to see them all
-      optionalPlugins =with pkgs.vimPlugins; {
+      optionalPlugins = with pkgs.vimPlugins; {
         debug = {
           # it is possible to add default values.
           # there is nothing special about the word "default"
@@ -167,9 +166,6 @@
         };
         lint = [
           nvim-lint
-        ];
-        format = [
-          conform-nvim
         ];
         markdown = [
           markdown-preview-nvim
@@ -188,6 +184,7 @@
           treesitter = [
             nvim-treesitter-textobjects
             nvim-treesitter.withAllGrammars
+
             # This is for if you only want some of the grammars
             # (nvim-treesitter.withPlugins (
             #   plugins: with plugins; [
@@ -205,14 +202,15 @@
             vim-fugitive
             vim-rhubarb
           ];
+
           extra = [
             fidget-nvim
             undotree
             vim-startuptime
-
-           snacks-nvim
-           mini-nvim
-           avante-nvim
+            snacks-nvim
+            noice-nvim
+            mini-nvim
+            avante-nvim
           ];
         };
       };
@@ -297,8 +295,8 @@
     # The get function is to prevent errors when querying subcategories.
 
     # see :help nixCats.flake.outputs.packageDefinitions
-    packageDefinitions =
-    let defaultPkgDef = {
+    packageDefinitions = let
+      defaultPkgDef = {
         pkgs,
         name,
         ...
@@ -328,7 +326,6 @@
           markdown = true;
           general = true;
           lint = true;
-          format = true;
           neonixdev = true;
           test = {
             subtest1 = true;
@@ -353,7 +350,8 @@
             # or inherit nixpkgs;
           };
         };
-      };  in {
+      };
+    in {
       nvim = defaultPkgDef;
       nvim-rs = defaultPkgDef;
       nvim-cpp = defaultPkgDef;
@@ -386,7 +384,6 @@
           general = true;
           neonixdev = true;
           lint = true;
-          format = true;
           test = true;
           # go = true; # <- disabled but you could enable it with override or module on install
           lspDebugMode = false;

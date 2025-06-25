@@ -1,4 +1,4 @@
-vim.cmd [[
+vim.cmd([[
 if argc() > 1
 	silent blast " load last buffer
 	silent bfirst " switch back to the first
@@ -14,22 +14,22 @@ syntax sync minlines=256
 
 " Allow saving of files as sudo when I forgot to start vim using sudo.
 cnoremap w!! execute 'write !sudo tee % >/dev/null' <bar> edit!
-]]
+]])
 
 vim.api.nvim_create_user_command("Gitadd", function()
-	local filename = vim.fn.expand "%"
-	vim.cmd "!git add %"
+	local filename = vim.fn.expand("%")
+	vim.cmd("!git add %")
 	vim.notify("Git added '" .. filename .. "'", "info", { title = IDE.name })
 end, {})
 
 vim.api.nvim_create_user_command("Chmodx", function()
-	local filename = vim.fn.expand "%"
-	vim.cmd "!chmod +x %"
+	local filename = vim.fn.expand("%")
+	vim.cmd("!chmod +x %")
 	vim.notify("Given execution rights to '" .. filename .. "'", "info", { title = IDE.name })
 end, {})
 
 vim.api.nvim_create_user_command("Rmf", function()
-	vim.cmd "!rm -f %"
+	vim.cmd("!rm -f %")
 end, {})
 
 vim.api.nvim_create_user_command("Q", function(opts)
@@ -73,7 +73,7 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 vim.api.nvim_create_autocmd({ "BufWritePre" }, {
 	pattern = "*",
 	callback = function()
-		vim.fn.mkdir(vim.fn.expand "<afile>:p:h", "p")
+		vim.fn.mkdir(vim.fn.expand("<afile>:p:h"), "p")
 	end,
 })
 
@@ -101,20 +101,20 @@ set_filetype("*/sway/*.conf", "swayconfig")
 vim.api.nvim_create_autocmd("BufReadPost", {
 	pattern = "*",
 	callback = function()
-		local line = vim.fn.line "'\""
+		local line = vim.fn.line("'\"")
 		if
 			line > 1
-			and line <= vim.fn.line "$"
+			and line <= vim.fn.line("$")
 			and vim.bo.filetype ~= "commit"
 			and vim.fn.index({ "xxd", "gitrebase" }, vim.bo.filetype) == -1
 		then
-			vim.cmd 'normal! g`"'
+			vim.cmd('normal! g`"')
 		end
 	end,
 })
 
 -- This is a WSL specific setting to use the Windows clipboard for + and * registers
-if vim.fn.filereadable "/proc/sys/fs/binfmt_misc/WSLInterop" == 1 then
+if vim.fn.filereadable("/proc/sys/fs/binfmt_misc/WSLInterop") == 1 then
 	vim.g.clipboard = {
 		name = "WslClipboard",
 		copy = {
@@ -132,7 +132,7 @@ end
 -- A per project shadafile
 -- https://www.reddit.com/r/neovim/comments/1hkpgar/a_per_project_shadafile/
 vim.opt.shadafile = (function()
-	local data = vim.fn.stdpath "data"
+	local data = vim.fn.stdpath("data")
 
 	local cwd = vim.fn.getcwd()
 	cwd = vim.fs.root(cwd, ".git") or cwd
@@ -145,9 +145,8 @@ vim.opt.shadafile = (function()
 	return file
 end)()
 
-
 vim.api.nvim_create_autocmd("TextYankPost", {
-    callback = function()
-        vim.highlight.on_yank()
-    end,
+	callback = function()
+		vim.highlight.on_yank()
+	end,
 })

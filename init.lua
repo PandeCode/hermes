@@ -18,9 +18,9 @@ Of course, if you only ever download nvim with nix, this isnt needed.]]
 --[[ function so that it will not throw  ]]
 --[[ an error if not loaded via nixCats  ]]
 --[[ ----------------------------------- ]]
-require('nixCatsUtils').setup {
-  non_nix_value = true,
-}
+require("nixCatsUtils").setup({
+	non_nix_value = true,
+})
 --[[
 Nix puts the plugins
 into the directories paq-nvim expects them to be in,
@@ -49,14 +49,18 @@ that directory is addable via the luaUtils template.
 it is not required, but has some useful utility functions.
 --]]
 
---[[
-ok thats enough for 1 file. Off to lua/myLuaConf/init.lua
-all the config starts there in this example config.
-This config is loadable with and without nix due to the above,
-and the lua/myLuaConf/non_nix_download.lua file.
-the rest is just example of how to configure nvim making use of various
-features of nixCats and using the plugin lze for lazy loading.
---]]
-require('myLuaConf')
+require("general")
 
-require('general')
+require("plugins")
+
+if nixCats("go") then
+	require("go")
+end
+
+if nixCats("rust") then
+	require("rust")
+end
+
+if nixCats("web") then
+	require("web")
+end

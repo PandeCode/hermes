@@ -1,5 +1,5 @@
 local base16
-local success, result = pcall(dofile, vim.fs.normalize "~/.config/stylix/nvim.lua")
+local success, result = pcall(dofile, vim.fs.normalize("~/.config/stylix/style.lua"))
 
 if success and result ~= nil then
 	base16 = result
@@ -25,10 +25,10 @@ else
 	}
 end
 
-require("mini.base16").setup {
+require("mini.base16").setup({
 	use_cterm = true,
 	palette = base16,
-}
+})
 
 local IsTransparent = false
 
@@ -77,23 +77,23 @@ end
 vim.keymap.set("n", "<LEADER>bt", ToggleBackground, { noremap = true, silent = true })
 
 local function is_dark(hex)
-    -- Remove the # if present
-    hex = hex:gsub("#", "")
+	-- Remove the # if present
+	hex = hex:gsub("#", "")
 
-    -- Convert hex to RGB
-    local r = tonumber(hex:sub(1, 2), 16)
-    local g = tonumber(hex:sub(3, 4), 16)
-    local b = tonumber(hex:sub(5, 6), 16)
+	-- Convert hex to RGB
+	local r = tonumber(hex:sub(1, 2), 16)
+	local g = tonumber(hex:sub(3, 4), 16)
+	local b = tonumber(hex:sub(5, 6), 16)
 
-    -- Calculate perceived brightness (ITU-R BT.709)
-    local brightness = (0.2126 * r + 0.7152 * g + 0.0722 * b)
+	-- Calculate perceived brightness (ITU-R BT.709)
+	local brightness = (0.2126 * r + 0.7152 * g + 0.0722 * b)
 
-    -- Return true if dark, false if light
-    return brightness < 128
+	-- Return true if dark, false if light
+	return brightness < 128
 end
 
 -- Set highlight groups with appropriate contrast
 for group, color in pairs(base16) do
-    local fg_color = is_dark(color) and "#ffffff" or "#000000"
-    vim.cmd(string.format("highlight GP_%s guifg=%s guibg=%s gui=NONE", group, fg_color, color))
+	local fg_color = is_dark(color) and "#ffffff" or "#000000"
+	vim.cmd(string.format("highlight GP_%s guifg=%s guibg=%s gui=NONE", group, fg_color, color))
 end
