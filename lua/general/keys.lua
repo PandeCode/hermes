@@ -13,6 +13,8 @@ local noremap_expr = { noremap = true, expr = true }
 local noremap_silent = { silent = true, noremap = true }
 
 local keymaps = {
+	{ n, "<Esc>", "<cmd>nohlsearch<CR>", noremap_silent },
+
 	{ n, "<LEADER>yf", "<CMD>!yew-fmt --edition 2018 %<CR>", noremap_silent },
 
 	{ n, "<LEADER>li", "<CMD>LspInfo<CR>", noremap_silent },

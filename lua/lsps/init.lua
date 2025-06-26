@@ -21,6 +21,7 @@ require("lze").h.lsp.set_ft_fallback(function(name)
 		return old_ft_fallback(name)
 	end
 end)
+
 require("lze").load({
 	{
 		"nvim-lspconfig",
@@ -35,7 +36,7 @@ require("lze").load({
 		end,
 		before = function(_)
 			vim.lsp.config("*", {
-				on_attach = require("myLuaConf.LSPs.on_attach"),
+				on_attach = require("lsps.on_attach"),
 			})
 		end,
 	},
@@ -66,6 +67,32 @@ require("lze").load({
 			})
 		end,
 	},
+
+	{
+		"clangd",
+		-- enabled = nixCats("cpp"),
+		lsp = {
+			filetypes = { "cpp", "c" },
+			root_markers = {
+				".clangd",
+				".clang-tidy",
+				".clang-format",
+				"compile_commands.json",
+				"compile_flags.txt",
+				"configure.ac",
+				".git",
+			},
+			capabilities = {
+				offsetEncoding = { "utf-8", "utf-16" },
+				textDocument = {
+					completion = {
+						editsNearCursor = true,
+					},
+				},
+			},
+		},
+	},
+
 	{
 		-- name of the lsp
 		"lua_ls",

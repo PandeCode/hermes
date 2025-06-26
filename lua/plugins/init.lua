@@ -1,7 +1,17 @@
+require("lze").register_handlers(require("nixCatsUtils.lzUtils").for_cat)
+require("lze").register_handlers(require("lzextras").lsp)
+
 require("plugins.oil")
 
 require("lze").load({
 	{ "vim-wakatime" },
+
+	{ import = "plugins.mini" },
+	{ import = "plugins.snacks" },
+	{ import = "plugins.lualine" },
+
+	{ import = "plugins.treesitter" },
+	{ import = "plugins.completion" },
 
 	{
 		"noice.nvim",
@@ -27,14 +37,6 @@ require("lze").load({
 		end,
 		dependencies = { "nui.nvim" },
 	},
-
-	{ import = "plugins.mini" },
-	{ import = "plugins.snacks" },
-	{ import = "plugins.lualine" },
-
-	{ import = "plugins.treesitter" },
-	{ import = "plugins.completion" },
-
 	{
 		"conform.nvim",
 		for_cat = "general",

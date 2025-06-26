@@ -1,7 +1,7 @@
 # Copyright (c) 2025 PandeCode
 # Licensed under the MIT license
 {
-  description = "hermes";
+  description = "hermes - neovim config";
 
   nixConfig = {
     substituters = [
@@ -116,6 +116,7 @@
         ];
 
         neonixdev = [
+          clang-tools
           nix-doc
           lua-language-server
           nixd
@@ -142,6 +143,9 @@
 
             oil-nvim
             nvim-web-devicons
+            snacks-nvim
+            noice-nvim
+            mini-nvim
           ];
         };
       };
@@ -164,9 +168,6 @@
           ];
           go = [nvim-dap-go];
         };
-        lint = [
-          nvim-lint
-        ];
         markdown = [
           markdown-preview-nvim
         ];
@@ -174,13 +175,6 @@
           lazydev-nvim
         ];
         general = {
-          blink = [
-            luasnip
-            cmp-cmdline
-            blink-cmp
-            blink-compat
-            colorful-menu-nvim
-          ];
           treesitter = [
             nvim-treesitter-textobjects
             nvim-treesitter.withAllGrammars
@@ -201,15 +195,19 @@
             vim-sleuth
             vim-fugitive
             vim-rhubarb
-          ];
 
+            luasnip
+            cmp-cmdline
+            blink-cmp
+            blink-compat
+            colorful-menu-nvim
+            lspkind-nvim
+          ];
           extra = [
             fidget-nvim
             undotree
             vim-startuptime
-            snacks-nvim
-            noice-nvim
-            mini-nvim
+
             avante-nvim
           ];
         };
@@ -325,7 +323,6 @@
         categories = {
           markdown = true;
           general = true;
-          lint = true;
           neonixdev = true;
           test = {
             subtest1 = true;
@@ -383,7 +380,6 @@
           markdown = true;
           general = true;
           neonixdev = true;
-          lint = true;
           test = true;
           # go = true; # <- disabled but you could enable it with override or module on install
           lspDebugMode = false;

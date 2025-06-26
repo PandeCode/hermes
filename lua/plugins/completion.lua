@@ -6,18 +6,15 @@ end
 return {
 	{
 		"cmp-cmdline",
-		for_cat = "general.blink",
 		on_plugin = { "blink.cmp" },
 		load = load_w_after,
 	},
 	{
 		"blink.compat",
-		for_cat = "general.blink",
 		dep_of = { "cmp-cmdline" },
 	},
 	{
 		"luasnip",
-		for_cat = "general.blink",
 		dep_of = { "blink.cmp" },
 		after = function(_)
 			local luasnip = require("luasnip")
@@ -35,12 +32,10 @@ return {
 	},
 	{
 		"colorful-menu.nvim",
-		for_cat = "general.blink",
 		on_plugin = { "blink.cmp" },
 	},
 	{
 		"blink.cmp",
-		for_cat = "general.blink",
 		event = "DeferredUIEnter",
 		after = function(_)
 			require("blink.cmp").setup({
