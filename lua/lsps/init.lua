@@ -22,6 +22,16 @@ require("lze").h.lsp.set_ft_fallback(function(name)
 	end
 end)
 
+vim.keymap.set("n", "g[", function()
+	vim.diagnostic.goto_prev()
+end, { desc = "[G]o diagnostic previous" })
+vim.keymap.set("n", "g]", function()
+	vim.diagnostic.goto_next()
+end, { desc = "[G]o diagnostic next" })
+vim.keyamp.set("n", "<leader>gd", function()
+	Snacks.picker.diagnostics()
+end, { desc = "[G]o [D]iagnostic" })
+
 require("lze").load({
 	{
 		"nvim-lspconfig",
@@ -84,9 +94,10 @@ require("lze").load({
 
 	{
 		"clangd",
-		enabled = nixCats("lsps") and nixCats("cpp"),
+		for_cat = "cpp",
 		lsp = {
 			filetypes = { "cpp", "c" },
+			on_attach = require("lsps.on_attach"),
 			root_markers = {
 				".clangd",
 				".clang-tidy",
