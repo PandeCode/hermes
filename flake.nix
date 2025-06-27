@@ -280,7 +280,7 @@
 
     # see :help nixCats.flake.outputs.packageDefinitions
     packageDefinitions = let
-      defaultPkgDef = {o ? {}}: ({
+      defaultPkgDef = o: ({
           pkgs,
           name,
           ...
