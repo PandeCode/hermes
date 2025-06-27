@@ -1,6 +1,5 @@
 return {
 	"lualine.nvim",
-	for_cat = "general.always",
 	event = "DeferredUIEnter",
 	after = function(plugin)
 		require("lualine").setup({

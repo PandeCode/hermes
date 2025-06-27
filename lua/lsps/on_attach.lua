@@ -1,7 +1,7 @@
 return function(_, bufnr)
 	local nmap = function(keys, func, desc)
 		if desc then
-			desc = "LSP: " .. desc
+			desc = "LSP: " .. vim.inspect(desc)
 		end
 
 		vim.keymap.set("n", keys, func, { buffer = bufnr, desc = desc })
@@ -11,6 +11,10 @@ return function(_, bufnr)
 	nmap("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")
 
 	nmap("gd", vim.lsp.buf.definition, "[G]oto [D]efinition")
+
+	nmap("<leader>gd", function()
+		Snacks.picker.diagnostics()
+	end, "[G]o [D]iagnostic")
 
 	nmap("gr", function()
 		require("snacks").picker.lsp_references()
@@ -38,4 +42,11 @@ return function(_, bufnr)
 	nmap("<leader>wl", function()
 		print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
 	end, "[W]orkspace [L]ist Folders")
+
+	nmap("g[", function()
+		vim.diagnostic.goto_prev()
+	end, "[G]o diagnostic previous")
+	nmap("g]", function()
+		vim.diagnostic.goto_next()
+	end, "[G]o diagnostic next")
 end

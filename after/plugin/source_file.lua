@@ -8,7 +8,7 @@ local function create_source_binding(pattern, callback, group, binding)
 		pattern = pattern,
 		group = vim.api.nvim_create_augroup(group, { clear = true }),
 		callback = function(tbl)
-			vim.keymap.set(Keys.N, binding, function()
+			vim.keymap.set("n", binding, function()
 				callback(tbl)
 				vim.notify(
 					"Sourced file '" .. vim.fn.expand("%") .. "'",

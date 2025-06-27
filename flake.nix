@@ -4,18 +4,18 @@
   description = "hermes - neovim config";
 
   nixConfig = {
-    substituters = [
-      #"https://aseipp-nix-cache.global.ssl.fastly.net"
-      "https://cache.nixos.org"
-    ];
+    experimental-features = ["nix-command" "flakes" "pipe-operators"];
+    accept-flake-config = true;
+    show-trace = true;
 
-    trusted-public-keys = ["cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="];
     extra-substituters = [
       "https://nix-community.cachix.org"
+      "https://hyprland.cachix.org"
       "https://charon.cachix.org"
     ];
     extra-trusted-public-keys = [
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
       "charon.cachix.org-1:epdetEs1ll8oi8DT8OG2jEA4whj3FDbqgPFvapEPbY8="
     ];
   };
@@ -168,10 +168,13 @@
           always = [
             nvim-lspconfig
             lualine-nvim
+            bufferline-nvim
             gitsigns-nvim
             vim-sleuth
             vim-fugitive
             vim-rhubarb
+
+            overseer-nvim
 
             luasnip
             cmp-cmdline
@@ -293,7 +296,7 @@
             aliases = [];
             wrapRc = true;
             configDirName = "nixCats-nvim";
-            neovim-unwrapped = pkgs.neovim-unwrapped; # inputs.neovim-nightly-overlay.packages.${pkgs.system}.neovim;
+            neovim-unwrapped = inputs.neovim-nightly-overlay.packages.${pkgs.system}.neovim;
             hosts = {
               python3.enable = true;
               node.enable = true;

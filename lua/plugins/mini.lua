@@ -2,9 +2,6 @@ return {
 	{
 		"mini.nvim",
 		after = function()
-			-- require("mini.animate").setup()
-			-- require("mini.notify").setup()
-
 			require("mini.cursorword").setup()
 			require("mini.pairs").setup()
 			require("mini.align").setup()
