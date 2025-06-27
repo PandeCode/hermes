@@ -14,6 +14,10 @@ return {
 		dep_of = { "cmp-cmdline" },
 	},
 	{
+		"friendly_snippets",
+		on_plugin = "luasnip",
+	},
+	{
 		"luasnip",
 		dep_of = { "blink.cmp" },
 		after = function(_)
@@ -32,7 +36,7 @@ return {
 	},
 	{
 		"colorful-menu.nvim",
-		on_plugin = { "blink.cmp" },
+		dep_of = { "blink.cmp" },
 	},
 	{
 		"blink.cmp",
@@ -65,6 +69,7 @@ return {
 					end,
 				},
 				fuzzy = {
+					implementation = "prefer_rust_with_warning",
 					sorts = {
 						"exact",
 						-- defaults
@@ -82,33 +87,54 @@ return {
 					menu = {
 						draw = {
 							treesitter = { "lsp" },
-							columns = { { "kind_icon" }, { "label", gap = 1 } },
+							-- columns = { { "kind_icon" }, { "label", gap = 1 }, { "kind" } },
+							columns = { { "kind_icon" }, { "label", "label_description", gap = 1 }, { "kind" } },
+
 							components = {
-								label = {
-									width = { fill = true, max = 60 },
+								kind_icon = {
 									text = function(ctx)
-										local highlights_info = require("colorful-menu").blink_highlights(ctx)
-										if highlights_info ~= nil then
-											-- Or you want to add more item to label
-											return highlights_info.label
-										else
-											return ctx.label
-										end
+										local kind_icon, _, _ = require("mini.icons").get("lsp", ctx.kind)
+										return kind_icon
 									end,
 									highlight = function(ctx)
-										local highlights = {}
-										local highlights_info = require("colorful-menu").blink_highlights(ctx)
-										if highlights_info ~= nil then
-											highlights = highlights_info.highlights
-										end
-										for _, idx in ipairs(ctx.label_matched_indices) do
-											table.insert(highlights, { idx, idx + 1, group = "BlinkCmpLabelMatch" })
-										end
-										-- Do something else
-										return highlights
+										local _, hl, _ = require("mini.icons").get("lsp", ctx.kind)
+										return hl
+									end,
+								},
+								kind = {
+									highlight = function(ctx)
+										local _, hl, _ = require("mini.icons").get("lsp", ctx.kind)
+										return hl
 									end,
 								},
 							},
+
+							-- components = {
+							-- 	label = {
+							-- 		width = { fill = true, max = 60 },
+							-- 		text = function(ctx)
+							-- 			local highlights_info = require("colorful-menu").blink_highlights(ctx)
+							-- 			if highlights_info ~= nil then
+							-- 				-- Or you want to add more item to label
+							-- 				return highlights_info.label
+							-- 			else
+							-- 				return ctx.label
+							-- 			end
+							-- 		end,
+							-- 		highlight = function(ctx)
+							-- 			local highlights = {}
+							-- 			local highlights_info = require("colorful-menu").blink_highlights(ctx)
+							-- 			if highlights_info ~= nil then
+							-- 				highlights = highlights_info.highlights
+							-- 			end
+							-- 			for _, idx in ipairs(ctx.label_matched_indices) do
+							-- 				table.insert(highlights, { idx, idx + 1, group = "BlinkCmpLabelMatch" })
+							-- 			end
+							-- 			-- Do something else
+							-- 			return highlights
+							-- 		end,
+							-- 	},
+							-- },
 							-- components = {
 							--   label = {
 							--     text = function(ctx)

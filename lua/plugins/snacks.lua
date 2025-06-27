@@ -1,35 +1,17 @@
+local function sk(c)
+	return function()
+		Snacks.picker[c]()
+	end
+end
 return {
 	"snacks.nvim",
+	event = "UIEnter",
 
 	keys = {
-		{
-			"<leader>ff",
-			function()
-				Snacks.picker.files()
-			end,
-			desc = "Find Files",
-		},
-		{
-			"<leader>fr",
-			function()
-				Snacks.picker.grep()
-			end,
-			desc = "Grep",
-		},
-		{
-			"<leader><space>",
-			function()
-				Snacks.picker.smart()
-			end,
-			desc = "Smart Find Files",
-		},
-		{
-			"<leader>,",
-			function()
-				Snacks.picker.buffers()
-			end,
-			desc = "Buffers",
-		},
+		{ "<leader>ff", sk("files"), desc = "Find Files" },
+		{ "<leader>fr", sk("grep"), desc = "Grep" },
+		{ "<leader><space>", sk("smart"), desc = "Smart Find Files" },
+		{ "<leader>,", sk("buffers"), desc = "Buffers" },
 		{
 			"<leader>nh",
 			function()
@@ -49,7 +31,7 @@ return {
 	after = function()
 		require("snacks").setup({
 			bigfile = { enabled = true },
-			dashboard = { enabled = true },
+			dashboard = { enabled = false },
 			explorer = { enabled = true },
 			indent = { enabled = true },
 			input = { enabled = true },

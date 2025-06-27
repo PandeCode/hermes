@@ -25,7 +25,6 @@ end)
 require("lze").load({
 	{
 		"nvim-lspconfig",
-		for_cat = "general.core",
 		on_require = { "lspconfig" },
 		-- NOTE: define a function for lsp,
 		-- and it will run for all specs with type(plugin.lsp) == table
@@ -69,8 +68,23 @@ require("lze").load({
 	},
 
 	{
+		"typescript-tools.nvim",
+		for_cat = "web",
+		on_plugin = { "nvim-lspconfig", "plenary.nvim" },
+		ft = {
+			"typescript",
+			"typescriptreact",
+			"javascript",
+			"javascriptreact",
+		},
+		after = function()
+			require("typescript-tools").setup({})
+		end,
+	},
+
+	{
 		"clangd",
-		-- enabled = nixCats("cpp"),
+		enabled = nixCats("lsps") and nixCats("cpp"),
 		lsp = {
 			filetypes = { "cpp", "c" },
 			root_markers = {
@@ -94,16 +108,9 @@ require("lze").load({
 	},
 
 	{
-		-- name of the lsp
 		"lua_ls",
 		enabled = nixCats("lua") or nixCats("neonixdev") or false,
-		-- provide a table containing filetypes,
-		-- and then whatever your functions defined in the function type specs expect.
-		-- in our case, it just expects the normal lspconfig setup options,
-		-- but with a default on_attach and capabilities
 		lsp = {
-			-- if you provide the filetypes it doesn't ask lspconfig for the filetypes
-			filetypes = { "lua" },
 			settings = {
 				Lua = {
 					runtime = { version = "LuaJIT" },
@@ -119,15 +126,11 @@ require("lze").load({
 				},
 			},
 		},
-		-- also these are regular specs and you can use before and after and all the other normal fields
 	},
 	{
 		"gopls",
 		for_cat = "go",
-		-- if you don't provide the filetypes it asks lspconfig for them
-		lsp = {
-			filetypes = { "go", "gomod", "gowork", "gotmpl" },
-		},
+		lsp = {},
 	},
 	{
 		"rnix",

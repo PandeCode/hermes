@@ -6,6 +6,11 @@ require("plugins.oil")
 require("lze").load({
 	{ "vim-wakatime" },
 
+	{
+		"neoscroll.nvim",
+		after = fnSetup("neoscroll"),
+	},
+
 	{ import = "plugins.mini" },
 	{ import = "plugins.snacks" },
 	{ import = "plugins.lualine" },
@@ -13,49 +18,42 @@ require("lze").load({
 	{ import = "plugins.treesitter" },
 	{ import = "plugins.completion" },
 
+	{ "nui.nvim", dep_of = "noice.nvim" },
 	{
 		"noice.nvim",
 		after = function()
 			require("noice").setup({
+				config = { notify = { enabled = false } },
 				lsp = {
-					-- override markdown rendering so that **cmp** and other plugins use **Treesitter**
 					override = {
 						["vim.lsp.util.convert_input_to_markdown_lines"] = true,
 						["vim.lsp.util.stylize_markdown"] = true,
-						["cmp.entry.get_documentation"] = true, -- requires hrsh7th/nvim-cmp
 					},
 				},
-				-- you can enable a preset for easier configuration
 				presets = {
 					bottom_search = true, -- use a classic bottom cmdline for search
 					command_palette = true, -- position the cmdline and popupmenu together
 					long_message_to_split = true, -- long messages will be sent to a split
-					inc_rename = false, -- enables an input dialog for inc-rename.nvim
 					lsp_doc_border = false, -- add a border to hover docs and signature help
 				},
 			})
 		end,
-		dependencies = { "nui.nvim" },
 	},
 	{
 		"conform.nvim",
 		for_cat = "general",
-		keys = { { "<leader>cf", desc = "[C]ode [F]ormat" } },
-		after = function(plugin)
+		keys = { { "<leader>cf" } },
+		after = function()
 			local conform = require("conform")
 
 			conform.setup({
 				formatters_by_ft = {
-					-- NOTE: download some formatters in lspsAndRuntimeDeps
-					-- and configure them here
 					lua = { "stylua" },
 					go = { "gofmt", "golint" },
 					templ = { "templ" },
-					-- Conform will run multiple formatters sequentially
-					python = { "isort", "black" },
-					-- Use a sub-list to run only the first available formatter
-					javascript = { { "prettierd", "prettier" } },
-					nix = { "alejandra" },
+					python = { "isort", "black" }, -- Conform will run multiple formatters sequentially
+					javascript = { { "prettierd", "prettier" } }, -- Use a sub-list to run only the first available formatter
+					nix = { "alejandra", "nixfmt" },
 					c = { "clang-format" },
 					cpp = { "clang-format" },
 				},
@@ -78,11 +76,6 @@ require("lze").load({
 
 	{
 		"markdown-preview.nvim",
-		-- NOTE: for_cat is a custom handler that just sets enabled value for us,
-		-- based on result of nixCats('cat.name') and allows us to set a different default if we wish
-		-- it is defined in luaUtils template in lua/nixCatsUtils/lzUtils.lua
-		-- you could replace this with enabled = nixCats('cat.name') == true
-		-- if you didnt care to set a different default for when not using nix than the default you already set
 		for_cat = "general.markdown",
 		cmd = { "MarkdownPreview", "MarkdownPreviewStop", "MarkdownPreviewToggle" },
 		ft = "markdown",
@@ -115,7 +108,6 @@ require("lze").load({
 	},
 	{
 		"undotree",
-		for_cat = "general.extra",
 		cmd = { "UndotreeToggle", "UndotreeHide", "UndotreeShow", "UndotreeFocus", "UndotreePersistUndo" },
 		keys = { { "<leader>U", "<cmd>UndotreeToggle<CR>", mode = { "n" }, desc = "Undo Tree" } },
 		before = function(_)
@@ -125,7 +117,6 @@ require("lze").load({
 	},
 	{
 		"vim-startuptime",
-		for_cat = "general.extra",
 		cmd = { "StartupTime" },
 		before = function(_)
 			vim.g.startuptime_event_width = 0
@@ -135,13 +126,13 @@ require("lze").load({
 	},
 	{
 		"fidget.nvim",
-		for_cat = "general.extra",
 		event = "DeferredUIEnter",
 		-- keys = "",
 		after = function(plugin)
 			require("fidget").setup({})
 		end,
 	},
+
 	{
 		"gitsigns.nvim",
 		for_cat = "general.always",
