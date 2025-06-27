@@ -296,7 +296,7 @@
             aliases = [];
             wrapRc = true;
             configDirName = "nixCats-nvim";
-            neovim-unwrapped = inputs.neovim-nightly-overlay.packages.${pkgs.system}.neovim;
+            # neovim-unwrapped = inputs.neovim-nightly-overlay.packages.${pkgs.system}.neovim;
             hosts = {
               python3.enable = true;
               node.enable = true;

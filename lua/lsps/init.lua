@@ -28,7 +28,7 @@ end, { desc = "[G]o diagnostic previous" })
 vim.keymap.set("n", "g]", function()
 	vim.diagnostic.goto_next()
 end, { desc = "[G]o diagnostic next" })
-vim.keyamp.set("n", "<leader>gd", function()
+vim.keymap.set("n", "<leader>gd", function()
 	Snacks.picker.diagnostics()
 end, { desc = "[G]o [D]iagnostic" })
 
@@ -94,10 +94,8 @@ require("lze").load({
 
 	{
 		"clangd",
-		for_cat = "cpp",
 		lsp = {
 			filetypes = { "cpp", "c" },
-			on_attach = require("lsps.on_attach"),
 			root_markers = {
 				".clangd",
 				".clang-tidy",
@@ -120,7 +118,6 @@ require("lze").load({
 
 	{
 		"lua_ls",
-		enabled = nixCats("lua") or nixCats("neonixdev") or false,
 		lsp = {
 			settings = {
 				Lua = {
