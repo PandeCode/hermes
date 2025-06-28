@@ -13,7 +13,6 @@ local options = {
 		listchars = "tab:→ ,lead:·,trail:·,nbsp:␣",
 		pumblend = 20,
 		winblend = 20,
-		showtabline = 2,
 		showmatch = true,
 		scrolloff = 8,
 		sidescrolloff = 8,
