@@ -173,7 +173,6 @@
             vim-sleuth
             vim-fugitive
             vim-rhubarb
-
             overseer-nvim
 
             luasnip

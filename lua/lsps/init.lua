@@ -90,6 +90,7 @@ require("lze").load({
 		"clangd",
 		lsp = {
 			filetypes = { "cpp", "c" },
+			on_attach = require("lsps.on_attach"),
 			root_markers = {
 				".clangd",
 				".clang-tidy",
@@ -113,6 +114,7 @@ require("lze").load({
 	{
 		"lua_ls",
 		lsp = {
+			on_attach = require("lsps.on_attach"),
 			settings = {
 				Lua = {
 					runtime = { version = "LuaJIT" },
