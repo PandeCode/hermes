@@ -25,65 +25,6 @@ require("lze").load({
 	{ "vim-wakatime" },
 
 	{ "neoscroll.nvim", on_setup = "neoscroll" },
-	-- {
-	-- 	"overseer.nvim",
-	-- 	ft = { "go", "cpp", "python", "c" },
-	-- 	after = function()
-	-- 		require("overseer").setup({
-	-- 			templates = { "builtin", "user.shell", "user.run_script", "user.cpp_build" },
-	-- 		})
-	--
-	-- 		vim.api.nvim_create_user_command("WatchRun", function()
-	-- 			local overseer = require("overseer")
-	-- 			overseer.run_template({ name = "run script" }, function(task)
-	-- 				if task then
-	-- 					task:add_component({ "restart_on_save", paths = { vim.fn.expand("%:p") } })
-	-- 					local main_win = vim.api.nvim_get_current_win()
-	-- 					overseer.run_action(task, "open vsplit")
-	-- 					vim.api.nvim_set_current_win(main_win)
-	-- 				else
-	-- 					vim.notify("WatchRun not supported for filetype " .. vim.bo.filetype, vim.log.levels.ERROR)
-	-- 				end
-	-- 			end)
-	-- 		end, {})
-	--
-	-- 		vim.api.nvim_create_user_command("OverseerRestartLast", function()
-	-- 			local overseer = require("overseer")
-	-- 			local tasks = overseer.list_tasks({ recent_first = true })
-	-- 			if vim.tbl_isempty(tasks) then
-	-- 				vim.notify("No tasks found", vim.log.levels.WARN)
-	-- 			else
-	-- 				overseer.run_action(tasks[1], "restart")
-	-- 			end
-	-- 		end, {})
-	--
-	-- 		vim.api.nvim_create_user_command("Make", function(params)
-	-- 			-- Insert args at the '$*' in the makeprg
-	-- 			local cmd, num_subs = vim.o.makeprg:gsub("%$%*", params.args)
-	-- 			if num_subs == 0 then
-	-- 				cmd = cmd .. " " .. params.args
-	-- 			end
-	-- 			local task = require("overseer").new_task({
-	-- 				cmd = vim.fn.expandcmd(cmd),
-	-- 				components = {
-	-- 					{ "on_output_quickfix", open = not params.bang, open_height = 8 },
-	-- 					"default",
-	-- 				},
-	-- 			})
-	-- 			task:start()
-	-- 		end, {
-	-- 			desc = "Run your makeprg as an Overseer task",
-	-- 			nargs = "*",
-	-- 			bang = true,
-	-- 		})
-	--
-	-- 		vim.keymap.set("n", "<leader>or", ":OverseerRun<CR>", { noremap = true, silent = true })
-	-- 		vim.keymap.set("n", "<leader>ow", ":WatchRun<CR>", { noremap = true, silent = true })
-	-- 		vim.keymap.set("n", "<leader>ol", ":OverseerRestartLast<CR>", { noremap = true, silent = true })
-	-- 		vim.keymap.set("n", "<leader>om", ":Make<CR>", { noremap = true, silent = true })
-	-- 	end,
-	-- },
-
 	{ import = "plugins.mini" },
 	{ import = "plugins.snacks" },
 	{ import = "plugins.bufferline" },
@@ -91,6 +32,153 @@ require("lze").load({
 
 	{ import = "plugins.treesitter" },
 	{ import = "plugins.completion" },
+	{ import = "plugins.git" },
+
+	{
+		"hover.nvim",
+		after = function()
+			require("hover").setup({
+				init = function()
+					require("hover.providers.lsp")
+					require("hover.providers.diagnostic")
+					require("hover.providers.gh")
+					require("hover.providers.gh_user")
+					require("hover.providers.dap")
+					require("hover.providers.fold_preview")
+					require("hover.providers.man")
+					require("hover.providers.dictionary")
+
+					require("hover").register({
+						name = "Tailwind",
+						priority = 1,
+						enabled = function(bufnr)
+							if "lua" == vim.fn.getbufvar(bufnr, "&filetype") then
+								return true
+							end
+							return false
+						end,
+						execute = function(opts, done)
+							local cword = vim.fn.expand("<cword>")
+
+							local base_descriptions = {
+								base00 = {
+									"Primary Background – Darkest Layer",
+									"Forms the foundation for the entire UI background.",
+									"Often used for editor background or root containers.",
+								},
+								base01 = {
+									"Secondary Background – Elevated Shade",
+									"Provides subtle contrast against the base background.",
+									"Used for panels, sidebars, or secondary surfaces.",
+								},
+								base02 = {
+									"Selection Highlight Background",
+									"Indicates selected items or active highlights.",
+									"Balances visibility without overpowering text.",
+								},
+								base03 = {
+									"Comments and Inactive Elements",
+									"Applies to comments, invisible characters, or guide lines.",
+									"Lower visual priority, often gray or muted.",
+								},
+								base04 = {
+									"Muted Foreground – Secondary Text",
+									"Used for non-essential or auxiliary text.",
+									"Labels, placeholders, or subdued notes.",
+								},
+								base05 = {
+									"Primary Foreground – Main Text",
+									"Default color for regular readable text.",
+									"Applies to most content, code, and UI labels.",
+								},
+								base06 = {
+									"Bright Foreground – Highlight Text",
+									"Used for strong emphasis or important UI elements.",
+									"Often applied to active items or headings.",
+								},
+								base07 = {
+									"Light Background – Emphasized UI Areas",
+									"Brightest shade in the theme.",
+									"Typically used for inline code blocks or selected backgrounds.",
+								},
+								base08 = {
+									"Critical Elements – Errors & Variables",
+									"Marks error messages, exceptions, and mutable variables.",
+									"Stands out for immediate attention.",
+								},
+								base09 = {
+									"Numeric & Boolean Values",
+									"Highlights numeric constants, booleans, and enums.",
+									"Useful for distinguishing fixed values in code.",
+								},
+								base0A = {
+									"Structural Elements – Classes & Tags",
+									"Emphasizes class names, markup tags, and data types.",
+									"Defines the skeleton of code structures.",
+								},
+								base0B = {
+									"Literals & Strings",
+									"Used for string values and quoted literals.",
+									"Reflects static data in code.",
+								},
+								base0C = {
+									"Support Constructs – RegEx & Helpers",
+									"Marks auxiliary patterns, regex, and helper keywords.",
+									"Often associated with tools and diagnostics.",
+								},
+								base0D = {
+									"Executable Elements – Functions & Methods",
+									"Represents callable code units: functions, methods, and lambdas.",
+									"Essential for understanding logic flow.",
+								},
+								base0E = {
+									"Language Keywords & Control Flow",
+									"Identifies language-level reserved words and flow-control terms.",
+									"For example: `if`, `else`, `return`, `while`.",
+								},
+								base0F = {
+									"Deprecated or Legacy Components",
+									"Highlights outdated code, unstable APIs, or transitional elements.",
+									"Useful for signaling migration or refactor needs.",
+								},
+							}
+
+							for key, description in pairs(base_descriptions) do
+								if string.find(cword, key) then
+									done({ lines = description, filetype = "markdown" })
+								end
+							end
+						end,
+					})
+				end,
+				preview_opts = {
+					border = "single",
+				},
+				-- Whether the contents of a currently open hover window should be moved
+				-- to a :h preview-window when pressing the hover keymap.
+				preview_window = false,
+				title = true,
+				mouse_providers = {
+					"LSP",
+				},
+				mouse_delay = 500,
+			})
+
+			-- Setup keymaps
+			vim.keymap.set("n", "K", require("hover").hover, { desc = "hover.nvim" })
+			vim.keymap.set("n", "gK", require("hover").hover_select, { desc = "hover.nvim (select)" })
+			vim.keymap.set("n", "<C-p>", function()
+				require("hover").hover_switch("previous")
+			end, { desc = "hover.nvim (previous source)" })
+			vim.keymap.set("n", "<C-n>", function()
+				require("hover").hover_switch("next")
+			end, { desc = "hover.nvim (next source)" })
+
+			-- Mouse support
+			vim.keymap.set("n", "<MouseMove>", require("hover").hover_mouse, { desc = "hover.nvim (mouse)" })
+			vim.o.mousemoveevent = true
+		end,
+	},
 
 	{ "nui.nvim", dep_of = "noice.nvim" },
 	{
@@ -204,87 +292,6 @@ require("lze").load({
 		-- keys = "",
 		after = function(plugin)
 			require("fidget").setup({})
-		end,
-	},
-
-	{
-		"gitsigns.nvim",
-		for_cat = "general.always",
-		event = "DeferredUIEnter",
-		after = function(plugin)
-			require("gitsigns").setup({
-				-- See `:help gitsigns.txt`
-				signs = {
-					add = { text = "+" },
-					change = { text = "~" },
-					delete = { text = "_" },
-					topdelete = { text = "‾" },
-					changedelete = { text = "~" },
-				},
-				on_attach = function(bufnr)
-					local gs = package.loaded.gitsigns
-
-					local function map(mode, l, r, opts)
-						opts = opts or {}
-						opts.buffer = bufnr
-						vim.keymap.set(mode, l, r, opts)
-					end
-
-					-- Navigation
-					map({ "n", "v" }, "]c", function()
-						if vim.wo.diff then
-							return "]c"
-						end
-						vim.schedule(function()
-							gs.next_hunk()
-						end)
-						return "<Ignore>"
-					end, { expr = true, desc = "Jump to next hunk" })
-
-					map({ "n", "v" }, "[c", function()
-						if vim.wo.diff then
-							return "[c"
-						end
-						vim.schedule(function()
-							gs.prev_hunk()
-						end)
-						return "<Ignore>"
-					end, { expr = true, desc = "Jump to previous hunk" })
-
-					-- Actions
-					-- visual mode
-					map("v", "<leader>hs", function()
-						gs.stage_hunk({ vim.fn.line("."), vim.fn.line("v") })
-					end, { desc = "stage git hunk" })
-					map("v", "<leader>hr", function()
-						gs.reset_hunk({ vim.fn.line("."), vim.fn.line("v") })
-					end, { desc = "reset git hunk" })
-					-- normal mode
-					map("n", "<leader>gs", gs.stage_hunk, { desc = "git stage hunk" })
-					map("n", "<leader>gr", gs.reset_hunk, { desc = "git reset hunk" })
-					map("n", "<leader>gS", gs.stage_buffer, { desc = "git Stage buffer" })
-					map("n", "<leader>gu", gs.undo_stage_hunk, { desc = "undo stage hunk" })
-					map("n", "<leader>gR", gs.reset_buffer, { desc = "git Reset buffer" })
-					map("n", "<leader>gp", gs.preview_hunk, { desc = "preview git hunk" })
-					map("n", "<leader>gb", function()
-						gs.blame_line({ full = false })
-					end, { desc = "git blame line" })
-					map("n", "<leader>gd", gs.diffthis, { desc = "git diff against index" })
-					map("n", "<leader>gD", function()
-						gs.diffthis("~")
-					end, { desc = "git diff against last commit" })
-
-					-- Toggles
-					map("n", "<leader>gtb", gs.toggle_current_line_blame, { desc = "toggle git blame line" })
-					map("n", "<leader>gtd", gs.toggle_deleted, { desc = "toggle git show deleted" })
-
-					-- Text object
-					map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", { desc = "select git hunk" })
-				end,
-			})
-			vim.cmd([[hi GitSignsAdd guifg=#04de21]])
-			vim.cmd([[hi GitSignsChange guifg=#83fce6]])
-			vim.cmd([[hi GitSignsDelete guifg=#fa2525]])
 		end,
 	},
 })

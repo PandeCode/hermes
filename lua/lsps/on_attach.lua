@@ -22,8 +22,6 @@ return function(_, bufnr)
 
 	nmap("<leader>D", vim.lsp.buf.type_definition, "Type [D]efinition")
 
-	-- See `:help K` for why this keymap
-	nmap("K", vim.lsp.buf.hover, "Hover Documentation")
 	nmap("<C-k>", vim.lsp.buf.signature_help, "Signature Documentation")
 	nmap("<F2>", vim.lsp.buf.rename, "[R]e[n]ame")
 	nmap("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")

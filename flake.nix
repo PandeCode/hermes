@@ -173,7 +173,7 @@
             vim-sleuth
             vim-fugitive
             vim-rhubarb
-            overseer-nvim
+            hover-nvim
 
             luasnip
             cmp-cmdline
@@ -304,6 +304,13 @@
                 path = {
                   value = "${pkgs.neovide}/bin/neovide";
                   args = ["--add-flags" "--neovim-bin ${name}"];
+                };
+              };
+              neo = {
+                enable = true;
+                path = {
+                  value = "${pkgs.bash}/bin/bash";
+                  args = ["--add-flags" "-c '${pkgs.fzf}/bin/fzf | ${pkgs.toybox}/bin/xargs ${pkgs.neovide}/bin/neovide --neovim-bin ${name} 2>&1  > /dev/null & disow'"];
                 };
               };
             };

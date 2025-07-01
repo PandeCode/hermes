@@ -92,6 +92,23 @@ return {
 					note = { pattern = "%f[%w]()NOTE()%f[%W]", group = "MiniHipatternsNote" },
 					info = { pattern = "%f[%w]()INFO()%f[%W]", group = "MiniHipatternsNote" },
 
+					base00 = { pattern = "base00", group = "GP_base00" },
+					base01 = { pattern = "base01", group = "GP_base01" },
+					base02 = { pattern = "base02", group = "GP_base02" },
+					base03 = { pattern = "base03", group = "GP_base03" },
+					base04 = { pattern = "base04", group = "GP_base04" },
+					base05 = { pattern = "base05", group = "GP_base05" },
+					base06 = { pattern = "base06", group = "GP_base06" },
+					base07 = { pattern = "base07", group = "GP_base07" },
+					base08 = { pattern = "base08", group = "GP_base08" },
+					base09 = { pattern = "base09", group = "GP_base09" },
+					base0A = { pattern = "base0A", group = "GP_base0A" },
+					base0B = { pattern = "base0B", group = "GP_base0B" },
+					base0C = { pattern = "base0C", group = "GP_base0C" },
+					base0D = { pattern = "base0D", group = "GP_base0D" },
+					base0E = { pattern = "base0E", group = "GP_base0E" },
+					base0F = { pattern = "base0F", group = "GP_base0F" },
+
 					hex_color = hipatterns.gen_highlighter.hex_color(),
 				},
 			})

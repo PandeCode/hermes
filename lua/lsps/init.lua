@@ -27,6 +27,10 @@ vim.keymap.set("n", "<leader>gd", function()
 end, { desc = "[G]o [D]iagnostic" })
 
 require("lze").load({
+    {
+        import = "lsps.clangd"
+    },
+
 	{
 		"nvim-lspconfig",
 		on_require = { "lspconfig" },
@@ -86,30 +90,7 @@ require("lze").load({
 		end,
 	},
 
-	{
-		"clangd",
-		lsp = {
-			filetypes = { "cpp", "c" },
-			on_attach = require("lsps.on_attach"),
-			root_markers = {
-				".clangd",
-				".clang-tidy",
-				".clang-format",
-				"compile_commands.json",
-				"compile_flags.txt",
-				"configure.ac",
-				".git",
-			},
-			capabilities = {
-				offsetEncoding = { "utf-8", "utf-16" },
-				textDocument = {
-					completion = {
-						editsNearCursor = true,
-					},
-				},
-			},
-		},
-	},
+
 
 	{
 		"lua_ls",
