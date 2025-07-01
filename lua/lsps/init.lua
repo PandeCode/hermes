@@ -27,10 +27,6 @@ vim.keymap.set("n", "<leader>gd", function()
 end, { desc = "[G]o [D]iagnostic" })
 
 require("lze").load({
-    {
-        import = "lsps.clangd"
-    },
-
 	{
 		"nvim-lspconfig",
 		on_require = { "lspconfig" },
@@ -42,24 +38,15 @@ require("lze").load({
 			vim.lsp.enable(plugin.name)
 		end,
 		before = function(_)
-			vim.lsp.config("*", {
-				on_attach = require("lsps.on_attach"),
-			})
+			vim.lsp.config("*", { on_attach = require("lsps.on_attach") })
 		end,
 	},
-	{
-		"mason.nvim",
-		-- only run it when not on nix
-		enabled = not catUtils.isNixCats,
-		on_plugin = { "nvim-lspconfig" },
-		load = function(name)
-			vim.cmd.packadd(name)
-			vim.cmd.packadd("mason-lspconfig.nvim")
-			require("mason").setup()
-			-- auto install will make it install servers when lspconfig is called on them.
-			require("mason-lspconfig").setup({ automatic_installation = true })
-		end,
-	},
+
+	{ import = "lsps.clangd" },
+	{ import = "lsps.lua_ls" },
+	{ import = "lsps.nixd" },
+	{ "gopls", for_cat = "go", lsp = {} },
+
 	{
 		-- lazydev makes your lsp way better in your config without needing extra lsp configuration.
 		"lazydev.nvim",
@@ -89,94 +76,17 @@ require("lze").load({
 			require("typescript-tools").setup({})
 		end,
 	},
-
-
-
 	{
-		"lua_ls",
-		lsp = {
-			on_attach = require("lsps.on_attach"),
-			settings = {
-				Lua = {
-					runtime = { version = "LuaJIT" },
-					formatters = {
-						ignoreComments = true,
-					},
-					signatureHelp = { enabled = true },
-					diagnostics = {
-						globals = { "nixCats", "vim" },
-						disable = { "missing-fields" },
-					},
-					telemetry = { enabled = false },
-				},
-			},
-		},
-	},
-	{
-		"gopls",
-		for_cat = "go",
-		lsp = {},
-	},
-	{
-		"rnix",
-		-- mason doesn't have nixd
+		"mason.nvim",
+		-- only run it when not on nix
 		enabled = not catUtils.isNixCats,
-		lsp = {
-			filetypes = { "nix" },
-		},
-	},
-	{
-		"nil_ls",
-		-- mason doesn't have nixd
-		enabled = not catUtils.isNixCats,
-		lsp = {
-			filetypes = { "nix" },
-		},
-	},
-	{
-		"nixd",
-		enabled = catUtils.isNixCats and (nixCats("nix") or nixCats("neonixdev")) or false,
-		lsp = {
-			filetypes = { "nix" },
-			settings = {
-				nixd = {
-					-- nixd requires some configuration.
-					-- luckily, the nixCats plugin is here to pass whatever we need!
-					-- we passed this in via the `extra` table in our packageDefinitions
-					-- for additional configuration options, refer to:
-					-- https://github.com/nix-community/nixd/blob/main/nixd/docs/configuration.md
-					nixpkgs = {
-						-- in the extras set of your package definition:
-						-- nixdExtras.nixpkgs = ''import ${pkgs.path} {}''
-						expr = nixCats.extra("nixdExtras.nixpkgs") or [[import <nixpkgs> {}]],
-					},
-					options = {
-						-- If you integrated with your system flake,
-						-- you should use inputs.self as the path to your system flake
-						-- that way it will ALWAYS work, regardless
-						-- of where your config actually was.
-						nixos = {
-							-- nixdExtras.nixos_options = ''(builtins.getFlake "path:${builtins.toString inputs.self.outPath}").nixosConfigurations.configname.options''
-							expr = nixCats.extra("nixdExtras.nixos_options"),
-						},
-						-- If you have your config as a separate flake, inputs.self would be referring to the wrong flake.
-						-- You can override the correct one into your package definition on import in your main configuration,
-						-- or just put an absolute path to where it usually is and accept the impurity.
-						["home-manager"] = {
-							-- nixdExtras.home_manager_options = ''(builtins.getFlake "path:${builtins.toString inputs.self.outPath}").homeConfigurations.configname.options''
-							expr = nixCats.extra("nixdExtras.home_manager_options"),
-						},
-					},
-					formatting = {
-						command = { "nixfmt" },
-					},
-					diagnostic = {
-						suppress = {
-							"sema-escaping-with",
-						},
-					},
-				},
-			},
-		},
+		on_plugin = { "nvim-lspconfig" },
+		load = function(name)
+			vim.cmd.packadd(name)
+			vim.cmd.packadd("mason-lspconfig.nvim")
+			require("mason").setup()
+			-- auto install will make it install servers when lspconfig is called on them.
+			require("mason-lspconfig").setup({ automatic_installation = true })
+		end,
 	},
 })

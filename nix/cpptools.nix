@@ -1,14 +1,12 @@
 {
   stdenv,
-  unzip,
   fetchurl,
-}: (stdenv.mkDerivation {
+}: (stdenv.mkDerivation rec {
   pname = "cpptools";
-  version = "v1.22.1";
-  nativeBuildInputs = [unzip];
+  version = "1.26.3";
   src = fetchurl {
-    url = "https://github.com/microsoft/vscode-cpptools/releases/download/v1.22.11/cpptools-linux-x64.vsix";
-    sha256 = "93ec1b4d9be83e6b0a28cebbf441cc84ee0f6d47b56a677f5cb54e27a929c0f3";
+    url = "https://github.com/microsoft/vscode-cpptools/releases/download/v${version}/cpptools-linux-x64.vsix";
+    sha256 = "2444b97ac556e9c465ae614040ed722d81196cb750bb820b5b4ae30c1a79124e";
   };
   phases = ["unpackPhase" "installPhase"];
   unpackPhase = ''

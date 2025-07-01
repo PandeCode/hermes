@@ -46,24 +46,28 @@ local function symbol_info()
 end
 
 return {
-	"clangd",
-	lsp = {
-		on_attach = function(_, bufnr)
-			require("lsps.on_attach")
+	{
+		"clangd",
+		lsp = {
+			on_attach = function(_, bufnr)
+				require("lsps.on_attach")()
 
-			vim.api.nvim_buf_create_user_command(bufnr, "LspClangdSwitchSourceHeader", function()
-				switch_source_header(bufnr)
-			end, { desc = "Switch between source/header" })
-			vim.api.nvim_buf_create_user_command(bufnr, "LspClangdShowSymbolInfo", function()
-				symbol_info()
-			end, { desc = "Show symbol info" })
+				vim.api.nvim_buf_create_user_command(bufnr, "LspClangdSwitchSourceHeader", function()
+					switch_source_header(bufnr)
+				end, { desc = "Switch between source/header" })
+				vim.api.nvim_buf_create_user_command(bufnr, "LspClangdShowSymbolInfo", function()
+					symbol_info()
+				end, { desc = "Show symbol info" })
 
-			vim.keymap.set(
-				"n",
-				"<leader>gh",
-				switch_source_header,
-				{ desc = "Switch between source/header", buffer = bufnr, noremap = true, silent = true }
-			)
-		end,
+				vim.keymap.set(
+					"n",
+					"<leader>gh",
+					switch_source_header,
+					{ desc = "Switch between source/header", buffer = bufnr, noremap = true, silent = true }
+				)
+
+				vim.print("Loaded special clangd")
+			end,
+		},
 	},
 }

@@ -23,9 +23,9 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixCats.url = "github:BirdeeHub/nixCats-nvim";
-
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -64,13 +64,15 @@
 
     categoryDefinitions = {
       pkgs,
-      settings,
-      categories,
-      extra,
-      name,
-      mkPlugin,
+      # settings,
+      # categories,
+      # extra,
+      # name,
+      # mkPlugin,
       ...
-    } @ packageDef: {
+    }
+    # @ packageDef
+    : {
       lspsAndRuntimeDeps = with pkgs; {
         general = [
           universal-ctags
@@ -78,7 +80,6 @@
           fd
           prettierd
         ];
-
         debug = rec {
           go = [delve];
           cpp = [
@@ -310,7 +311,13 @@
                 enable = true;
                 path = {
                   value = "${pkgs.bash}/bin/bash";
-                  args = ["--add-flags" "-c '${pkgs.fzf}/bin/fzf | ${pkgs.toybox}/bin/xargs ${pkgs.neovide}/bin/neovide --neovim-bin ${name} 2>&1  > /dev/null & disow'"];
+                  args = [
+                    "--add-flags"
+                    ''
+                      -c '${pkgs.fzf}/bin/fzf |
+                          ${pkgs.toybox}/bin/xargs ${pkgs.neovide}/bin/neovide --neovim-bin ${name} 2>&1 > /dev/null & disown'
+                    ''
+                  ];
                 };
               };
             };
@@ -432,7 +439,7 @@
       pkgs = import nixpkgs {inherit system;};
       # The one used to build neovim is resolved inside the builder
       # and is passed to our categoryDefinitions and packageDefinitions
-    in {
+    in rec {
       # these outputs will be wrapped with ${system} by utils.eachSystem
 
       # this will generate a set of all the packages
@@ -441,13 +448,12 @@
       # and additionally output the original as default.
       packages = utils.mkAllWithDefault defaultPackage;
 
-      # choose your package for devShell
-      # and add whatever else you want in it.
       devShells = {
         default = pkgs.mkShell {
           name = defaultPackageName;
           packages = with pkgs; [
-            defaultPackage
+            (packages.default)
+            (packages.nvim-cpp)
             statix
             deadnix
             alejandra
