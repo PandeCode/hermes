@@ -66,19 +66,13 @@ require("lze").load({
 		"typescript-tools.nvim",
 		for_cat = "web",
 		on_plugin = { "nvim-lspconfig", "plenary.nvim" },
-		ft = {
-			"typescript",
-			"typescriptreact",
-			"javascript",
-			"javascriptreact",
-		},
+		ft = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
 		after = function()
 			require("typescript-tools").setup({})
 		end,
 	},
 	{
 		"mason.nvim",
-		-- only run it when not on nix
 		enabled = not catUtils.isNixCats,
 		on_plugin = { "nvim-lspconfig" },
 		load = function(name)

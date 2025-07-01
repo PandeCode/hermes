@@ -10,12 +10,10 @@
 
     extra-substituters = [
       "https://nix-community.cachix.org"
-      "https://hyprland.cachix.org"
       "https://charon.cachix.org"
     ];
     extra-trusted-public-keys = [
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
       "charon.cachix.org-1:epdetEs1ll8oi8DT8OG2jEA4whj3FDbqgPFvapEPbY8="
     ];
   };
@@ -89,7 +87,7 @@
           ];
           rs = cpp;
         };
-        cpp = [clang-tools bear cmake cppcheck valgrind];
+        cpp = [clang-tools ccls];
         go = [go gopls gotools go-tools gccgo];
         py = [python3 ruff];
         rs = [rust-analyzer];

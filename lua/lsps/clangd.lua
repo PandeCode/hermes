@@ -45,29 +45,71 @@ local function symbol_info()
 	end, bufnr)
 end
 
-return {
-	{
-		"clangd",
-		lsp = {
-			on_attach = function(_, bufnr)
-				require("lsps.on_attach")()
 
-				vim.api.nvim_buf_create_user_command(bufnr, "LspClangdSwitchSourceHeader", function()
-					switch_source_header(bufnr)
-				end, { desc = "Switch between source/header" })
-				vim.api.nvim_buf_create_user_command(bufnr, "LspClangdShowSymbolInfo", function()
-					symbol_info()
-				end, { desc = "Show symbol info" })
+local function ccls_switch_source_header(client, bufnr)
+  local method_name = 'textDocument/switchSourceHeader'
+  local params = vim.lsp.util.make_text_document_params(bufnr)
+  client:request(method_name, params, function(err, result)
+    if err then
+      error(tostring(err))
+    end
+    if not result then
+      vim.notify('corresponding file cannot be determined')
+      return
+    end
+    vim.cmd.edit(vim.uri_to_fname(result))
+  end, bufnr)
+end
 
-				vim.keymap.set(
-					"n",
-					"<leader>gh",
-					switch_source_header,
-					{ desc = "Switch between source/header", buffer = bufnr, noremap = true, silent = true }
-				)
+local cpp_lsp = vim.fn.getenv("CPP_LSP")
 
-				vim.print("Loaded special clangd")
-			end,
-		},
-	},
-}
+if cpp_lsp == vim.NIL or cpp_lsp == nil or cpp_lsp == "" then
+  cpp_lsp = "clangd"
+end
+
+if cpp_lsp == "ccls" then
+  return {
+    {
+      "ccls",
+      lsp = {
+        on_attach = function(_, bufnr)
+          require("lsps.on_attach")()
+          vim.api.nvim_buf_create_user_command(bufnr, "LspClangdSwitchSourceHeader", function()
+            ccls_switch_source_header(bufnr)
+          end, { desc = "Switch between source/header" })
+          vim.keymap.set(
+            "n",
+            "<leader>gh",
+            ccls_switch_source_header,
+            { desc = "Switch between source/header", buffer = bufnr, noremap = true, silent = true }
+          )
+          vim.print("Loaded special ccls")
+        end,
+      },
+    },
+  }
+else
+  return {
+    {
+      "clangd",
+      lsp = {
+        on_attach = function(_, bufnr)
+          require("lsps.on_attach")()
+          vim.api.nvim_buf_create_user_command(bufnr, "LspClangdSwitchSourceHeader", function()
+            switch_source_header(bufnr)
+          end, { desc = "Switch between source/header" })
+          vim.api.nvim_buf_create_user_command(bufnr, "LspClangdShowSymbolInfo", function()
+            symbol_info()
+          end, { desc = "Show symbol info" })
+          vim.keymap.set(
+            "n",
+            "<leader>gh",
+            switch_source_header,
+            { desc = "Switch between source/header", buffer = bufnr, noremap = true, silent = true }
+          )
+          vim.print("Loaded special clangd")
+        end,
+      },
+    },
+  }
+end
