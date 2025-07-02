@@ -1,4 +1,7 @@
 require("general.autocmd")
 require("general.keys")
 require("general.options")
-require("general.neovide")
+
+if vim.g.neovide ~= nil then
+    require("general.neovide")
+end

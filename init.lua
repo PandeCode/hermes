@@ -1,4 +1,5 @@
 vim.loader.enable()
+math.randomseed(os.time())
 
 require("nixCatsUtils").setup({
 	non_nix_value = true,
