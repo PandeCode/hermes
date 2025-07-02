@@ -21,9 +21,19 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixCats.url = "github:BirdeeHub/nixCats-nvim";
+
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    plugins-hover-nvim = {
+      url = "github:PandeCode/hover.nvim";
+      flake = false;
+    };
+    plugins-snacks-nvim = {
+      url = "github:PandeCode/snacks.nvim";
+      flake = false;
     };
   };
 

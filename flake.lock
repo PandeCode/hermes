@@ -214,11 +214,45 @@
         "type": "github"
       }
     },
+    "plugins-hover-nvim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1751428620,
+        "narHash": "sha256-Yag4qmI+c8qNkP11PCW4upZqOPO32h/dx29+ouHEJ3w=",
+        "owner": "PandeCode",
+        "repo": "hover.nvim",
+        "rev": "c15fc057a5e69a84753ba88c6946811a28f53cbf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "PandeCode",
+        "repo": "hover.nvim",
+        "type": "github"
+      }
+    },
+    "plugins-snacks-nvim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1747521452,
+        "narHash": "sha256-fTcxqULvTmZYkToIt5GeNMjc5PdNE1NFK8v6EXz3heQ=",
+        "owner": "PandeCode",
+        "repo": "snacks.nvim",
+        "rev": "efe43801f094449af4be1fdd09a197b82d20c8d0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "PandeCode",
+        "repo": "snacks.nvim",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "neovim-nightly-overlay": "neovim-nightly-overlay",
         "nixCats": "nixCats",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "plugins-hover-nvim": "plugins-hover-nvim",
+        "plugins-snacks-nvim": "plugins-snacks-nvim"
       }
     },
     "treefmt-nix": {
