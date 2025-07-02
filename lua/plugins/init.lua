@@ -161,7 +161,7 @@ require("lze").load({
 				mouse_providers = {
 					"LSP",
 				},
-				mouse_delay = 500,
+				mouse_delay = 50000,
 			})
 
 			-- Setup keymaps
