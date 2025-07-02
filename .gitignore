@@ -2,3 +2,4 @@ result
 tags
 .direnv
 test
+.ccls-cache
