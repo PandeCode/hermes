@@ -27,10 +27,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    plugins-hover-nvim = {
-      url = "github:PandeCode/hover.nvim";
-      flake = false;
-    };
+    # plugins-hover-nvim = {
+    #   url = "github:PandeCode/hover.nvim";
+    #   flake = false;
+    # };
     plugins-snacks-nvim = {
       url = "github:PandeCode/snacks.nvim";
       flake = false;
@@ -183,7 +183,7 @@
             vim-sleuth
             vim-fugitive
             vim-rhubarb
-            hover-nvim
+            # hover-nvim
 
             luasnip
             cmp-cmdline

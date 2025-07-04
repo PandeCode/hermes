@@ -214,22 +214,6 @@
         "type": "github"
       }
     },
-    "plugins-hover-nvim": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1751428620,
-        "narHash": "sha256-Yag4qmI+c8qNkP11PCW4upZqOPO32h/dx29+ouHEJ3w=",
-        "owner": "PandeCode",
-        "repo": "hover.nvim",
-        "rev": "c15fc057a5e69a84753ba88c6946811a28f53cbf",
-        "type": "github"
-      },
-      "original": {
-        "owner": "PandeCode",
-        "repo": "hover.nvim",
-        "type": "github"
-      }
-    },
     "plugins-snacks-nvim": {
       "flake": false,
       "locked": {
@@ -251,7 +235,6 @@
         "neovim-nightly-overlay": "neovim-nightly-overlay",
         "nixCats": "nixCats",
         "nixpkgs": "nixpkgs",
-        "plugins-hover-nvim": "plugins-hover-nvim",
         "plugins-snacks-nvim": "plugins-snacks-nvim"
       }
     },
