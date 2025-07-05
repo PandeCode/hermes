@@ -155,7 +155,20 @@ return {
 					preset = "luasnip",
 				},
 				sources = {
-					default = { "lsp", "path", "snippets", "buffer", "omni" },
+					default = {
+						"lsp",
+						"path",
+						"snippets",
+						"buffer",
+						"omni",
+						unpack((function()
+							if nixCats("ai") then
+								return { "codecompanion" }
+							else
+								return {}
+							end
+						end)()),
+					},
 					providers = {
 						path = {
 							score_offset = 50,

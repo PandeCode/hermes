@@ -139,6 +139,7 @@
             vim-wakatime
             nvim-web-devicons
 
+            none-ls-nvim
             oil-nvim
           ];
         };
@@ -204,6 +205,9 @@
           ];
 
           extra = [
+            codecompanion-nvim
+            dropbar-nvim
+
             fidget-nvim
             undotree
             vim-startuptime
@@ -323,8 +327,7 @@
                   args = [
                     "--add-flags"
                     ''
-                      -c '${pkgs.fzf}/bin/fzf |
-                          ${pkgs.toybox}/bin/xargs ${pkgs.neovide}/bin/neovide --neovim-bin ${name} 2>&1 > /dev/null & disown'
+                      -c '${pkgs.fzf}/bin/fzf | xargs -I {} ${pkgs.neovide}/bin/neovide {} --neovim-bin ${name} 2>&1 > /dev/null & disown'
                     ''
                   ];
                 };
@@ -336,6 +339,7 @@
             o
             // {
               general = true;
+              ai = true;
               neonixdev = true;
               lspDebugMode = false;
             };
