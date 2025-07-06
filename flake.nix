@@ -194,7 +194,6 @@
             lspkind-nvim
             friendly-snippets
 
-            conform-nvim
             noice-nvim
             snacks-nvim
             mini-nvim

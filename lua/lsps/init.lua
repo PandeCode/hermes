@@ -29,63 +29,6 @@ end, { desc = "[G]o [D]iagnostic" })
 require("lze").load({
 
 	{
-		"none-ls.nvim",
-		after = function()
-			local null_ls = require("null-ls")
-
-			null_ls.setup({
-				sources = {
-					null_ls.builtins.code_actions.proselint,
-					null_ls.builtins.completion.spell,
-					null_ls.builtins.diagnostics.codespell,
-					null_ls.builtins.diagnostics.markdownlint,
-					null_ls.builtins.diagnostics.statix,
-					null_ls.builtins.code_actions.statix,
-				},
-			})
-
-			local problems = {
-				{ pattern = "\226\128\139", name = "ZERO WIDTH SPACE", replacement = "" },
-				{ pattern = "\194\160", name = "NON-BREAKING SPACE", replacement = " " },
-				{ pattern = "\239\187\191", name = "BYTE ORDER MARK", replacement = "" },
-				{ pattern = "\226\128\141", name = "ZERO WIDTH JOINER", replacement = "" },
-				{ pattern = "\226\128\142", name = "RIGHT-TO-LEFT MARK", replacement = "" },
-				{ pattern = "\226\128\143", name = "LEFT-TO-RIGHT MARK", replacement = "" },
-			}
-
-			local no_problems = {
-				method = null_ls.methods.DIAGNOSTICS,
-				filetypes = { "*" },
-				generator = {
-					fn = function(params)
-						local diagnostics = {}
-
-						for i, line in ipairs(params.content) do
-							for _, problem in ipairs(problems) do
-								local col, end_col = line:find(problem)
-								if col and end_col then
-									table.insert(diagnostics, {
-										row = i,
-										col = col,
-										end_col = end_col + 1,
-										source = "no-really",
-										message = problem.name,
-										severity = vim.diagnostic.severity.WARN,
-									})
-								end
-							end
-						end
-						return diagnostics
-					end,
-				},
-			}
-
-			null_ls.register(no_problems)
-		end,
-		lazy = true,
-	},
-
-	{
 		"nvim-lspconfig",
 		on_require = { "lspconfig" },
 		-- NOTE: define a function for lsp,
@@ -100,6 +43,7 @@ require("lze").load({
 		end,
 	},
 
+	{ import = "lsps.none_ls" },
 	{ import = "lsps.clangd" },
 	{ import = "lsps.lua_ls" },
 	{ import = "lsps.nixd" },

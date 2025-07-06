@@ -28,17 +28,6 @@ local function get_attached_clients()
 		end
 	end
 
-	-- Add formatters (conform.nvim)
-	local conform_success, conform = pcall(require, "conform")
-	if conform_success then
-		for _, formatter in pairs(conform.list_formatters_for_buffer(0)) do
-			if formatter then
-				num_client_names = num_client_names + 1
-				buf_client_names[num_client_names] = formatter
-			end
-		end
-	end
-
 	local client_names_str = table.concat(buf_client_names, ", ")
 	local language_servers = string.format("[%s]", client_names_str)
 

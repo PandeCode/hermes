@@ -63,7 +63,8 @@ return {
 						end
 						-- Commands
 						if type == ":" or type == "@" then
-							return { "cmdline", "cmp_cmdline" }
+							-- return { "cmdline", "cmp_cmdline" }
+							return { "cmdline" }
 						end
 						return {}
 					end,
@@ -161,13 +162,9 @@ return {
 						"snippets",
 						"buffer",
 						"omni",
-						unpack((function()
-							if nixCats("ai") then
-								return { "codecompanion" }
-							else
-								return {}
-							end
-						end)()),
+					},
+					per_filetype = {
+						codecompanion = { "codecompanion" },
 					},
 					providers = {
 						path = {

@@ -205,40 +205,6 @@ require("lze").load({
 			})
 		end,
 	},
-	{
-		"conform.nvim",
-		for_cat = "general",
-		keys = { { "<leader>cf" } },
-		after = function()
-			local conform = require("conform")
-
-			conform.setup({
-				formatters_by_ft = {
-					lua = { "stylua" },
-					go = { "gofmt", "golint" },
-					templ = { "templ" },
-					python = { "isort", "black" }, -- Conform will run multiple formatters sequentially
-					javascript = { { "prettierd", "prettier" } }, -- Use a sub-list to run only the first available formatter
-					nix = { "alejandra", "nixfmt" },
-					c = { "clang-format" },
-					cpp = { "clang-format" },
-				},
-				format_on_save = {
-					-- These options will be passed to conform.format()
-					timeout_ms = 500,
-					lsp_format = "fallback",
-				},
-			})
-
-			vim.keymap.set({ "n", "v" }, "<leader>cf", function()
-				conform.format({
-					lsp_fallback = true,
-					async = false,
-					timeout_ms = 1000,
-				})
-			end, { desc = "[C]ode [F]ormat" })
-		end,
-	},
 
 	{
 		"markdown-preview.nvim",

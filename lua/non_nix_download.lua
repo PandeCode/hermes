@@ -54,10 +54,6 @@ require("nixCatsUtils.catPacker").setup({
 	{ "Saghen/blink.compat", opt = true },
 	{ "xzbdmw/colorful-menu.nvim", opt = true },
 
-	-- lint and format
-	{ "mfussenegger/nvim-lint", opt = true },
-	{ "stevearc/conform.nvim", opt = true },
-
 	-- dap
 	{ "nvim-neotest/nvim-nio", opt = true },
 	{ "rcarriga/nvim-dap-ui", opt = true },

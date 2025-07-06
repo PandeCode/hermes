@@ -1,11 +1,11 @@
 vim.loader.enable()
-math.randomseed(os.time())
 
 require("nixCatsUtils").setup({
 	non_nix_value = true,
 })
 
 require("utils")
+math.randomseed(os.time())
 
 function _G.catRequire(path)
 	if path ~= nil and nixCats(path) then
