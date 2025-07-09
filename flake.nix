@@ -31,10 +31,16 @@
     #   url = "github:PandeCode/hover.nvim";
     #   flake = false;
     # };
+
     plugins-snacks-nvim = {
       url = "github:PandeCode/snacks.nvim";
       flake = false;
     };
+
+    # plugins-overseer-nvim = {
+    #   url = "github:stevearc/overseer.nvim/6271cab7ccc4ca840faa93f54440ffae3a3918bd";
+    #   flake = false;
+    # };
   };
 
   outputs = {
@@ -210,7 +216,9 @@
             fidget-nvim
             undotree
             vim-startuptime
-            avante-nvim
+            # avante-nvim
+
+            overseer-nvim
           ];
         };
       };
