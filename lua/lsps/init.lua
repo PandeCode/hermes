@@ -46,6 +46,7 @@ require("lze").load({
 	{ import = "lsps.none_ls" },
 	{ import = "lsps.clangd" },
 	{ import = "lsps.lua_ls" },
+	{ import = "lsps.python" },
 	{ import = "lsps.nixd" },
 	{ "gopls", for_cat = "go", lsp = {} },
 

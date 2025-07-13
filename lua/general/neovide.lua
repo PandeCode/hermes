@@ -26,7 +26,7 @@ vim.g.neovide_confirm_quit = false -- true
 vim.g.neovide_floating_corner_radius = 0.5
 
 vim.g.neovide_title_background_color =
-	string.format("%x", vim.api.nvim_get_hl(0, { id = vim.api.nvim_get_hl_id_by_name "Normal" }).bg)
+	string.format("%x", vim.api.nvim_get_hl(0, { id = vim.api.nvim_get_hl_id_by_name("Normal") }).bg)
 
 vim.keymap.set("n", "<C-+>", function()
 	vim.g.neovide_scale_factor = vim.g.neovide_scale_factor + 0.1

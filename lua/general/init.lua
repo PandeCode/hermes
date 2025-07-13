@@ -3,5 +3,5 @@ require("general.keys")
 require("general.options")
 
 if vim.g.neovide ~= nil then
-    require("general.neovide")
+	require("general.neovide")
 end

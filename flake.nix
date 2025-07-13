@@ -106,7 +106,7 @@
 
         cpp = [clang-tools ccls];
         go = [go gopls gotools go-tools gccgo];
-        py = [python3 ruff];
+        py = [python3 ruff pyright];
         rs = [rust-analyzer];
         web = [
           bun
@@ -366,6 +366,7 @@
       nvim-cpp = defaultPkgDef {cpp = true;};
       nvim-go = defaultPkgDef {go = true;};
       nvim-web = defaultPkgDef {web = true;};
+      nvim-py = defaultPkgDef {py = true;};
 
       regularCats = {pkgs, ...} @ misc: {
         settings = {

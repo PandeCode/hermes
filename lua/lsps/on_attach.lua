@@ -34,5 +34,5 @@ return function(_, bufnr)
 		print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
 	end, "[W]orkspace [L]ist Folders")
 
-    vim.print "Loaded on_attach"
+	vim.print("Loaded on_attach")
 end
