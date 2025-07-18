@@ -1,6 +1,6 @@
 return {
 	{
-		"pyright",
+		"hls",
 		lsp = {
 			-- server_capabilities = { hoverProvider = false },
 			on_attach = function(args)

@@ -1,6 +1,7 @@
 {
   stdenv,
   fetchurl,
+  unzip,
 }: (stdenv.mkDerivation rec {
   pname = "cpptools";
   version = "1.26.3";
@@ -9,6 +10,7 @@
     sha256 = "2444b97ac556e9c465ae614040ed722d81196cb750bb820b5b4ae30c1a79124e";
   };
   phases = ["unpackPhase" "installPhase"];
+  nativeBuildInputs = [unzip];
   unpackPhase = ''
     mkdir -p $out/bin
     unzip $src

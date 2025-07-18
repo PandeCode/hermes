@@ -89,26 +89,35 @@
     : {
       lspsAndRuntimeDeps = with pkgs; {
         general = [
+          # General tools
           universal-ctags
           ripgrep
           fd
           prettierd
-        ];
-        debug = rec {
-          go = [delve];
-          cpp = [
-            gdb
-            (pkgs.callPackage ./nix/codelldb.nix)
-            (pkgs.callPackage ./nix/cpptools.nix)
-          ];
-          rs = cpp;
-        };
+          delve
+          (callPackage ./nix/codelldb.nix {})
+          (callPackage ./nix/cpptools.nix {})
 
-        cpp = [clang-tools ccls];
-        go = [go gopls gotools go-tools gccgo];
-        py = [python3 ruff pyright];
-        rs = [rust-analyzer];
-        web = [
+          # C/C++ support
+          clang-tools
+          ccls
+
+          # Go support
+          go
+          gopls
+          gotools
+          go-tools
+          gccgo
+
+          # Python support
+          python3
+          ruff
+          pyright
+
+          # Rust support
+          rust-analyzer
+
+          # Web development support
           bun
           prettierd
           vscode-langservers-extracted
@@ -116,82 +125,51 @@
           eslint
           tailwindcss-language-server
           emmet-ls
-        ];
-        neonixdev = [
+
+          # Nix development support
           nix-doc
           nixd
           statix
-
           lua-language-server
           stylua
           alejandra
         ];
       };
 
+      # Plugins that load automatically at startup
       startupPlugins = with pkgs.vimPlugins; {
-        debug = [
-          nvim-nio
-        ];
         general = {
           always = [
+            # Core plugins
             lze
             lzextras
             vim-repeat
             plenary-nvim
 
+            # Editor enhancement
             vim-visual-multi
             vim-wordmotion
+            vim-sleuth
 
+            # UI and status
             vim-wakatime
             nvim-web-devicons
-
-            none-ls-nvim
-            oil-nvim
-          ];
-        };
-      };
-
-      optionalPlugins = with pkgs.vimPlugins; {
-        debug = {
-          # it is possible to add default values.
-          # there is nothing special about the word "default"
-          # but we have turned this subcategory into a default value
-          # via the extraCats section at the bottom of categoryDefinitions.
-          default = [
-            nvim-dap
-            nvim-dap-ui
-            nvim-dap-virtual-text
-          ];
-          go = [nvim-dap-go];
-        };
-        web = [
-          markdown-preview-nvim
-        ];
-        neonixdev = [
-          lazydev-nvim
-        ];
-        general = {
-          treesitter = [
-            nvim-treesitter-textobjects
-            nvim-treesitter.withAllGrammars
-            # (nvim-treesitter.withPlugins (
-            #   plugins: with plugins; [
-            #     nix
-            #     lua
-            #   ]
-            # ))
-          ];
-
-          always = [
-            nvim-lspconfig
             lualine-nvim
             bufferline-nvim
+
+            # File management
+            oil-nvim
+
+            # LSP and formatting
+            none-ls-nvim
+            nvim-lspconfig
+
+            # Git integration
             gitsigns-nvim
-            vim-sleuth
             vim-fugitive
             vim-rhubarb
-            # hover-nvim
 
+            # Completion
             luasnip
             cmp-cmdline
             blink-cmp
@@ -200,25 +178,52 @@
             lspkind-nvim
             friendly-snippets
 
+            # UI enhancements
             noice-nvim
             snacks-nvim
             mini-nvim
             neoscroll-nvim
           ];
-          web = [
-            typescript-tools-nvim
-          ];
+        };
+      };
 
-          extra = [
+      # Plugins that can be lazy loaded
+      optionalPlugins = with pkgs.vimPlugins; {
+        general = {
+          lazy = [
+            # Debugging
+            nvim-nio
+            nvim-dap
+            nvim-dap-ui
+            nvim-dap-virtual-text
+            nvim-dap-go
+
+            # Treesitter
+            nvim-treesitter-textobjects
+            nvim-treesitter.withAllGrammars
+            # (nvim-treesitter.withPlugins (
+            #   plugins: with plugins; [
+            #     nix
+            #     lua
+            #   ]
+            # ))
+
+            # Language specific
+            typescript-tools-nvim
+            lazydev-nvim
+
+            # Web development
+            markdown-preview-nvim
+
+            # Additional tools
             codecompanion-nvim
             dropbar-nvim
-
             fidget-nvim
             undotree
             vim-startuptime
             # avante-nvim
-
             overseer-nvim
+            # hover-nvim
           ];
         };
       };
@@ -283,12 +288,6 @@
         test = [
           ["test" "default"]
         ];
-        debug = [
-          ["debug" "default"]
-        ];
-        go = [
-          ["debug" "go"] # yes it has to be a list of lists
-        ];
       };
     };
 
@@ -302,71 +301,62 @@
     # The get function is to prevent errors when querying subcategories.
 
     # see :help nixCats.flake.outputs.packageDefinitions
-    packageDefinitions = let
-      defaultPkgDef = o: ({
-          pkgs,
-          name,
-          ...
-        } @ misc: {
-          # these also recieve our pkgs variable
-          # see :help nixCats.flake.outputs.packageDefinitions
-          settings = {
-            suffix-path = true;
-            suffix-LD = true;
-            aliases = [];
-            wrapRc = true;
-            configDirName = "nixCats-nvim";
-            # neovim-unwrapped = inputs.neovim-nightly-overlay.packages.${pkgs.system}.neovim;
-            hosts = {
-              python3.enable = true;
-              node.enable = true;
-              neovide = {
-                enable = true;
-                path = {
-                  value = "${pkgs.neovide}/bin/neovide";
-                  args = ["--add-flags" "--neovim-bin ${name}"];
-                };
+    packageDefinitions = {
+      # Single unified nvim package with all language support
+      nvim = {
+        pkgs,
+        name,
+        ...
+      } @ misc: {
+        # these also recieve our pkgs variable
+        # see :help nixCats.flake.outputs.packageDefinitions
+        settings = {
+          suffix-path = true;
+          suffix-LD = true;
+          aliases = [];
+          wrapRc = true;
+          configDirName = "nixCats-nvim";
+          # neovim-unwrapped = inputs.neovim-nightly-overlay.packages.${pkgs.system}.neovim;
+          hosts = {
+            python3.enable = true;
+            node.enable = true;
+            neovide = {
+              enable = true;
+              path = {
+                value = "${pkgs.neovide}/bin/neovide";
+                args = ["--add-flags" "--neovim-bin ${name}"];
               };
-              neo = {
-                enable = true;
-                path = {
-                  value = "${pkgs.bash}/bin/bash";
-                  args = [
-                    "--add-flags"
-                    ''
-                      -c '${pkgs.fzf}/bin/fzf | xargs -I {} ${pkgs.neovide}/bin/neovide {} --neovim-bin ${name} 2>&1 > /dev/null & disown'
-                    ''
-                  ];
-                };
+            };
+            neo = {
+              enable = true;
+              path = {
+                value = "${pkgs.bash}/bin/bash";
+                args = [
+                  "--add-flags"
+                  ''
+                    -c '${pkgs.fzf}/bin/fzf | xargs -I {} ${pkgs.neovide}/bin/neovide {} --neovim-bin ${name} 2>&1 > /dev/null & disown'
+                  ''
+                ];
               };
             };
           };
-          # enable the categories you want from categoryDefinitions
-          categories =
-            o
-            // {
-              general = true;
-              ai = true;
-              neonixdev = true;
-              lspDebugMode = false;
-            };
-          extra = {
-            # to keep the categories table from being filled with non category things that you want to pass
-            # there is also an extra table you can use to pass extra stuff.
-            # but you can pass all the same stuff in any of these sets and access it in lua
-            nixdExtras = {
-              nixpkgs = ''import ${pkgs.path} {}'';
-              # or inherit nixpkgs;
-            };
+        };
+        # enable the categories you want from categoryDefinitions
+        categories = {
+          general = true;
+          ai = true;
+          lspDebugMode = false;
+        };
+        extra = {
+          # to keep the categories table from being filled with non category things that you want to pass
+          # there is also an extra table you can use to pass extra stuff.
+          # but you can pass all the same stuff in any of these sets and access it in lua
+          nixdExtras = {
+            nixpkgs = ''import ${pkgs.path} {}'';
+            # or inherit nixpkgs;
           };
-        });
-    in {
-      nvim = defaultPkgDef {};
-      nvim-rs = defaultPkgDef {rs = true;};
-      nvim-cpp = defaultPkgDef {cpp = true;};
-      nvim-go = defaultPkgDef {go = true;};
-      nvim-web = defaultPkgDef {web = true;};
-      nvim-py = defaultPkgDef {py = true;};
+        };
+      };
 
       regularCats = {pkgs, ...} @ misc: {
         settings = {
@@ -391,11 +381,8 @@
           # Probably add the cache stuff they recommend too.
         };
         categories = {
-          web = true;
           general = true;
-          neonixdev = true;
           test = true;
-          # go = true; # <- disabled but you could enable it with override or module on install
           lspDebugMode = false;
         };
         extra = {
@@ -474,7 +461,6 @@
           name = defaultPackageName;
           packages = with pkgs; [
             (packages.default)
-            (packages.nvim-cpp)
             statix
             deadnix
             alejandra

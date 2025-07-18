@@ -1,6 +1,7 @@
 {
   stdenv,
   fetchurl,
+  unzip
 }: (stdenv.mkDerivation rec {
   pname = "codelldb";
   version = "1.11.5";
@@ -9,6 +10,7 @@
     sha256 = "0y09q8ssyrayyaxpvmsdip25lccg543gw8haf3jq0yxlh2pky88p";
   };
   phases = ["unpackPhase" "installPhase"];
+  nativeBuildInputs = [unzip];
   unpackPhase = ''
     mkdir -p $out/bin
     unzip $src
