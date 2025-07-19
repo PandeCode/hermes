@@ -2,7 +2,9 @@ return {
 	{
 		"lua_ls",
 		lsp = {
-			on_attach = require("lsps.on_attach"),
+			on_attach = function(_, bufrn)
+				require("lsps.on_attach")(_, bufrn)
+			end,
 			settings = {
 				Lua = {
 					runtime = { version = "LuaJIT" },

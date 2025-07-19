@@ -1,11 +1,8 @@
 local catUtils = require("nixCatsUtils")
 
-local nix_lsp = vim.fn.getenv("CPP_NIX_LSP")
-if nix_lsp == vim.NIL or nix_lsp == nil or nix_lsp == "" then
-	nix_lsp = "nixd"
-end
+local nix_lsp = vim.fn.getenv("NIX_LSP")
 
-if nix_lsp == "nil_ls" then
+if nix_lsp ~= vim.NIL and nix_lsp ~= nil and nix_lsp == "nil" then
 	return {
 		{
 			"nil_ls",
@@ -21,7 +18,10 @@ else
 			enabled = catUtils.isNixCats and (nixCats("nix") or nixCats("neonixdev")) or false,
 			lsp = {
 				filetypes = { "nix" },
-				on_attach = require("lsps.on_attach"),
+				on_attach =
+					function(_, bufrn)
+						require("lsps.on_attach")(_, bufrn)
+					end,
 				settings = {
 					nixd = {
 						nixpkgs = {

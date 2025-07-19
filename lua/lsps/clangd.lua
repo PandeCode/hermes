@@ -95,7 +95,7 @@ if cpp_lsp == "ccls" then
 			"ccls",
 			lsp = {
 				on_attach = function(_, bufnr)
-					require("lsps.on_attach")()
+					require("lsps.on_attach")(_, bufnr)
 					vim.api.nvim_buf_create_user_command(bufnr, "LspClangdSwitchSourceHeader", function()
 						ccls_switch_source_header(bufnr)
 					end, { desc = "Switch between source/header" })
@@ -116,7 +116,7 @@ else
 			"clangd",
 			lsp = {
 				on_attach = function(_, bufnr)
-					require("lsps.on_attach")()
+					require("lsps.on_attach")(_, bufnr)
 					vim.api.nvim_buf_create_user_command(bufnr, "LspClangdSwitchSourceHeader", function()
 						switch_source_header(bufnr)
 					end, { desc = "Switch between source/header" })

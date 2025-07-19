@@ -22,7 +22,7 @@ return {
 		dep_of = { "blink.cmp" },
 		after = function(_)
 			local luasnip = require("luasnip")
-			require("luasnip.loaders.from_vscode").lazy_load()
+			require("luasnip.loaders.from_vscode").load()
 			luasnip.config.setup({})
 
 			local ls = require("luasnip")

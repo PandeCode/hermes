@@ -5,10 +5,10 @@ return {
 			local null_ls = require("null-ls")
 
 			local problems = {
-				{ pattern = "\226\128\139", name = "ZERO WIDTH SPACE", replacement = "" }, -- ​ (U+200B)
-				{ pattern = "\194\160", name = "NON-BREAKING SPACE", replacement = " " }, --   (U+00A0)
-				{ pattern = "\239\187\191", name = "BYTE ORDER MARK", replacement = "" }, -- ﻿ (U+FEFF)
-				{ pattern = "\226\128\141", name = "ZERO WIDTH JOINER", replacement = "" }, -- ‍ (U+200D)
+				{ pattern = "\226\128\139", name = "ZERO WIDTH SPACE",   replacement = "" }, -- ​ (U+200B)
+				{ pattern = "\194\160",     name = "NON-BREAKING SPACE", replacement = " " }, --   (U+00A0)
+				{ pattern = "\239\187\191", name = "BYTE ORDER MARK",    replacement = "" }, -- ﻿ (U+FEFF)
+				{ pattern = "\226\128\141", name = "ZERO WIDTH JOINER",  replacement = "" }, -- ‍ (U+200D)
 				{ pattern = "\226\128\142", name = "RIGHT-TO-LEFT MARK", replacement = "" }, -- ‎ (U+200E)
 				{ pattern = "\226\128\143", name = "LEFT-TO-RIGHT MARK", replacement = "" }, -- ‏ (U+200F)
 			}
@@ -51,15 +51,41 @@ return {
 					null_ls.builtins.formatting.alejandra,
 					null_ls.builtins.formatting.nixfmt,
 					null_ls.builtins.formatting.clang_format,
-
+					null_ls.builtins.formatting.typstyle,
+					null_ls.builtins.formatting.just,
+					null_ls.builtins.formatting.gdformat,
+					null_ls.builtins.formatting.dart_format,
 					null_ls.builtins.formatting.prettierd,
+					null_ls.builtins.formatting.cmake_format,
 
-					-- Diagnostics / Code actions / Completion
+					null_ls.builtins.diagnostics.gdlint,
+
+					null_ls.builtins.diagnostics.glslc.with({
+						extra_args = { "--target-env=opengl" }, -- use opengl instead of vulkan1.0
+					}),
+
+
+					null_ls.builtins.diagnostics.qmllint,
+
+					null_ls.builtins.diagnostics.vale,
 					null_ls.builtins.diagnostics.markdownlint,
+					null_ls.builtins.diagnostics.checkmake,
+					null_ls.builtins.diagnostics.cmake_lint,
+					null_ls.builtins.diagnostics.cppcheck,
+
 					null_ls.builtins.diagnostics.statix,
-					null_ls.builtins.code_actions.proselint,
-					null_ls.builtins.code_actions.statix,
+					null_ls.builtins.diagnostics.deadnix,
+
+					null_ls.builtins.diagnostics.fish,
+
+					null_ls.builtins.hover.dictionary,
+					null_ls.builtins.hover.printenv,
+
+
 					null_ls.builtins.completion.spell,
+
+					null_ls.builtins.code_actions.statix,
+					null_ls.builtins.code_actions.ts_node_action,
 				},
 			})
 
@@ -96,6 +122,43 @@ return {
 			vim.keymap.set({ "n", "v" }, "<leader>cf", function()
 				lsp_format_with_fallback({ timeout_ms = 1000 })
 			end, { desc = "[C]ode [F]ormat" })
+
+			local nmap = function(keys, func, desc)
+				if desc then
+					desc = "LSP: " .. desc
+				end
+
+				vim.keymap.set("n", keys, func, { desc = desc })
+			end
+
+			nmap("gr", function()
+				require("snacks").picker.lsp_references()
+			end, "[G]oto [R]eferences")
+			nmap("gI", function()
+				require("snacks").picker.lsp_implementations()
+			end, "[G]oto [I]mplementation")
+			nmap("<leader>ds", function()
+				require("snacks").picker.lsp_symbols()
+			end, "[D]ocument [S]ymbols")
+			nmap("<leader>ws", function()
+				require("snacks").picker.lsp_workspace_symbols()
+			end, "[W]orkspace [S]ymbols")
+
+			nmap("<leader>D", vim.lsp.buf.type_definition, "Type [D]efinition")
+
+			nmap("K", vim.lsp.buf.hover, "Hover Documentation")
+			nmap("<C-k>", vim.lsp.buf.signature_help, "Signature Documentation")
+			nmap("<F2>", vim.lsp.buf.rename, "[R]e[n]ame")
+			nmap("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")
+			nmap("gd", vim.lsp.buf.definition, "[G]oto [D]efinition")
+			nmap("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
+			nmap("<leader>wa", vim.lsp.buf.add_workspace_folder, "[W]orkspace [A]dd Folder")
+			nmap("<leader>wr", vim.lsp.buf.remove_workspace_folder, "[W]orkspace [R]emove Folder")
+			nmap("<leader>wl", function()
+				print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+			end, "[W]orkspace [L]ist Folders")
 		end,
+
+
 	},
 }

@@ -21,7 +21,7 @@ if no_ai == vim.NIL or no_ai == "" or no_ai == nil then
                         log_level = "DEBUG",
                     },
                 })
-                vim.print("no_ai Loaded")
+                vim.print("ai Loaded")
             end,
         },
     }
