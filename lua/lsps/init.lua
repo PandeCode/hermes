@@ -44,11 +44,10 @@ require("lze").load({
     },
 
     { import = "lsps.none_ls" },
-    { import = "lsps.clangd" },
-    { import = "lsps.lua_ls" },
-    { import = "lsps.python" },
-    { import = "lsps.haskell" },
-    { import = "lsps.nixd" },
+    { import = "lsps.clangd", ft = { "c", "cpp" } },
+    { import = "lsps.lua_ls", ft = { "lua" } },
+    { import = "lsps.python", ft = { "python" } },
+    { import = "lsps.nixd",   ft = { "nix" } },
     { "gopls",                lsp = {} },
 
     {

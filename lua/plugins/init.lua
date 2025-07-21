@@ -35,6 +35,7 @@ require("lze").load({
 	{ import = "plugins.bufferline" },
 	{ import = "plugins.lualine" },
 
+
 	{ import = "plugins.treesitter" },
 	{ import = "plugins.completion" },
 	{ import = "plugins.git" },

@@ -146,6 +146,7 @@ return {
 
 			nmap("<leader>D", vim.lsp.buf.type_definition, "Type [D]efinition")
 
+			nmap('<space>cl', vim.lsp.codelens.run, "[C]ode [L]ens")
 			nmap("K", vim.lsp.buf.hover, "Hover Documentation")
 			nmap("<C-k>", vim.lsp.buf.signature_help, "Signature Documentation")
 			nmap("<F2>", vim.lsp.buf.rename, "[R]e[n]ame")

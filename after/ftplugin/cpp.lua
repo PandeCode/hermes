@@ -1,3 +1,5 @@
+local TS = Utils.treesitter
+
 local function gen_enum_funcs(enum_name, bufnr)
 	enum_name = enum_name or vim.fn.expand "<cword>"
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
@@ -45,21 +47,22 @@ local function gen_enum_funcs(enum_name, bufnr)
 				.. table.concat(items, ", ")
 				.. '}");'
 		else
-			return 'fprintf(stderr, "Must be valid type Options::{Option1, Option2, Option3, Option4, Option5, Option6, Option7, Option8, Option9, Option10, Option11}");abort();'
+			return
+			'fprintf(stderr, "Must be valid type Options::{Option1, Option2, Option3, Option4, Option5, Option6, Option7, Option8, Option9, Option10, Option11}");abort();'
 		end
 	end)()
 
 	local lines = {
 		"// clang-format off",
 		cpp and enum_name .. " " .. enum_name .. "_fromstring(const std::string& str) {"
-			or enum_name .. " " .. enum_name .. "_fromstring(const char* str) {",
+		or enum_name .. " " .. enum_name .. "_fromstring(const char* str) {",
 	}
 
 	for _, value in pairs(items) do
 		table.insert(
 			lines,
 			cpp and '	if(str == "' .. value .. '") return ' .. enum_name .. "::" .. value .. ";"
-				or '	if(strcmp(str, "' .. value .. '") == 0) return ' .. enum_name .. "::" .. value .. ";"
+			or '	if(strcmp(str, "' .. value .. '") == 0) return ' .. enum_name .. "::" .. value .. ";"
 		)
 	end
 
@@ -68,7 +71,7 @@ local function gen_enum_funcs(enum_name, bufnr)
 	table.insert(
 		lines,
 		cpp and "std::string " .. enum_name .. "_tostring(const " .. enum_name .. "& e) {"
-			or "const char* " .. enum_name .. "_tostring(const " .. enum_name .. "& e) {"
+		or "const char* " .. enum_name .. "_tostring(const " .. enum_name .. "& e) {"
 	)
 	table.insert(lines, "	switch(e) {")
 

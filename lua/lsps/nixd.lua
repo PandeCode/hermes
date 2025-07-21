@@ -15,7 +15,6 @@ else
 	return {
 		{
 			"nixd",
-			enabled = catUtils.isNixCats and (nixCats("nix") or nixCats("neonixdev")) or false,
 			lsp = {
 				filetypes = { "nix" },
 				on_attach =

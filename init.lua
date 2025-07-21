@@ -5,13 +5,8 @@ require("nixCatsUtils").setup({
 })
 
 require("utils")
-math.randomseed(os.time())
 
-function _G.catRequire(path)
-	if path ~= nil and nixCats(path) then
-		return require(path)
-	end
-end
+math.randomseed(os.time())
 
 function _G.fnSetup(path, opts)
 	return function()
@@ -26,7 +21,7 @@ require("non_nix_download")
 require("plugins")
 require("lsps")
 
-catRequire("go")
-catRequire("rust")
-catRequire("web")
-catRequire("debug")
+-- require("go")
+-- require("rust")
+require("web")
+require("debug")
