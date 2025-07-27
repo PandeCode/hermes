@@ -1,3 +1,5 @@
+local TS = Utils.treesitter
+
 vim.keymap.set("n", "<leader>ex", function()
 	local binding_node = TS.GetNodeAtCursorByName("binding")
 	local attrpath_node = TS.GetNodeAtCursorByName("attrpath")
