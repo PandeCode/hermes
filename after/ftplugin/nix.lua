@@ -1,9 +1,9 @@
 local TS = Utils.treesitter
 
 vim.keymap.set("n", "<leader>ex", function()
-	local binding_node = TS.GetNodeAtCursorByName("binding")
-	local attrpath_node = TS.GetNodeAtCursorByName("attrpath")
-	local attr_node = TS.GetNodeAtCursorByName("identifier")
+	local binding_node = TS.get_node_at_cursor_by_name("binding")
+	local attrpath_node = TS.get_node_at_cursor_by_name("attrpath")
+	local attr_node = TS.get_node_at_cursor_by_name("identifier")
 
 	if binding_node == nil or attrpath_node == nil or attr_node == nil then
 		return
@@ -17,7 +17,7 @@ vim.keymap.set("n", "<leader>ex", function()
 		end,
 		vim.tbl_map(function(child)
 			return vim.treesitter.get_node_text(child, 0)
-		end, TS.GetNodeChildren(attrpath_node))
+		end, TS.get_node_children(attrpath_node))
 	)
 
 	local final_str = ""

@@ -1,3 +1,4 @@
+IDE = { name = "" }
 -- ╔══════════════════════════════════════════════════════════════════════════════╗
 -- ║                                    Utils                                     ║
 -- ║              A comprehensive utility library for Neovim/Lua                 ║
