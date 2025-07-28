@@ -93,22 +93,10 @@ return {
 
 			-- LSP formatting fallback
 			local function lsp_format_with_fallback(opts)
-				local clients = vim.lsp.get_clients({ bufnr = opts.bufnr or 0 })
-
-				local has_lsp_formatter = vim.tbl_filter(function(client)
-					return client.supports_method("textDocument/formatting") and client.name ~= "null-ls"
-				end, clients)
-
 				vim.lsp.buf.format({
 					bufnr = opts.bufnr,
 					async = opts.async or false,
 					timeout_ms = opts.timeout_ms or 1000,
-					filter = function(client)
-						if not vim.tbl_isempty(has_lsp_formatter) then
-							return client.name ~= "null-ls"
-						end
-						return true
-					end,
 				})
 			end
 

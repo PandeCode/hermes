@@ -110,6 +110,10 @@
 
           rust-analyzer
 
+          bash-language-server
+
+          neocmakelsp
+
           go
           gopls
           gotools

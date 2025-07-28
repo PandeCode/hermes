@@ -48,6 +48,8 @@ require("lze").load({
     { import = "lsps.lua_ls", ft = { "lua" } },
     { import = "lsps.python", ft = { "python" } },
     { import = "lsps.nixd",   ft = { "nix" } },
+    { import = "lsps.bash",   ft = { "bash", "sh" } },
+    { import = "lsps.cmake",  ft = { "cmake" } },
     { "gopls",                lsp = {} },
 
     {
