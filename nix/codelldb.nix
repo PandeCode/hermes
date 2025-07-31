@@ -1,7 +1,7 @@
 {
   stdenv,
   fetchurl,
-  unzip
+  unzip,
 }: (stdenv.mkDerivation rec {
   pname = "codelldb";
   version = "1.11.5";

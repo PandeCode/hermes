@@ -17,10 +17,9 @@ else
 			"nixd",
 			lsp = {
 				filetypes = { "nix" },
-				on_attach =
-					function(_, bufrn)
-						require("lsps.on_attach")(_, bufrn)
-					end,
+				on_attach = function(_, bufrn)
+					require("lsps.on_attach")(_, bufrn)
+				end,
 				settings = {
 					nixd = {
 						nixpkgs = {

@@ -25,8 +25,8 @@ require("plugins.oil")
 require("lze").load({
 	{ "vim-wakatime" },
 	{ "dropbar.nvim" },
-	{ "neoscroll.nvim",             setup = "neoscroll" },
-	{ "fidget.nvim",                event = "DeferredUIEnter", setup = "fidget" },
+	{ "neoscroll.nvim", setup = "neoscroll" },
+	{ "fidget.nvim", event = "DeferredUIEnter", setup = "fidget" },
 
 	-- { import = "plugins.hover" },
 
@@ -34,7 +34,6 @@ require("lze").load({
 	{ import = "plugins.snacks" },
 	{ import = "plugins.bufferline" },
 	{ import = "plugins.lualine" },
-
 
 	{ import = "plugins.treesitter" },
 	{ import = "plugins.completion" },

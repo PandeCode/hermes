@@ -1,2 +1,1 @@
-return function(_, _)
-end
+return function(_, _) end

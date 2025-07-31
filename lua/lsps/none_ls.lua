@@ -5,10 +5,10 @@ return {
 			local null_ls = require("null-ls")
 
 			local problems = {
-				{ pattern = "\226\128\139", name = "ZERO WIDTH SPACE",   replacement = "" }, -- ​ (U+200B)
-				{ pattern = "\194\160",     name = "NON-BREAKING SPACE", replacement = " " }, --   (U+00A0)
-				{ pattern = "\239\187\191", name = "BYTE ORDER MARK",    replacement = "" }, -- ﻿ (U+FEFF)
-				{ pattern = "\226\128\141", name = "ZERO WIDTH JOINER",  replacement = "" }, -- ‍ (U+200D)
+				{ pattern = "\226\128\139", name = "ZERO WIDTH SPACE", replacement = "" }, -- ​ (U+200B)
+				{ pattern = "\194\160", name = "NON-BREAKING SPACE", replacement = " " }, --   (U+00A0)
+				{ pattern = "\239\187\191", name = "BYTE ORDER MARK", replacement = "" }, -- ﻿ (U+FEFF)
+				{ pattern = "\226\128\141", name = "ZERO WIDTH JOINER", replacement = "" }, -- ‍ (U+200D)
 				{ pattern = "\226\128\142", name = "RIGHT-TO-LEFT MARK", replacement = "" }, -- ‎ (U+200E)
 				{ pattern = "\226\128\143", name = "LEFT-TO-RIGHT MARK", replacement = "" }, -- ‏ (U+200F)
 			}
@@ -64,7 +64,6 @@ return {
 						extra_args = { "--target-env=opengl" }, -- use opengl instead of vulkan1.0
 					}),
 
-
 					null_ls.builtins.diagnostics.qmllint,
 
 					null_ls.builtins.diagnostics.vale,
@@ -80,7 +79,6 @@ return {
 
 					null_ls.builtins.hover.dictionary,
 					null_ls.builtins.hover.printenv,
-
 
 					null_ls.builtins.completion.spell,
 
@@ -134,7 +132,7 @@ return {
 
 			nmap("<leader>D", vim.lsp.buf.type_definition, "Type [D]efinition")
 
-			nmap('<space>cl', vim.lsp.codelens.run, "[C]ode [L]ens")
+			nmap("<space>cl", vim.lsp.codelens.run, "[C]ode [L]ens")
 			nmap("K", vim.lsp.buf.hover, "Hover Documentation")
 			nmap("<C-k>", vim.lsp.buf.signature_help, "Signature Documentation")
 			nmap("<F2>", vim.lsp.buf.rename, "[R]e[n]ame")
@@ -147,7 +145,5 @@ return {
 				print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
 			end, "[W]orkspace [L]ist Folders")
 		end,
-
-
 	},
 }

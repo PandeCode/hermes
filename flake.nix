@@ -31,6 +31,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    emmylua-analyzer-rust = {
+      url = "github:EmmyLuaLs/emmylua-analyzer-rust";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # plugins-hover-nvim = {
     #   url = "github:PandeCode/hover.nvim";
     #   flake = false;
@@ -100,6 +105,8 @@
           (callPackage ./nix/codelldb.nix {})
           (callPackage ./nix/cpptools.nix {})
 
+          inputs.emmylua-analyzer-rust.packages.${pkgs.system}.default
+
           gdtoolkit_4
 
           clang-tools
@@ -111,6 +118,8 @@
           rust-analyzer
 
           bash-language-server
+
+          systemd-lsp
 
           neocmakelsp
 
@@ -192,7 +201,7 @@
             mini-nvim
             neoscroll-nvim
 
-# already lazy
+            # already lazy
             haskell-tools-nvim
           ];
         };
@@ -218,7 +227,6 @@
             #     lua
             #   ]
             # ))
-
 
             typescript-tools-nvim
             lazydev-nvim
