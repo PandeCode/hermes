@@ -19,38 +19,33 @@ cnoremap w!! execute 'write !sudo tee % >/dev/null' <bar> edit!
 vim.api.nvim_create_user_command("Gitadd", function()
 	local filename = vim.fn.expand("%")
 	vim.cmd("!git add %")
-	vim.notify("Git added '" .. filename .. "'", "info", { title = IDE.name })
+	vim.notify("Git added '" .. filename .. "'")
 end, {})
 
 vim.api.nvim_create_user_command("Chmodx", function()
 	local filename = vim.fn.expand("%")
 	vim.cmd("!chmod +x %")
-	vim.notify("Given execution rights to '" .. filename .. "'", "info", { title = IDE.name })
+	vim.notify("Given execution rights to '" .. filename .. "'")
 end, {})
 
 vim.api.nvim_create_user_command("Rmf", function()
 	vim.cmd("!rm -f %")
 end, {})
 
-vim.api.nvim_create_user_command("Q", function(opts)
-	vim.cmd("quit" .. (opts.bang and "!" or ""))
-end, { bang = true, bar = true })
-
-vim.api.nvim_create_user_command("W", function(opts)
-	vim.cmd("w" .. (opts.bang and "!" or ""))
-end, { bang = true, bar = true })
-
-vim.api.nvim_create_user_command("WQ", function(opts)
-	vim.cmd("wq" .. (opts.bang and "!" or ""))
-end, { bang = true, bar = true })
-
-vim.api.nvim_create_user_command("Wq", function(opts)
-	vim.cmd("wq" .. (opts.bang and "!" or ""))
-end, { bang = true, bar = true })
-
-vim.api.nvim_create_user_command("E", function(opts)
-	vim.cmd("e " .. opts.args)
-end, { nargs = 1, complete = "file" })
+vim.cmd([[
+  cnoreabbrev W w
+  cnoreabbrev Q q
+  cnoreabbrev WQ wq
+  cnoreabbrev Wq wq
+  cnoreabbrev WQA wqa
+  cnoreabbrev Wqa wqa
+  cnoreabbrev QA qa
+  cnoreabbrev Qa qa
+  cnoreabbrev E e
+  cnoreabbrev gitadd Gitadd
+  cnoreabbrev chmodx Chmodx
+  cnoreabbrev rmf Rmf
+]])
 
 vim.opt.number = true
 vim.opt.relativenumber = true
@@ -146,7 +141,5 @@ vim.opt.shadafile = (function()
 end)()
 
 vim.api.nvim_create_autocmd("TextYankPost", {
-	callback = function()
-		vim.highlight.on_yank()
-	end,
+	callback = vim.highlight.on_yank,
 })
