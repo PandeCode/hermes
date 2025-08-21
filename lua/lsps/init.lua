@@ -56,6 +56,8 @@ require("lze").load({
 	},
 
 	{ import = "lsps.none_ls" },
+
+	{ import = "lsps.racket_langserver", ft = { "racket", "scheme" } },
 	{ import = "lsps.clangd", ft = { "c", "cpp" } },
 	{ import = "lsps.lua_ls", ft = { "lua" } },
 	{ import = "lsps.python", ft = { "python" } },
