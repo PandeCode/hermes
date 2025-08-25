@@ -162,6 +162,7 @@
             lzextras
             vim-repeat
             plenary-nvim
+            rainbow-delimiters-nvim
 
             # Editor enhancement
             vim-visual-multi

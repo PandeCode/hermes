@@ -57,14 +57,29 @@ require("lze").load({
 
 	{ import = "lsps.none_ls" },
 
-	{ import = "lsps.racket_langserver", ft = { "racket", "scheme" } },
 	{ import = "lsps.clangd", ft = { "c", "cpp" } },
 	{ import = "lsps.lua_ls", ft = { "lua" } },
 	{ import = "lsps.python", ft = { "python" } },
 	{ import = "lsps.nixd", ft = { "nix" } },
 	{ import = "lsps.bash", ft = { "bash", "sh" } },
 	{ import = "lsps.cmake", ft = { "cmake" } },
-	{ "gopls", lsp = {} },
+	{
+		"gopls",
+		lsp = {
+			on_attach = function(_, bufrn)
+				require("lsps.on_attach")(bufrn)
+			end,
+		},
+	},
+	{
+		"racket_langserver",
+		lsp = {
+			on_attach = function(_, bufrn)
+				require("lsps.on_attach")(bufrn)
+			end,
+		},
+		ft = { "racket", "scheme" },
+	},
 
 	{
 		-- lazydev makes your lsp way better in your config without needing extra lsp configuration.
