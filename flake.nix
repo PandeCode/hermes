@@ -31,10 +31,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    emmylua-analyzer-rust = {
-      url = "github:EmmyLuaLs/emmylua-analyzer-rust";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # emmylua-analyzer-rust = {
+    #   url = "github:EmmyLuaLs/emmylua-analyzer-rust";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
 
     # plugins-hover-nvim = {
     #   url = "github:PandeCode/hover.nvim";
@@ -105,7 +105,10 @@
           (callPackage ./nix/codelldb.nix {})
           (callPackage ./nix/cpptools.nix {})
 
-          inputs.emmylua-analyzer-rust.packages.${pkgs.system}.default
+          # inputs.emmylua-analyzer-rust.packages.${pkgs.system}.default
+          emmylua-ls
+          emmylua-check
+          emmylua-doc-cli
 
           gdtoolkit_4
 
