@@ -110,8 +110,6 @@
           emmylua-check
           emmylua-doc-cli
 
-          gdtoolkit_4
-
           clang-tools
           ccls
           neocmakelsp
