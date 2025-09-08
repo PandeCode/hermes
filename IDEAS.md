@@ -4,27 +4,21 @@ make shell.nix(s) to have different templetes ready for different environments
 
 aspell
 
-
 matlab
 
 Rust
 
-
 Go
-
 
 Web
 
-
 C/Cpp
-
-
 
 Shaders (glsl_analyzer, clang-format)
 
 ```nix
     extraPackages =
-      (with pkgs.vimPlugins.nvim-treesitter-parsers; [asm bash c comment cpp csv fish git_config git_rebase gitattributes gitcommit gitignore glsl heex html javascript json json5 kdl latex lua luadoc luau make markdown markdown_inline nix nu powershell python query rust tsx typescript vim vimdoc scss graphql fennel gdshader gdscript])
+      (with pkgs.vimPlugins.nvim-treesitter-parsers; [asm bash c comment cpp csv fish git_config git_rebase gitattributes gitcommit gitignore glsl heex html javascript json json5 kdl latex lua luadoc luau make markdown markdown_inline nix nu powershell python query rust tsx typescript vim vimdoc scss graphql fennel gdshader gdscript racket])
       ++ (with pkgs; [
         (pkgs.python3.withPackages (python-pkgs:
           with python-pkgs; [

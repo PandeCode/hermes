@@ -4,7 +4,7 @@ if no_ai == vim.NIL or no_ai == "" or no_ai == nil then
 	return {
 		{
 			"codecompanion.nvim",
-			on_plugin = { "nvim-treesitter", "nvim-lua/plenary.nvim", "saghen/blink.cmp" },
+			on_plugin = { "nvim-treesitter", "plenary.nvim", "blink.cmp" },
 
 			before = function()
 				vim.env["CODECOMPANION_TOKEN_PATH"] = vim.fn.expand("~/.config")

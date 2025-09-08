@@ -29,6 +29,7 @@ local keymaps = {
 	-- Buffer
 	{ n, "<LEADER>bp", vim.cmd.bp, noremap_silent },
 	{ n, "<LEADER>bn", vim.cmd.bn, noremap_silent },
+	{ n, "<LEADER>bo", ":%bd|e#<cr>", noremap_silent },
 	{ n, "<A-d>", vim.cmd.bd, noremap_silent },
 
 	{ n, "<LEADER>c<LEADER>", ":normal gcc<cr>", noremap_silent },

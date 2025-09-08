@@ -220,6 +220,8 @@
             nvim-dap-virtual-text
             nvim-dap-go
 
+            refactoring-nvim
+
             # Treesitter
             nvim-treesitter-textobjects
             nvim-treesitter.withAllGrammars
