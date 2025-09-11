@@ -1,14 +1,11 @@
+```bash
+nix run github:pandecode/hermes --accept-flake-config
+```
 
 ## Binary Cache
 
 This project uses [Cachix](https://cachix.org) for faster builds:
 
-```bash
-cachix use charon
-```
-
-
-### Option B: Pin it in `nixConfig` (flake-level)
 Inside your `flake.nix`, add:
 
 ```nix
