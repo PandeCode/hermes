@@ -8,12 +8,6 @@ require("utils")
 
 math.randomseed(os.time())
 
-function _G.fnSetup(path, opts)
-	return function()
-		require(path).setup(opts or {})
-	end
-end
-
 require("general")
 
 require("non_nix_download")
