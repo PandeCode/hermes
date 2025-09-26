@@ -1,5 +1,18 @@
 ```bash
+# Comamnds to run
 nix run github:pandecode/hermes --accept-flake-config
+```
+
+```bash
+nix run github:pandecode/hermes --accept-flake-config --override-input nixpkgs nixpkgs
+```
+
+```bash
+nix run github:pandecode/hermes --accept-flake-config --extra-experimental-features flakes --extra-experimental-features nix-command
+
+
+
+nix run github:pandecode/hermes --accept-flake-config --extra-experimental-features flakes --extra-experimental-features nix-command --override-input nixpkgs nixpkgs
 ```
 
 ## Binary Cache
