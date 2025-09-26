@@ -111,14 +111,12 @@ Utils.random = {}
 ---@param list table An array-like table to select from
 ---@return any A random element from the list
 function Utils.random.from(list)
-	math.randomseed(os.time())
 	return list[math.random(1, #list)]
 end
 
 --- Generate a random boolean value
 ---@return boolean A random true or false value
 function Utils.random.bool()
-	math.randomseed(os.time())
 	return math.random(0, 1) == 1
 end
 
