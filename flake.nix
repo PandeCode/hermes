@@ -46,6 +46,11 @@
       flake = false;
     };
 
+    plugins-vlime = {
+      url = "github:vlime/vlime";
+      flake = false;
+    };
+
     # plugins-overseer-nvim = {
     #   url = "github:stevearc/overseer.nvim/6271cab7ccc4ca840faa93f54440ffae3a3918bd";
     #   flake = false;
@@ -71,7 +76,7 @@
         # This overlay grabs all the inputs named in the format
         # `plugins-<pluginName>`
         # Once we add this overlay to our nixpkgs, we are able to
-        # use `pkgs.vimPlugins`, which is a set of our plugins.
+        # use `pkgs.neoVimPlugins`, which is a set of our plugins.
         (utils.standardPluginOverlay inputs)
         # add any other flake overlays here.
 
@@ -123,6 +128,8 @@
           systemd-lsp
 
           neocmakelsp
+
+          sbcl
 
           go
           gopls
@@ -199,9 +206,10 @@
 
             # UI enhancements
             noice-nvim
-            snacks-nvim
             mini-nvim
             neoscroll-nvim
+
+            pkgs.neovimPlugins.snacks-nvim
 
             # already lazy
             haskell-tools-nvim
@@ -213,6 +221,9 @@
       optionalPlugins = with pkgs.vimPlugins; {
         general = {
           lazy = [
+            pkgs.neovimPlugins.vlime
+            parinfer-rust
+
             # Debugging
             nvim-nio
             nvim-dap
@@ -380,6 +391,7 @@
           # to keep the categories table from being filled with non category things that you want to pass
           # there is also an extra table you can use to pass extra stuff.
           # but you can pass all the same stuff in any of these sets and access it in lua
+          vlimePath = "${pkgs.neovimPlugins.vlime}";
           nixdExtras = {
             nixpkgs = ''import ${pkgs.path} {}'';
             # or inherit nixpkgs;
