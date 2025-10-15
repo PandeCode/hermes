@@ -394,6 +394,13 @@ function Utils.text.is_empty(str)
 	return str == nil or str == vim.NIL or str == ""
 end
 
+function Utils.open_ephemeral_term(cmd)
+	vim.cmd("split | terminal " .. cmd)
+	local bufnr = vim.api.nvim_get_current_buf()
+	vim.bo[bufnr].buflisted = false
+	vim.bo[bufnr].bufhidden = "wipe"
+end
+
 -- Export the Utils table for potential module usage
 -- Usage: local Utils = require('path.to.this.file')
 return Utils

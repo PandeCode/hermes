@@ -25,8 +25,8 @@ require("plugins.oil")
 require("lze").load({
 	{ "vim-wakatime" },
 	{ "dropbar.nvim" },
-	{ "neoscroll.nvim",             setup = "neoscroll" },
-	{ "fidget.nvim",                event = "DeferredUIEnter", setup = "fidget" },
+	{ "neoscroll.nvim", setup = "neoscroll" },
+	{ "fidget.nvim", event = "DeferredUIEnter", setup = "fidget" },
 
 	-- { import = "plugins.hover" },
 
@@ -42,10 +42,6 @@ require("lze").load({
 
 	{
 		"refactoring.nvim",
-		on_plugin = {
-			"plenary.nvim",
-			"nvim-treesitter",
-		},
 		ft = {
 			"typescript",
 			"typescriptreact",
