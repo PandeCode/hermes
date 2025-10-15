@@ -42,11 +42,6 @@ require("nixCatsUtils.catPacker").setup({
 	{ "j-hui/fidget.nvim", opt = true },
 	{ "neovim/nvim-lspconfig", opt = true },
 
-	--  NOTE:  we take care of lazy loading elsewhere in an autocommand
-	-- so that we can use the same code on and off nix.
-	-- so here we just tell it not to auto load it
-	{ "folke/lazydev.nvim", opt = true },
-
 	-- completion
 	{ "L3MON4D3/LuaSnip", opt = true, as = "luasnip" },
 	{ "hrsh7th/cmp-cmdline", opt = true },

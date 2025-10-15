@@ -86,7 +86,7 @@ end
 local cpp_lsp = vim.fn.getenv("CPP_LSP")
 
 if cpp_lsp == vim.NIL or cpp_lsp == nil or cpp_lsp == "" then
-	cpp_lsp = "clangd"
+	cpp_lsp = "ccls"
 end
 
 if cpp_lsp == "ccls" then

@@ -80,21 +80,6 @@ require("lze").load({
 		},
 		ft = { "racket", "scheme" },
 	},
-
-	{
-		-- lazydev makes your lsp way better in your config without needing extra lsp configuration.
-		"lazydev.nvim",
-		cmd = { "LazyDev" },
-		ft = "lua",
-		after = function(_)
-			require("lazydev").setup({
-				library = {
-					{ words = { "nixCats" }, path = (nixCats.nixCatsPath or "") .. "/lua" },
-				},
-			})
-		end,
-	},
-
 	{
 		"typescript-tools.nvim",
 		on_plugin = { "nvim-lspconfig", "plenary.nvim" },

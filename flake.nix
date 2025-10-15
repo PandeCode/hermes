@@ -31,11 +31,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # emmylua-analyzer-rust = {
-    #   url = "github:EmmyLuaLs/emmylua-analyzer-rust";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
-
     # plugins-hover-nvim = {
     #   url = "github:PandeCode/hover.nvim";
     #   flake = false;
@@ -50,11 +45,6 @@
       url = "github:vlime/vlime";
       flake = false;
     };
-
-    # plugins-overseer-nvim = {
-    #   url = "github:stevearc/overseer.nvim/6271cab7ccc4ca840faa93f54440ffae3a3918bd";
-    #   flake = false;
-    # };
   };
 
   outputs = {
@@ -105,59 +95,55 @@
           universal-ctags
           ripgrep
           fd
+          proselint
 
           prettierd
-          (callPackage ./nix/codelldb.nix {})
-          (callPackage ./nix/cpptools.nix {})
 
-          # inputs.emmylua-analyzer-rust.packages.${pkgs.system}.default
           emmylua-ls
+
           emmylua-check
           emmylua-doc-cli
 
-          clang-tools
           ccls
-          neocmakelsp
-          cmake-format
-          cmake-lint
-
-          rust-analyzer
-
-          bash-language-server
-
-          systemd-lsp
-
-          neocmakelsp
 
           sbcl
-
-          go
-          gopls
-          gotools
-          go-tools
 
           (python3.withPackages (p: with p; [black]))
           ruff
           pyright
-          proselint
 
+          lua-language-server
+
+          nixd
+          statix
+          stylua
+          alejandra
+          deadnix
+        ];
+        extras = [
           bun
-          prettierd
           vscode-langservers-extracted
           typescript-language-server
           eslint
           tailwindcss-language-server
           emmet-ls
 
-          lua-language-server
+          rust-analyzer
+          bash-language-server
+          systemd-lsp
+          neocmakelsp
 
-          nix-doc
-          nixd
-          nil
-          statix
-          stylua
-          alejandra
-          deadnix
+          (callPackage ./nix/codelldb.nix {})
+          (callPackage ./nix/cpptools.nix {})
+
+          go
+          gopls
+          gotools
+          go-tools
+          clang-tools
+          neocmakelsp
+          cmake-format
+          cmake-lint
         ];
       };
 
@@ -244,7 +230,6 @@
             # ))
 
             typescript-tools-nvim
-            lazydev-nvim
 
             # Web development
             markdown-preview-nvim
