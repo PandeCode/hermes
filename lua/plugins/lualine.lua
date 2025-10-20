@@ -1,4 +1,3 @@
-run = 0
 local function get_attached_clients()
 	-- Get active clients for current buffer
 	local buf_clients = vim.lsp.get_clients({ bufnr = 0 })
@@ -29,8 +28,6 @@ local function get_attached_clients()
 		end
 	end
 
-	vim.print(run)
-	run = run + 1
 	if buf_ft == "lisp" then
 		if sbclIsRunning() then
 			table.insert(buf_client_names, "sbcl")

@@ -18,6 +18,31 @@ local function get_parent_dirs(path)
 	return dirs
 end
 
+local function load_file(custom_config_path)
+	vim.notify("Sourcing custom config from: " .. custom_config_path, vim.log.levels.INFO)
+	local ok, err = pcall(dofile, custom_config_path)
+	if not ok then
+		vim.notify("Error sourcing custom config: " .. err, vim.log.levels.ERROR)
+	end
+end
+
+local db_file = vim.fn.expand("~/.cache/nvim/db_nvimrc.json")
+
+if vim.fn.filereadable(db_file) == 0 then
+	vim.fn.writefile({ "{}" }, db_file)
+end
+
+function value_database(p)
+	local tbl = vim.fn.json_decode(vim.fn.readfile(db_file))
+	return tbl[p]
+end
+
+function add_to_database(p, v)
+	local tbl = vim.fn.json_decode(vim.fn.readfile(db_file))
+	tbl[p] = v
+	vim.fn.writefile({ vim.fn.json_encode(tbl) }, db_file)
+end
+
 local function source_custom_config()
 	local cwd = vim.fn.getcwd()
 	local dirs = get_parent_dirs(cwd)
@@ -25,10 +50,23 @@ local function source_custom_config()
 	for _, dir in ipairs(dirs) do
 		local custom_config_path = dir .. "/.nvimrc.lua"
 		if file_exists(custom_config_path) then
-			vim.notify("Sourcing custom config from: " .. custom_config_path, vim.log.levels.INFO)
-			local ok, err = pcall(dofile, custom_config_path)
-			if not ok then
-				vim.notify("Error sourcing custom config: " .. err, vim.log.levels.ERROR)
+			local db_val = value_database(custom_config_path)
+
+			if db_val == nil then
+				local choice = vim.fn.confirm("Do you want to source .nvimrc.lua?", "&Yes\n&No")
+				if choice == 1 then
+					add_to_database(custom_config_path, true)
+					load_file(custom_config_path)
+				else
+					vim.notify(".nvimrc.lua denied")
+					add_to_database(custom_config_path, false)
+				end
+			else
+				if db_val == true then
+					load_file(custom_config_path)
+				else
+					vim.print("Denied .nvimrc.lua file.")
+				end
 			end
 		end
 	end
