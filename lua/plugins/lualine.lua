@@ -1,3 +1,4 @@
+run = 0
 local function get_attached_clients()
 	-- Get active clients for current buffer
 	local buf_clients = vim.lsp.get_clients({ bufnr = 0 })
@@ -28,8 +29,15 @@ local function get_attached_clients()
 		end
 	end
 
-	local client_names_str = table.concat(buf_client_names, ", ")
-	local language_servers = string.format("[%s]", client_names_str)
+	vim.print(run)
+	run = run + 1
+	if buf_ft == "lisp" then
+		if sbclIsRunning() then
+			table.insert(buf_client_names, "sbcl")
+		end
+	end
+
+	local language_servers = "[" .. table.concat(buf_client_names, ", ") .. "]"
 
 	return language_servers
 end
@@ -38,7 +46,7 @@ return {
 	"lualine.nvim",
 	event = "DeferredUIEnter",
 	on_plugin = { "nvim-web-devicons", "conform.nvim" },
-	after = function(plugin)
+	after = function(_plugin)
 		local attached_clients = {
 			get_attached_clients,
 			color = {
