@@ -26,7 +26,8 @@ local function createTemplate(pattern, text, pos, ignored)
 					0,
 					-1,
 					false,
-					vim.split(text:gsub("{{basefilename}}", basefilename):gsub("{{filename}}", filename), "\n")
+					vim.split(
+					text:gsub("{{basefilename}}", basefilename):gsub("{{filename}}", filename), "\n")
 				)
 
 				-- Set the cursor position
@@ -66,20 +67,18 @@ in {
 		"shell.nix",
 		[[{pkgs ? import <nixpkgs> {}}:
 pkgs.mkShell {
-  buildInputs = with pkgs; [
+  packages = with pkgs; [
 
   ];
-  # nativeBuildInputs = with pkgs; [];
 
   shellHook = ''
-    # export PATH=$PATH:
   '';
 }]],
 		{ 4, 2 },
 	},
 	{ "*.nix", [[{...}: {
 
-}]], { 2, 2 } },
+}]], { 2, 2 }, { "shell.nix", "flake.nix" } },
 	{ "main.py", [[def main():
     print()
 
@@ -94,7 +93,6 @@ int main() {
     return 0;
 }]],
 		{ 3, 5 },
-		{ "shell.nix", "flake.nix" },
 	},
 	{ "lua/plugins/*.lua", [[return {
 
