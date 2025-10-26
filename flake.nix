@@ -100,7 +100,6 @@
           prettierd
 
           emmylua-ls
-
           emmylua-check
           emmylua-doc-cli
 
