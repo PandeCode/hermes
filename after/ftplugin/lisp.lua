@@ -52,7 +52,7 @@ require("lze").load({
 				end
 			end
 
-			vim.keymap.set("n", "<leader>ss", function()
+			vim.keymap.set("n", "<leader>sk", function()
 				vim.fn.jobstart({ "killall", "-9", "sbcl" })
 			end)
 

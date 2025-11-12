@@ -27,9 +27,41 @@ local function load_file(custom_config_path)
 end
 
 local db_file = vim.fn.expand("~/.cache/nvim/db_nvimrc.json")
+local hash_db_file = vim.fn.expand("~/.cache/nvim/hash_db_nvimrc.json")
 
 if vim.fn.filereadable(db_file) == 0 then
 	vim.fn.writefile({ "{}" }, db_file)
+end
+
+if vim.fn.filereadable(hash_db_file) == 0 then
+	vim.fn.writefile({ "{}" }, hash_db_file)
+end
+
+function get_hash(file)
+	return file
+end
+
+function get_hash_db_value(p)
+	local tbl = vim.fn.json_decode(vim.fn.readfile(hash_db_file))
+	return tbl[p]
+end
+
+function add_to_hash_db(p)
+	local tbl = vim.fn.json_decode(vim.fn.readfile(hash_db_file))
+	tbl[p] = get_hash(v)
+	vim.fn.writefile({ vim.fn.json_encode(tbl) }, hash_db_file)
+end
+
+function remove_file_from_hash_db(p)
+	local tbl = vim.fn.json_decode(vim.fn.readfile(hash_db_file))
+	tbl[p] = nil
+	vim.fn.writefile({ vim.fn.json_encode(tbl) }, hash_db_file)
+end
+
+function remove_file_from_db(p)
+	local tbl = vim.fn.json_decode(vim.fn.readfile(db_file))
+	tbl[p] = nil
+	vim.fn.writefile({ vim.fn.json_encode(tbl) }, db_file)
 end
 
 function value_database(p)
@@ -56,6 +88,7 @@ local function source_custom_config()
 				local choice = vim.fn.confirm("Do you want to source .nvimrc.lua?", "&Yes\n&No")
 				if choice == 1 then
 					add_to_database(custom_config_path, true)
+					add_to_hash_db(custom_config_path)
 					load_file(custom_config_path)
 				else
 					vim.notify(".nvimrc.lua denied")
@@ -63,7 +96,13 @@ local function source_custom_config()
 				end
 			else
 				if db_val == true then
-					load_file(custom_config_path)
+					if get_hash_db_value(custom_config_path) == get_hash(custom_config_path) then
+						load_file(custom_config_path)
+					else
+						vim.print("File changed, Need to re-auth")
+						remove_file_from_db(custom_config_path)
+						remove_file_from_hash_db(custom_config_path)
+					end
 				else
 					vim.print("Denied .nvimrc.lua file.")
 				end
