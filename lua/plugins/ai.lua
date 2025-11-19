@@ -1,6 +1,6 @@
-local no_ai = vim.fn.getenv("NO_AI")
+local ai = vim.fn.getenv("AI")
 
-if no_ai == vim.NIL or no_ai == "" or no_ai == nil then
+if ai ~= vim.NIL then
 	return {
 		{
 			"codecompanion.nvim",

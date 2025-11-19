@@ -206,6 +206,8 @@
       optionalPlugins = with pkgs.vimPlugins; {
         general = {
           lazy = [
+            cord-nvim
+
             pkgs.neovimPlugins.vlime
             parinfer-rust
 

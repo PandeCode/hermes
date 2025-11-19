@@ -1,7 +1,10 @@
+local null_ls = require("null-ls")
+null_ls.register(null_ls.builtins.diagnostics.cppcheck)
+
 local TS = Utils.treesitter
 
 local function gen_enum_funcs(enum_name, bufnr)
-	enum_name = enum_name or vim.fn.expand "<cword>"
+	enum_name = enum_name or vim.fn.expand("<cword>")
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 	local ft = vim.bo[bufnr].filetype
 	if ft ~= "cpp" and ft ~= "c" then
@@ -47,8 +50,11 @@ local function gen_enum_funcs(enum_name, bufnr)
 				.. table.concat(items, ", ")
 				.. '}");'
 		else
-			return
-			'fprintf(stderr, "Must be valid type Options::{Option1, Option2, Option3, Option4, Option5, Option6, Option7, Option8, Option9, Option10, Option11}");abort();'
+			return 'fprintf(stderr, "Must be valid type '
+				.. enum_name
+				.. "::{"
+				.. table.concat(items, ", ")
+				.. '}");abort();'
 		end
 	end)()
 
@@ -70,8 +76,8 @@ local function gen_enum_funcs(enum_name, bufnr)
 	table.insert(lines, "}")
 	table.insert(
 		lines,
-		cpp and "std::string " .. enum_name .. "_tostring(const " .. enum_name .. "& e) {"
-		or "const char* " .. enum_name .. "_tostring(const " .. enum_name .. "& e) {"
+		cpp and "std::string " .. enum_name .. "_tostring(" .. enum_name .. " e) {"
+		or "const char* " .. enum_name .. "_tostring(" .. enum_name .. " e) {"
 	)
 	table.insert(lines, "	switch(e) {")
 

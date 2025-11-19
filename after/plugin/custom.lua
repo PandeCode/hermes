@@ -27,35 +27,24 @@ local function load_file(custom_config_path)
 end
 
 local db_file = vim.fn.expand("~/.cache/nvim/db_nvimrc.json")
-local hash_db_file = vim.fn.expand("~/.cache/nvim/hash_db_nvimrc.json")
 
 if vim.fn.filereadable(db_file) == 0 then
 	vim.fn.writefile({ "{}" }, db_file)
 end
 
-if vim.fn.filereadable(hash_db_file) == 0 then
-	vim.fn.writefile({ "{}" }, hash_db_file)
-end
-
-function get_hash(file)
-	return file
-end
-
-function get_hash_db_value(p)
-	local tbl = vim.fn.json_decode(vim.fn.readfile(hash_db_file))
-	return tbl[p]
-end
-
-function add_to_hash_db(p)
-	local tbl = vim.fn.json_decode(vim.fn.readfile(hash_db_file))
-	tbl[p] = get_hash(v)
-	vim.fn.writefile({ vim.fn.json_encode(tbl) }, hash_db_file)
-end
-
-function remove_file_from_hash_db(p)
-	local tbl = vim.fn.json_decode(vim.fn.readfile(hash_db_file))
-	tbl[p] = nil
-	vim.fn.writefile({ vim.fn.json_encode(tbl) }, hash_db_file)
+function get_hash(path)
+	local algo = "sha256sum"
+	local cmd = string.format("%s %q", algo, path)
+	local handle = io.popen(cmd)
+	if not handle then
+		return nil, "popen failed"
+	end
+	local out = handle:read("*l")
+	handle:close()
+	if not out then
+		return nil, "no output"
+	end
+	return out:match("^(%w+)")
 end
 
 function remove_file_from_db(p)
@@ -71,7 +60,15 @@ end
 
 function add_to_database(p, v)
 	local tbl = vim.fn.json_decode(vim.fn.readfile(db_file))
-	tbl[p] = v
+	tbl[p] = {
+		allowed = v,
+		hash = (function()
+			if v then
+				return get_hash(p)
+			end
+			return ""
+		end)(),
+	}
 	vim.fn.writefile({ vim.fn.json_encode(tbl) }, db_file)
 end
 
@@ -88,20 +85,19 @@ local function source_custom_config()
 				local choice = vim.fn.confirm("Do you want to source .nvimrc.lua?", "&Yes\n&No")
 				if choice == 1 then
 					add_to_database(custom_config_path, true)
-					add_to_hash_db(custom_config_path)
 					load_file(custom_config_path)
 				else
 					vim.notify(".nvimrc.lua denied")
 					add_to_database(custom_config_path, false)
 				end
 			else
-				if db_val == true then
-					if get_hash_db_value(custom_config_path) == get_hash(custom_config_path) then
+				if db_val.allowed == true then
+					if db_val.hash == get_hash(custom_config_path) then
 						load_file(custom_config_path)
 					else
 						vim.print("File changed, Need to re-auth")
 						remove_file_from_db(custom_config_path)
-						remove_file_from_hash_db(custom_config_path)
+						source_custom_config()
 					end
 				else
 					vim.print("Denied .nvimrc.lua file.")
