@@ -1,6 +1,3 @@
-local null_ls = require("null-ls")
-null_ls.register(null_ls.builtins.diagnostics.cppcheck)
-
 local TS = Utils.treesitter
 
 local function gen_enum_funcs(enum_name, bufnr)

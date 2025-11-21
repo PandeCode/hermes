@@ -70,7 +70,6 @@ return {
 					null_ls.builtins.diagnostics.markdownlint,
 					null_ls.builtins.diagnostics.checkmake,
 					null_ls.builtins.diagnostics.cmake_lint,
-					null_ls.builtins.diagnostics.cppcheck,
 
 					null_ls.builtins.diagnostics.statix,
 					null_ls.builtins.diagnostics.deadnix,
