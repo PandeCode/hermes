@@ -394,6 +394,12 @@ function Utils.text.is_empty(str)
 	return str == nil or str == vim.NIL or str == ""
 end
 
+function Utils.mk_ephemeral_term(cmd)
+	return function()
+		Utils.open_ephemeral_term(cmd)
+	end
+end
+
 function Utils.open_ephemeral_term(cmd)
 	vim.cmd("split | terminal " .. cmd)
 	local bufnr = vim.api.nvim_get_current_buf()
