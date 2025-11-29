@@ -129,11 +129,14 @@ return {
 				require("snacks").picker.lsp_workspace_symbols()
 			end, "[W]orkspace [S]ymbols")
 
-			nmap("<leader>D", vim.lsp.buf.type_definition, "Type [D]efinition")
+			local noice = require("noice.lsp")
+
+			nmap("K", noice.hover, "Hover Documentation")
+			nmap("<C-k>", noice.signature, "Signature Documentation")
+
+			nmap("<leader>d", vim.lsp.buf.type_definition, "Type [D]efinition")
 
 			nmap("<space>cl", vim.lsp.codelens.run, "[C]ode [L]ens")
-			nmap("K", vim.lsp.buf.hover, "Hover Documentation")
-			nmap("<C-S-k>", vim.lsp.buf.signature_help, "Signature Documentation")
 			nmap("<F2>", vim.lsp.buf.rename, "[R]e[n]ame")
 			nmap("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")
 			nmap("gd", vim.lsp.buf.definition, "[G]oto [D]efinition")
