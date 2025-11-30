@@ -26,8 +26,8 @@ require("lze").load({
 	{ "cord.nvim" },
 	{ "vim-wakatime" },
 	{ "dropbar.nvim" },
-	{ "neoscroll.nvim",             setup = "neoscroll" },
-	{ "fidget.nvim",                event = "DeferredUIEnter", setup = "fidget" },
+	{ "neoscroll.nvim", setup = "neoscroll" },
+	{ "fidget.nvim", event = "DeferredUIEnter", setup = "fidget" },
 
 	-- { import = "plugins.hover" },
 

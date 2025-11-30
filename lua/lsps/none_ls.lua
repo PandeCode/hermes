@@ -5,10 +5,10 @@ return {
 			local null_ls = require("null-ls")
 
 			local problems = {
-				{ pattern = "\226\128\139", name = "ZERO WIDTH SPACE",   replacement = "" }, -- ​ (U+200B)
-				{ pattern = "\194\160",     name = "NON-BREAKING SPACE", replacement = " " }, --   (U+00A0)
-				{ pattern = "\239\187\191", name = "BYTE ORDER MARK",    replacement = "" }, -- ﻿ (U+FEFF)
-				{ pattern = "\226\128\141", name = "ZERO WIDTH JOINER",  replacement = "" }, -- ‍ (U+200D)
+				{ pattern = "\226\128\139", name = "ZERO WIDTH SPACE", replacement = "" }, -- ​ (U+200B)
+				{ pattern = "\194\160", name = "NON-BREAKING SPACE", replacement = " " }, --   (U+00A0)
+				{ pattern = "\239\187\191", name = "BYTE ORDER MARK", replacement = "" }, -- ﻿ (U+FEFF)
+				{ pattern = "\226\128\141", name = "ZERO WIDTH JOINER", replacement = "" }, -- ‍ (U+200D)
 				{ pattern = "\226\128\142", name = "RIGHT-TO-LEFT MARK", replacement = "" }, -- ‎ (U+200E)
 				{ pattern = "\226\128\143", name = "LEFT-TO-RIGHT MARK", replacement = "" }, -- ‏ (U+200F)
 			}

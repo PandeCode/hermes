@@ -4,7 +4,7 @@ end
 vim.b.did_after_ftplugin_lisp = true
 
 local endswith = function(str, suffix)
-	return str:sub(- #suffix) == suffix
+	return str:sub(-#suffix) == suffix
 end
 
 function sbclIsRunning()

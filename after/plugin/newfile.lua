@@ -26,8 +26,7 @@ local function createTemplate(pattern, text, pos, ignored)
 					0,
 					-1,
 					false,
-					vim.split(
-					text:gsub("{{basefilename}}", basefilename):gsub("{{filename}}", filename), "\n")
+					vim.split(text:gsub("{{basefilename}}", basefilename):gsub("{{filename}}", filename), "\n")
 				)
 
 				-- Set the cursor position

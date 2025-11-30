@@ -111,6 +111,21 @@ local keymaps = {
 
 	{
 		n,
+		"<leader>tt",
+		function()
+			if vim.g.showtabline == nil or vim.g.showtabline == 2 then
+				vim.g.showtabline = 0
+				vim.cmd("set showtabline=0")
+			else
+				vim.g.showtabline = 2
+				vim.cmd("set showtabline=2")
+			end
+		end,
+		noremap,
+	},
+
+	{
+		n,
 		"j",
 		function()
 			if vim.v.count > 0 then

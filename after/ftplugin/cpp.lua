@@ -58,14 +58,14 @@ local function gen_enum_funcs(enum_name, bufnr)
 	local lines = {
 		"// clang-format off",
 		cpp and enum_name .. " " .. enum_name .. "_fromstring(const std::string& str) {"
-		or enum_name .. " " .. enum_name .. "_fromstring(const char* str) {",
+			or enum_name .. " " .. enum_name .. "_fromstring(const char* str) {",
 	}
 
 	for _, value in pairs(items) do
 		table.insert(
 			lines,
 			cpp and '	if(str == "' .. value .. '") return ' .. enum_name .. "::" .. value .. ";"
-			or '	if(strcmp(str, "' .. value .. '") == 0) return ' .. enum_name .. "::" .. value .. ";"
+				or '	if(strcmp(str, "' .. value .. '") == 0) return ' .. enum_name .. "::" .. value .. ";"
 		)
 	end
 
@@ -74,7 +74,7 @@ local function gen_enum_funcs(enum_name, bufnr)
 	table.insert(
 		lines,
 		cpp and "std::string " .. enum_name .. "_tostring(" .. enum_name .. " e) {"
-		or "const char* " .. enum_name .. "_tostring(" .. enum_name .. " e) {"
+			or "const char* " .. enum_name .. "_tostring(" .. enum_name .. " e) {"
 	)
 	table.insert(lines, "	switch(e) {")
 
