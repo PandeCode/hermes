@@ -21,11 +21,9 @@ return {
 		"luasnip",
 		dep_of = { "blink.cmp" },
 		after = function(_)
-			local luasnip = require("luasnip")
-			require("luasnip.loaders.from_vscode").load()
-			luasnip.config.setup({})
-
 			local ls = require("luasnip")
+			require("luasnip.loaders.from_vscode").load()
+			ls.config.setup({})
 
 			vim.keymap.set({ "i", "s" }, "<M-n>", function()
 				if ls.choice_active() then

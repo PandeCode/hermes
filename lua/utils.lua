@@ -401,10 +401,13 @@ function Utils.mk_ephemeral_term(cmd)
 end
 
 function Utils.open_ephemeral_term(cmd)
-	vim.cmd("split | terminal " .. cmd)
-	local bufnr = vim.api.nvim_get_current_buf()
+	vim.cmd("botright split | terminal " .. cmd)
+	local bufnr = vim.api.nvim_win_get_buf(0)
 	vim.bo[bufnr].buflisted = false
 	vim.bo[bufnr].bufhidden = "wipe"
+	local h = math.floor(vim.o.lines / 4)
+	vim.cmd("resize " .. h)
+	vim.cmd("wincmd p")
 end
 
 -- Export the Utils table for potential module usage
