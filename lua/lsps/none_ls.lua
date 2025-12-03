@@ -131,6 +131,8 @@ return {
 
 			local noice = require("noice.lsp")
 
+			vim.lsp.inlay_hint.enable(true)
+
 			nmap("K", noice.hover, "Hover Documentation")
 			nmap("<C-k>", noice.signature, "Signature Documentation")
 

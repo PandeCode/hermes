@@ -94,6 +94,7 @@ if cpp_lsp == "ccls" then
 		{
 			"ccls",
 			lsp = {
+				settings = { { cache = { directory = "/tmp/ccls-cache" } } },
 				on_attach = function(_, bufnr)
 					require("lsps.on_attach")(_, bufnr)
 					vim.api.nvim_buf_create_user_command(bufnr, "LspClangdSwitchSourceHeader", function()

@@ -15,8 +15,7 @@ vim.list_extend(libs, {
 })
 
 local emmylua_json = {
-	["$schema"] =
-	"https://raw.githubusercontent.com/EmmyLuaLs/emmylua-analyzer-rust/refs/heads/main/crates/emmylua_code_analysis/resources/schema.json",
+	["$schema"] = "https://raw.githubusercontent.com/EmmyLuaLs/emmylua-analyzer-rust/refs/heads/main/crates/emmylua_code_analysis/resources/schema.json",
 	runtime = { version = "LuaJIT" },
 	diagnostics = {
 		globals = { "nixCats", "vim" },

@@ -5,7 +5,7 @@ local function gen_enum_funcs(enum_name, bufnr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 	local ft = vim.bo[bufnr].filetype
 	if ft ~= "cpp" and ft ~= "c" then
-		vim.notify("Can only be used in c or cpp", "warn", { title = IDE.name })
+		vim.notify("Can only be used in c or cpp")
 		return
 	end
 	local cpp = ft == "cpp"
@@ -47,11 +47,7 @@ local function gen_enum_funcs(enum_name, bufnr)
 				.. table.concat(items, ", ")
 				.. '}");'
 		else
-			return 'fprintf(stderr, "Must be valid type '
-				.. enum_name
-				.. "::{"
-				.. table.concat(items, ", ")
-				.. '}");abort();'
+			return 'return "Invalid";'
 		end
 	end)()
 
