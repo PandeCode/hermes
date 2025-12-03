@@ -40,8 +40,10 @@ set_highlight("Normal", { bg = "NONE" })
 set_highlight("NonText", { bg = "NONE" })
 set_highlight("SignColumn", { bg = "NONE" })
 
-set_highlight(LineNr, { guifg = base16.base0E })
-set_highlight(LspInlayHint, { guifg = base16.base0E })
+vim.cmd([[
+hi LineNr guifg=]] .. base16.base0E .. [[
+hi LspInlayHint guifg=]] .. base16.base0E .. [[
+]])
 
 function ToggleBackground()
 	local palette = MiniBase16.config.palette
