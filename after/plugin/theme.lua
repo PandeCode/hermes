@@ -32,21 +32,21 @@ require("mini.base16").setup({
 
 local IsTransparent = false
 
--- Function to set highlight groups using Lua API
 local function set_highlight(group, opts)
 	vim.api.nvim_set_hl(0, group, opts)
 end
 
--- Ensure initial transparent state
 set_highlight("Normal", { bg = "NONE" })
 set_highlight("NonText", { bg = "NONE" })
 set_highlight("SignColumn", { bg = "NONE" })
+
+set_highlight(LineNr, { guifg = base16.base0E })
+set_highlight(LspInlayHint, { guifg = base16.base0E })
 
 function ToggleBackground()
 	local palette = MiniBase16.config.palette
 
 	if IsTransparent then
-		-- Set themed background using Lua API
 		set_highlight("Normal", {
 			fg = palette.base05,
 			bg = palette.base00,
@@ -64,7 +64,6 @@ function ToggleBackground()
 
 		IsTransparent = false
 	else
-		-- Set transparent background using Lua API
 		set_highlight("Normal", { bg = "NONE" })
 		set_highlight("LineNr", { bg = "NONE" })
 		set_highlight("SignColumn", { bg = "NONE" })
@@ -73,26 +72,17 @@ function ToggleBackground()
 	end
 end
 
--- Map the toggle function using Lua API
 vim.keymap.set("n", "<LEADER>bt", ToggleBackground, { noremap = true, silent = true })
 
 local function is_dark(hex)
-	-- Remove the # if present
 	hex = hex:gsub("#", "")
-
-	-- Convert hex to RGB
 	local r = tonumber(hex:sub(1, 2), 16)
 	local g = tonumber(hex:sub(3, 4), 16)
 	local b = tonumber(hex:sub(5, 6), 16)
-
-	-- Calculate perceived brightness (ITU-R BT.709)
 	local brightness = (0.2126 * r + 0.7152 * g + 0.0722 * b)
-
-	-- Return true if dark, false if light
 	return brightness < 128
 end
 
--- Set highlight groups with appropriate contrast
 for group, color in pairs(base16) do
 	local fg_color = is_dark(color) and "#ffffff" or "#000000"
 	vim.cmd(string.format("highlight GP_%s guifg=%s guibg=%s gui=NONE", group, fg_color, color))
