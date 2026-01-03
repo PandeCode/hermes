@@ -26,7 +26,8 @@ local function createTemplate(pattern, text, pos, ignored)
 					0,
 					-1,
 					false,
-					vim.split(text:gsub("{{basefilename}}", basefilename):gsub("{{filename}}", filename), "\n")
+					vim.split(
+					text:gsub("{{basefilename}}", basefilename):gsub("{{filename}}", filename), "\n")
 				)
 
 				-- Set the cursor position
@@ -38,6 +39,52 @@ local function createTemplate(pattern, text, pos, ignored)
 	})
 end
 local templates = {
+	{
+		"build.zig",
+		[[const std = @import("std");
+
+pub fn build(b: *std.Build) void {
+    const exe = b.addExecutable(.{ .name = "", .root_module = b.createModule(.{
+        .root_source_file = b.path("src/main.zig"),
+        .link_libc = true,
+        .target = b.standardTargetOptions(.{}),
+        .optimize = b.standardOptimizeOption(.{}),
+    }) });
+    exe.linkLibC();
+
+    b.installArtifact(exe);
+
+    const run_step = b.step("run", "run");
+    const run_exe = b.addRunArtifact(exe);
+
+    run_step.dependOn(&run_exe.step);
+
+    run_exe.step.dependOn(b.getInstallStep());
+    if (b.args) |args| {
+        run_exe.addArgs(args);
+    }
+}]],
+		{ 4, 44 },
+	},
+	{
+		"main.zig",
+		[[const std = @import("std");
+const builtins = @import("builtins");
+
+const c = @cImport({
+    @cInclude("stdio.h");
+    @cInclude("stdlib.h");
+});
+
+const print = std.debug.print;
+
+pub fn main() {
+	// var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+	// const allocator = gpa.allocator();
+	print("hello", .{});
+}]],
+		{ 12, 1 },
+	},
 	{ "*.sh", [[#!/usr/bin/env bash]], { 2, 1 } },
 	{ "default.nix", [[_ :{
 	imports = [
