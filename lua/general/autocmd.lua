@@ -98,10 +98,10 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 	callback = function()
 		local line = vim.fn.line("'\"")
 		if
-			line > 1
-			and line <= vim.fn.line("$")
-			and vim.bo.filetype ~= "commit"
-			and vim.fn.index({ "xxd", "gitrebase" }, vim.bo.filetype) == -1
+		    line > 1
+		    and line <= vim.fn.line("$")
+		    and vim.bo.filetype ~= "commit"
+		    and vim.fn.index({ "xxd", "gitrebase" }, vim.bo.filetype) == -1
 		then
 			vim.cmd('normal! g`"')
 		end
@@ -141,5 +141,5 @@ vim.opt.shadafile = (function()
 end)()
 
 vim.api.nvim_create_autocmd("TextYankPost", {
-	callback = vim.highlight.on_yank,
+	callback = vim.hl.on_yank,
 })

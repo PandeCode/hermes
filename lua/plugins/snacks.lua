@@ -3,15 +3,36 @@ local function sk(c)
 		Snacks.picker[c]()
 	end
 end
+
 return {
 	"snacks.nvim",
 	event = "UIEnter",
 
 	keys = {
-		{ "<leader>ff", sk("files"), desc = "Find Files" },
-		{ "<leader>fr", sk("grep"), desc = "Grep" },
-		{ "<leader><space>", sk("smart"), desc = "Smart Find Files" },
-		{ "<leader>,", sk("buffers"), desc = "Buffers" },
+		{ "<leader>ff",      sk("files"),               desc = "Find Files" },
+		{ "<leader>fr",      sk("grep"),                desc = "Grep" },
+		{ "<leader>fm",      sk("marks"),               desc = "Marks" },
+		{ "<leader>fn",      sk("man"),                 desc = "Man" },
+		{ "<leader><space>", sk("smart"),               desc = "Smart Find Files" },
+		{ "<leader>,",       sk("buffers"),             desc = "Buffers" },
+		{ "<leader>ch",      sk("cliphist"),            desc = "cliphist" },
+
+		{ "<leader>fll",     sk("loclist"),             desc = "loclist" },
+		{ "<leader>fq",      sk("qflist"),              desc = "qflist" },
+
+		{ "<leader>fld",     sk("lsp_declarations"),    desc = "lsp_declarations" },
+		{ "<leader>fle",     sk("lsp_definitions"),     desc = "lsp_definitions" },
+		{ "<leader>fli",     sk("lsp_implementations"), desc = "lsp_implementations" },
+		{ "<leader>flr",     sk("lsp_references"),      desc = "lsp_references" },
+		{ "<leader>fls",     sk("lsp_symbols"),         desc = "lsp_symbols" },
+
+		{
+			"<leader>se",
+			function()
+				Snacks.explorer()
+			end,
+			desc = "Buffers",
+		},
 		{
 			"<leader>nh",
 			function()

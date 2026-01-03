@@ -111,7 +111,11 @@
           ruff
           pyright
 
-          lua-language-server
+          # lua-language-server
+
+          mermaid-cli
+          tectonic
+          ghostscript_headless
 
           nixd
           statix
