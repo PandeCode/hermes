@@ -9,6 +9,7 @@ local function createTemplate(pattern, text, pos, ignored)
 		callback = function()
 			local filename = vim.fn.expand("%:t")
 			local basefilename = vim.fn.expand("%:t:r")
+			local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
 
 			if ignored ~= nil then
 				for _, ignore in pairs(ignored) do
@@ -27,7 +28,12 @@ local function createTemplate(pattern, text, pos, ignored)
 					-1,
 					false,
 					vim.split(
-					text:gsub("{{basefilename}}", basefilename):gsub("{{filename}}", filename), "\n")
+						text
+						:gsub("{{cwd}}", cwd) --
+						:gsub("{{basefilename}}", basefilename)
+						:gsub("{{filename}}", filename),
+						"\n"
+					)
 				)
 
 				-- Set the cursor position
@@ -44,7 +50,7 @@ local templates = {
 		[[const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const exe = b.addExecutable(.{ .name = "", .root_module = b.createModule(.{
+    const exe = b.addExecutable(.{ .name = "{{cwd}}", .root_module = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
         .link_libc = true,
         .target = b.standardTargetOptions(.{}),
@@ -78,10 +84,10 @@ const c = @cImport({
 
 const print = std.debug.print;
 
-pub fn main() {
+pub fn main() !void {
 	// var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 	// const allocator = gpa.allocator();
-	print("hello", .{});
+	print("hello {{cwd}}", .{});
 }]],
 		{ 12, 1 },
 	},
