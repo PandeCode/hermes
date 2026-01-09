@@ -410,6 +410,24 @@ function Utils.open_ephemeral_term(cmd)
 	vim.cmd("wincmd p")
 end
 
+function Utils.matchAll(str, tbl)
+	for x in pairs(tbl) do
+		if not str:match(x) then
+			return false
+		end
+	end
+	return true
+end
+
+function Utils.matchAny(str, tbl)
+	for _, pattern in pairs(tbl) do
+		if str:match(pattern) then
+			return true
+		end
+	end
+	return false
+end
+
 -- Export the Utils table for potential module usage
 -- Usage: local Utils = require('path.to.this.file')
 return Utils
