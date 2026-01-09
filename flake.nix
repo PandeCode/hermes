@@ -202,6 +202,7 @@
 
             # already lazy
             haskell-tools-nvim
+            rustaceanvim
           ];
         };
       };
@@ -210,8 +211,6 @@
       optionalPlugins = with pkgs.vimPlugins; {
         general = {
           lazy = [
-            rustaceanvim
-
             cord-nvim
 
             pkgs.neovimPlugins.vlime
