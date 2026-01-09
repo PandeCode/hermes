@@ -60,9 +60,17 @@ require("lze").load({
 	{ import = "lsps.clangd", ft = { "c", "cpp" } },
 	{ import = "lsps.lua_ls", ft = { "lua" } },
 	{ import = "lsps.python", ft = { "python" } },
-	{ import = "lsps.nixd", ft = { "nix" } },
-	{ import = "lsps.bash", ft = { "bash", "sh" } },
-	{ import = "lsps.cmake", ft = { "cmake" } },
+	{ import = "lsps.nixd",   ft = { "nix" } },
+	{ import = "lsps.bash",   ft = { "bash", "sh" } },
+	{ import = "lsps.cmake",  ft = { "cmake" } },
+	{
+		"zls",
+		lsp = {
+			on_attach = function(_, bufrn)
+				require("lsps.on_attach")(bufrn)
+			end,
+		},
+	},
 	{
 		"gopls",
 		lsp = {
