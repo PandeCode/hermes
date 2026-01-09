@@ -210,6 +210,8 @@
       optionalPlugins = with pkgs.vimPlugins; {
         general = {
           lazy = [
+            rustaceanvim
+
             cord-nvim
 
             pkgs.neovimPlugins.vlime
