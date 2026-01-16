@@ -4,7 +4,7 @@ end
 vim.b.did_after_ftplugin_lisp = true
 
 local endswith = function(str, suffix)
-	return str:sub(-#suffix) == suffix
+	return str:sub(- #suffix) == suffix
 end
 
 function sbclIsRunning()
@@ -28,20 +28,6 @@ function sbclIsRunning()
 end
 
 require("lze").load({
-	{
-		"parinfer-rust",
-		allow_again = false,
-		after = function()
-			vim.keymap.set("n", "<leader>pf", function()
-				vim.cmd(":ParinferOff<cr>")
-				vim.notify("ParinferOff")
-			end, { silent = true, noremap = true, desc = "ParinferOff" })
-			vim.keymap.set("n", "<leader>pn", function()
-				vim.cmd(":ParinferOn<cr>")
-				vim.notify("ParinferOn")
-			end, { silent = true, noremap = true, desc = "ParinferOn" })
-		end,
-	},
 	{
 		"vlime",
 		allow_again = false,

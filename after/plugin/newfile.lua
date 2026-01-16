@@ -29,9 +29,9 @@ local function createTemplate(pattern, text, pos, ignored)
 					false,
 					vim.split(
 						text
-						:gsub("{{cwd}}", cwd) --
-						:gsub("{{basefilename}}", basefilename)
-						:gsub("{{filename}}", filename),
+							:gsub("{{cwd}}", cwd) --
+							:gsub("{{basefilename}}", basefilename)
+							:gsub("{{filename}}", filename),
 						"\n"
 					)
 				)
@@ -44,9 +44,11 @@ local function createTemplate(pattern, text, pos, ignored)
 		end,
 	})
 end
+
 local templates = {
 	{
 		"build.zig",
+		--zig
 		[[const std = @import("std");
 
 pub fn build(b: *std.Build) void {
@@ -74,6 +76,7 @@ pub fn build(b: *std.Build) void {
 	},
 	{
 		"main.zig",
+		-- zig
 		[[const std = @import("std");
 const builtins = @import("builtins");
 

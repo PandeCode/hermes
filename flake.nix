@@ -203,6 +203,8 @@
             # already lazy
             haskell-tools-nvim
             rustaceanvim
+
+            firenvim
           ];
         };
       };

@@ -14,7 +14,7 @@ return {
 		end,
 		after = function(plugin)
 			-- [[ Configure Treesitter ]]
-			-- See `:help nvim-treesitter`
+			-- Se:h treesitter-query-modeline-extend:h treesitter-query-modeline-extende `:help nvim-treesitter`
 			require("nvim-treesitter.configs").setup({
 				highlight = { enable = true },
 				indent = { enable = false },

@@ -19,3 +19,5 @@ require("lsps")
 -- require("rust")
 require("web")
 require("debug")
+
+require("fire")

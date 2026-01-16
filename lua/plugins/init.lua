@@ -41,6 +41,23 @@ require("lze").load({
 	{ import = "plugins.git" },
 
 	{
+		"parinfer-rust",
+		allow_again = false,
+		ft = { "query", "lisp", "racket", "clojure" },
+		after = function(_)
+			print(_)
+			vim.keymap.set("n", "<leader>pf", function()
+				vim.cmd(":ParinferOff<cr>")
+				vim.notify("ParinferOff")
+			end, { silent = true, noremap = true, desc = "ParinferOff" })
+			vim.keymap.set("n", "<leader>pn", function()
+				vim.cmd(":ParinferOn<cr>")
+				vim.notify("ParinferOn")
+			end, { silent = true, noremap = true, desc = "ParinferOn" })
+		end,
+	},
+
+	{
 		"refactoring.nvim",
 		ft = {
 			"typescript",
