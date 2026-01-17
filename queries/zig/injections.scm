@@ -26,9 +26,9 @@
    ((multiline_string) @injection.content
                        (#set! injection.language "wgsl"))
 )
-)
 
 (
+ _
  (comment) @c
  (#any-of? @c "// json" "//json")
  [
