@@ -29,9 +29,9 @@ local function createTemplate(pattern, text, pos, ignored)
 					false,
 					vim.split(
 						text
-							:gsub("{{cwd}}", cwd) --
-							:gsub("{{basefilename}}", basefilename)
-							:gsub("{{filename}}", filename),
+						:gsub("{{cwd}}", cwd) --
+						:gsub("{{basefilename}}", basefilename)
+						:gsub("{{filename}}", filename),
 						"\n"
 					)
 				)
@@ -52,12 +52,13 @@ local templates = {
 		[[const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const exe = b.addExecutable(.{ .name = "{{cwd}}", .root_module = b.createModule(.{
+    const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
         .link_libc = true,
         .target = b.standardTargetOptions(.{}),
         .optimize = b.standardOptimizeOption(.{}),
-    }) });
+    });
+    const exe = b.addExecutable(.{ .name = "{{cwd}}", .root_module = exe_mod });
     exe.linkLibC();
 
     b.installArtifact(exe);
@@ -71,6 +72,13 @@ pub fn build(b: *std.Build) void {
     if (b.args) |args| {
         run_exe.addArgs(args);
     }
+
+    const exe_check = b.addExecutable(.{
+        .name = "__check",
+        .root_module = exe_mod,
+    });
+    const check = b.step("__check", "Check if project compiles");
+    check.dependOn(&exe_check.step);
 }]],
 		{ 4, 44 },
 	},
@@ -94,6 +102,10 @@ pub fn main() !void {
 }]],
 		{ 12, 1 },
 	},
+	{ "zls.json", [[{
+  "enable_build_on_save": true,
+  "build_on_save_step": "check"
+}]], { 1, 1 } },
 	{ "*.sh", [[#!/usr/bin/env bash]], { 2, 1 } },
 	{ "default.nix", [[_ :{
 	imports = [
