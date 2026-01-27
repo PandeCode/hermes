@@ -138,7 +138,7 @@ return {
 			vim.lsp.inlay_hint.enable()
 
 			nmap("K", noice.hover, "Hover Documentation")
-			nmap("<C-k>", noice.signature, "Signature Documentation")
+			-- nmap("<C-k>", noice.signature, "Signature Documentation")
 
 			nmap("<leader>d", vim.lsp.buf.type_definition, "Type [D]efinition")
 

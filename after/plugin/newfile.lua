@@ -106,7 +106,26 @@ pub fn main() !void {
   "enable_build_on_save": true,
   "build_on_save_step": "check"
 }]], { 1, 1 } },
-	{ "*.sh", [[#!/usr/bin/env bash]], { 2, 1 } },
+	{
+		"*.sh",
+		[[#!/usr/bin/env bash
+
+set -e
+
+yell() { echo "$0: $*" >&2; }
+die() { yell "$*"; exit 111; }
+try() { "$@" || die "cannot $*"; }
+
+exit_trap () {
+  local lc="$BASH_COMMAND" rc=$?
+  yell "Command [$lc] exited with code [$rc]"
+}
+
+trap exit_trap EXIT
+
+]],
+		{ 2, 1 },
+	},
 	{ "default.nix", [[_ :{
 	imports = [
 
