@@ -12,10 +12,10 @@ return {
 			vim.cmd.packadd(name)
 			vim.cmd.packadd("nvim-treesitter-textobjects")
 		end,
-		after = function(plugin)
+		after = function(_plugin)
 			-- [[ Configure Treesitter ]]
 			-- Se:h treesitter-query-modeline-extend:h treesitter-query-modeline-extende `:help nvim-treesitter`
-			require("nvim-treesitter.configs").setup({
+			require("nvim-treesitter.config").setup({
 				highlight = { enable = true },
 				indent = { enable = false },
 				incremental_selection = {

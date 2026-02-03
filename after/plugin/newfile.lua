@@ -183,8 +183,21 @@ int main() {
 	{ "lua/plugins/*.lua", [[return {
 
 }]], { 2, 2 } },
-	{ ".direnv", [[use nix
-#use flake]], { 4, 2 } },
+	{ ".direnv", [[use nix #use flake]], { 4, 2 } },
+
+	{
+		"jsconfig.json",
+		[[{
+  "compilerOptions": {
+    "checkJs": true,
+    "allowJs": true
+  },
+  "include": [
+    "./",
+  ]
+}]],
+		{ 7, 5 },
+	},
 }
 
 for _, template in ipairs(templates) do
