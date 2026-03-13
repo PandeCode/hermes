@@ -18,16 +18,22 @@
 (macro rsetup [p t]
   `((. (require ,p) :setup) (or ,t {})))
 
-(each [_ k (ipairs [:emmylua_ls :fennel_ls])]
-  (vim.lsp.enable k))
+(rsetup :oil)
+
+(vim.keymap.set :n "-" :<cmd>Oil<CR>
+                {:noremap true :desc "Open Parent Directory"})
+
+(vim.keymap.set :n :<leader>- "<cmd>Oil .<CR>"
+                {:noremap true :desc "Open nvim root directory"})
 
 (vim.api.nvim_create_autocmd [:BufEnter :BufWrite :BufWritePost]
                              {:callback #(pcall vim.treesitter.start)})
 
 ; ((. vim.wo 0 0 :foldexpr) "v:lua.vim.treesitter.foldexpr()")
-; ((. vim.wo 0 0 :foldmethod) "expr")
+; ((. vim.wo 0 0 :foldmethod) :expr)
+; ((. vim.wo 0 0 :foldmethod) :manual)
 
-(set vim.bo.indentexpr "v:lua.require'nvim-treesitter'.indentexpr()")
+(set vim.bo.indentexpr "v:lua.require('nvim-treesitter').indentexpr()")
 
 (local ts-ctx (require :treesitter-context))
 
@@ -145,7 +151,33 @@
 
 (rsetup :blink.pairs)
 (rsetup :blink.indent)
-(rsetup :blink.cmp {})
+(rsetup :blink.cmp
+        {:signature {:enabled true :window {:show_documentation true}}
+         :completion {:menu {:draw {:treesitter [:lsp]
+                                    :columns [[:kind_icon]
+                                              {1 :label
+                                               2 :label_description
+                                               :gap 1}
+                                              [:kind]]
+                                    :components {:kind_icon {:text (fn [ctx]
+                                                                     (local (kind_icon _
+                                                                                       _)
+                                                                            (MiniIcons.get :lsp
+                                                                                           ctx.kind))
+                                                                     kind_icon)
+                                                             :highlight (fn [ctx]
+                                                                          (local (_ hl
+                                                                                    _)
+                                                                                 (MiniIcons.get :lsp
+                                                                                                ctx.kind))
+                                                                          hl)}
+                                                 :kind {:highlight (fn [ctx]
+                                                                     (local (_ hl
+                                                                               _)
+                                                                            (MiniIcons.get :lsp
+                                                                                           ctx.kind))
+                                                                     hl)}}}}
+                      :documentation {:auto_show true}}})
 
 ; {
 ;   'saghen/blink.cmp',
@@ -321,7 +353,9 @@
 
 (n :gr #(snacks.picker.lsp_references) "[G]oto [R]eferences")
 (n :gI #(snacks.picker.lsp_implementations) "[G]oto [I]mplementation")
-(n :<leader>ds #(snacks.picker.lsp_symbols) "[D]ocument [S]ymbols")
+;; TODO fix
+(n :<leader>lds #(snacks.picker.lsp_symbols) "[D]ocument [S]ymbols")
+
 (n :<leader>ws #(snacks.picker.lsp_workspace_symbols) "[W]orkspace [S]ymbols")
 
 (n :<leader>ei
@@ -329,11 +363,31 @@
    "Toggle Inlay")
 
 (n :K noice.hover "Hover Documentation")
+;; TODO fix
 ;; nmap("<C-k>", noice.signature, "Signature Documentation")
-(n :<leader>d vim.lsp.buf.type_definition "Type [D]efinition")
+;; TODO fix
+(n :<leader>ltd vim.lsp.buf.type_definition "Type [D]efinition")
 (n :<space>cl vim.lsp.codelens.run "[C]ode [L]ens")
 (n :<F2> vim.lsp.buf.rename "[R]e[n]ame")
 (n :<leader>ca vim.lsp.buf.code_action "[C]ode [A]ction")
 
 (n :gd vim.lsp.buf.definition "[G]oto [D]efinition")
 (n :gD vim.lsp.buf.declaration "[G]oto [D]eclaration")
+
+(each [_ k (ipairs [:emmylua_ls
+                    :fennel_ls
+                    :nixd
+                    :pyright
+                    :neocmake
+                    :zls
+                    :racket_langserver
+                    :gopls])]
+  (vim.lsp.enable k))
+
+(vim.lsp.config :nixd
+                {:settings {:nixd {:nixpkgs {:expr (or vim.g.nix_nixd_nixpkgs
+                                                       "import <nixpkgs> {}")}
+                                   :options {:nixos {:expr vim.g.nix_nixd_nixos_options}
+                                             :home-manager {:expr vim.g.nix_nixd_home_manager_options}}
+                                   :formatting {:command [:nixfmt]}
+                                   :diagnostic {:suppress [:sema-escaping-with]}}}})

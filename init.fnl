@@ -11,6 +11,8 @@
 (include :fnl.theme)
 (include :fnl.statusline)
 
+(include :fnl.dap)
+
 ;; https://www.reddit.com/r/neovim/comments/1jpbc7s/disable_virtual_text_if_there_is_diagnostic_in/
 
 (vim.diagnostic.config {:virtual_text true
@@ -137,8 +139,6 @@ end
 for _, top_format_stop_block in ipairs(top_format_stop_blocks) do
 	add_top_format_stop_block(top_format_stop_block[1], top_format_stop_block[2])
 end
-     "
-
- )
+     ")
 
 nil

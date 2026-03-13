@@ -53,3 +53,7 @@ Custom in client lsp for bash to do:
 Learn new treesitter api
 
 See if ffi can be used
+
+eval line/block of lua/fennel
+
+vlime

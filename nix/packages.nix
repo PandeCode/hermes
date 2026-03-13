@@ -36,12 +36,16 @@ in
       friendly-snippets
       gitsigns-nvim
       parinfer-rust
+
+      oil-nvim
     ];
 
-    lazyPlugins =
-      # with pkgs.vimPlugins;
-      [
-      ];
+    lazyPlugins = with pkgs.vimPlugins; [
+      nvim-dap
+      nvim-dap-ui
+      nvim-dap-virtual-text
+      nvim-nio
+    ];
 
     plugins = eagerPlugins ++ lazyPlugins;
 
@@ -112,6 +116,7 @@ in
           neocmakelsp
           cmake-format
           cmake-lint
+          gdb
         ]
         ++ lldbTools;
 
@@ -119,6 +124,7 @@ in
         [
           cargo
           rust-analyzer
+          rustc
         ]
         ++ lldbTools;
 
@@ -195,6 +201,18 @@ in
 
               vim.g.nix_profile = "${profile}"
 
+              vim.g.nix_nixd_nixpkgs = "import ${pkgs.path} {}"
+
+            ''
+            + (
+              if builtins.hasAttr "self" inputs
+              then ''
+                vim.g.nix_nixd_nixos_options = "(builtins.getFlake "path:${toString inputs.self.outPath}").nixosConfigurations.configname.options"
+                vim.g.nix_nixd_home_manager_options = "(builtins.getFlake "path:${toString inputs.self.outPath}").homeConfigurations.configname.options"
+              ''
+              else ""
+            )
+            + ''
               vim.g.nix_plugins = {
                 ${builtins.concatStringsSep "\n          " (
                 (map (toPluginEntry false) eagerPlugins)

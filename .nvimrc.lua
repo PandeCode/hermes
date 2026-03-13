@@ -3,9 +3,17 @@ vim.lsp.enable("fennel_ls")
 null_ls = require("null-ls")
 null_ls.register(null_ls.builtins.formatting.fnlfmt)
 
-vim.keymap.set("n", "<leader>ts", function()
-	vim.treesitter.start()
-end)
+local function _9_()
+	return pcall(vim.treesitter.start)
+end
+vim.api.nvim_create_autocmd({ "BufEnter", "BufWrite", "BufWritePost", "BufRead" }, { callback = _9_ })
+vim.api.nvim_create_autocmd("TextYankPost", { callback = vim.hl.on_yank })
+
+local function _1_()
+	vim.cmd.edit("%")
+	return vim.treesitter.start()
+end
+vim.keymap.set("n", "<leader>fe", _1_)
 
 vim.api.nvim_create_autocmd("BufWritePost", {
 	pattern = "init.fnl",
