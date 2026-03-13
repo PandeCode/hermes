@@ -51,7 +51,13 @@
   in {
     nix.nixPath = ["nixpkgs=${inputs.nixpkgs}"];
 
-    # nixosConfigurations = (import ./nix/nixosConfigurations.nix) extras;
+    nixosModules = forAllSystems (system: {
+      default = {
+        environment.systemPackages = [
+          inputs.self.packages.${system}.default
+        ];
+      };
+    });
     # homeConfigurations = (import ./nix/homeConfigurations.nix) extras;
     # checks = forAllSystems ((import ./nix/checks.nix) extras);
     devShells = forAllSystems ((import ./nix/devShells.nix) extras);

@@ -156,11 +156,15 @@ in
       fun = with pkgs;
         [
           sbcl
+
           haskell-language-server
           cabal-install
+          stack
+          ghc
+
           ocaml
           ocamlPackages.ocaml-lsp
-          dune_3
+          # dune_3
         ]
         ++ lldbTools;
     };
