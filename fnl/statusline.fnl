@@ -93,19 +93,25 @@ end
 (fn git []
   (let [d vim.b.gitsigns_status_dict]
     (if d
-        (.. d.head
+        (.. " "
+            d.head
             " "
-            (if d.added (if (> d.added 0) (shl "GitSignsAdd" (.. "+ " d.added )) "") "")
-            " "
-            (if d.changed (if (> d.changed 0) (shl "GitSignsChange" (.. "~ " d.changed )) "") "")
-            " "
-            (if d.removed (if (> d.removed 0) (shl "GitSignsRemove" ( .. "- " d.removed) ) "") ""))
+            (if d.added   (if (> d.added 0)   (shl "GitSignsAdd"    (.. "+ " d.added   " ")) "") "")
+            (if d.changed (if (> d.changed 0) (shl "GitSignsChange" (.. "~ " d.changed " ")) "") "")
+            (if d.removed (if (> d.removed 0) (shl "GitSignsRemove" (.. "- " d.removed " ")) "") "")
+            " ")
         "")))
+
+(fn fun []
+  (if vim.g.parinfer_enabled :infer ""))
 
 ;; fnlfmt: skip
 (fn Statusline.active []
-  (.. "%f"
+  (.. "%f "
+      (fun)
+      " "
       (lsp)
+      " "
       (git)
       "%="
       (get_attached_clients)

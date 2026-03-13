@@ -15,6 +15,8 @@ local function _1_()
 end
 vim.keymap.set("n", "<leader>fe", _1_)
 
+print("hi")
+
 vim.api.nvim_create_autocmd("BufWritePost", {
 	pattern = "init.fnl",
 	callback = function()

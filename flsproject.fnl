@@ -2,5 +2,5 @@
  :macro-path "./?.fnlm;./?/init.fnlm;./?.fnl;./?/init-macros.fnl;./?/init.fnl;src/?.fnlm;src/?/init.fnlm;src/?.fnl;src/?/init-macros.fnl;src/?/init.fnl"
  :lua-version :lua5.4
  :libraries {:nvim true}
- :extra-globals "Snacks MiniTrailspace MiniIcons"
+ :extra-globals "Snacks MiniTrailspace MiniIcons MiniSurround MiniHipatterns MiniBase16"
  :lints {}}

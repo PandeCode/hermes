@@ -25,45 +25,10 @@
 (vim.cmd (.. "hi LineNr guifg=" base16.base0E "\n"
              "hi LspInlayHint guifg=" base16.base04 "\n"))
 
-; (local IsTransparent false)
-;
-; (fn set_hl [gp opt] (vim.api.nvim_set_hl 0 gp opt))
-;
-; (set_hl :Normal {:bg :NONE})
-; (set_hl :NonText {:bg :NONE})
-; (set_hl :SignColumn {:bg :NONE})
+(local IsTransparent false)
 
-; function ToggleBackground()
-; 	local palette = MiniBase16.config.palette
-;
-; 	if IsTransparent then
-; 		set_highlight("Normal", {
-; 			fg = palette.base05,
-; 			bg = palette.base00,
-; 		})
-;
-; 		set_highlight("LineNr", {
-; 			fg = palette.base03,
-; 			bg = palette.base00,
-; 		})
-;
-; 		set_highlight("SignColumn", {
-; 			fg = palette.base03,
-; 			bg = palette.base00,
-; 		})
-;
-; 		IsTransparent = false
-; 	else
-; 		set_highlight("Normal", { bg = "NONE" })
-; 		set_highlight("LineNr", { bg = "NONE" })
-; 		set_highlight("SignColumn", { bg = "NONE" })
-;
-; 		IsTransparent = true
-; 	end
-; end
-;
-; vim.keymap.set("n", "<LEADER>bt", ToggleBackground, { noremap = true, silent = true })
-;
+(fn set_hl [gp opt] (vim.api.nvim_set_hl 0 gp opt))
+
 ; local function is_dark(hex)
 ; 	hex = hex:gsub("#", "")
 ; 	local r = tonumber(hex:sub(1, 2), 16)
@@ -72,10 +37,42 @@
 ; 	local brightness = (0.2126 * r + 0.7152 * g + 0.0722 * b)
 ; 	return brightness < 128
 ; end
-;
-; for group, color in pairs(base16) do
-; 	local fg_color = is_dark(color) and "#ffffff" or "#000000"
-; 	vim.cmd(string.format("highlight GP_%s guifg=%s guibg=%s gui=NONE", group, fg_color, color))
-; end
+
+(fn is_dark [_hex]
+  (local hex (_hex:gsub "#" ""))
+  (local r (tonumber (hex:sub 1 2) 16))
+  (local g (tonumber (hex:sub 3 4) 16))
+  (local b (tonumber (hex:sub 5 6) 16))
+  (local brightness (+ (* 0.2126 r) (* 0.7152 g) (* 0.0722 b)))
+  (< brightness 128))
+
+(each [group color (pairs base16)]
+  (let [fg_color (if (is_dark color) "#ffffff" "#000000")]
+    (vim.cmd (string.format "highlight GP_%s guifg=%s guibg=%s gui=NONE" group
+                            fg_color color))))
+
+(var IsTransparent true)
+
+(fn set_hl [gp opt] (vim.api.nvim_set_hl 0 gp opt))
+
+(fn ToggleBackground []
+  (let [palette MiniBase16.config.palette]
+    (if IsTransparent
+        (do
+          (set_hl :Normal {:fg palette.base05 :bg palette.base00})
+          (set_hl :LineNr {:fg palette.base03 :bg palette.base00})
+          (set_hl :SignColumn {:fg palette.base03 :bg palette.base00})
+          (set_hl :NonText {:fg palette.base02 :bg palette.base00})
+          (set IsTransparent false))
+        (do
+          (set_hl :Normal {:bg :NONE})
+          (set_hl :LineNr {:fg palette.base03 :bg :NONE})
+          (set_hl :SignColumn {:fg palette.base03 :bg :NONE})
+          (set_hl :NonText {:fg palette.base02 :bg :NONE})
+          (set IsTransparent true)))))
+
+(ToggleBackground)
+
+(vim.keymap.set :n :<LEADER>bt ToggleBackground {:noremap true :silent true})
 
 nil

@@ -28,6 +28,7 @@ in
       snacks-nvim
 
       trouble-nvim
+      dropbar-nvim
 
       blink-cmp
       blink-pairs
@@ -38,11 +39,16 @@ in
       parinfer-rust
 
       oil-nvim
+
+      cord-nvim
     ];
 
     lazyPlugins = with pkgs.vimPlugins; [
       nvim-dap
-      nvim-dap-ui
+
+      # nvim-dap-ui
+      nvim-dap-view
+
       nvim-dap-virtual-text
       nvim-nio
     ];
