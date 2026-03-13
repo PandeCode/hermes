@@ -350,7 +350,6 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
   vim.lsp.config("nixd", {settings = {nixd = {nixpkgs = {expr = (vim.g.nix_nixd_nixpkgs or "import <nixpkgs> {}")}, options = {nixos = {expr = vim.g.nix_nixd_nixos_options}, ["home-manager"] = {expr = vim.g.nix_nixd_home_manager_options}}, formatting = {command = {"nixfmt"}}, diagnostic = {suppress = {"sema-escaping-with"}}}}})
   vim.keymap.set("n", "<leader>po", ":ParinferOn<cr>")
   vim.keymap.set("n", "<leader>pf", ":ParinferOff<cr>")
-  vim.cmd("ParinferOff")
   return require("dropbar").setup((nil or {}))
 end
 require("fnl.plugins")
@@ -776,4 +775,3 @@ for _, top_format_stop_block in ipairs(top_format_stop_blocks) do
 end
      
 return nil
-
