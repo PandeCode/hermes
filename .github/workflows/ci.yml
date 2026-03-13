@@ -8,14 +8,20 @@ on:
 
 jobs:
   build:
+    if: >
+      !(
+        (github.event_name == 'push' &&
+         startsWith(github.event.head_commit.message, 'nobuild:')) ||
+        (github.event_name == 'pull_request' &&
+         startsWith(github.event.pull_request.title, 'nobuild:'))
+      )
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v25
+        uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
@@ -28,7 +34,7 @@ jobs:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
       - name: Build flake output
-        run: nix build --accept-flake-config
+        run: nix build --accept-flake-config --keep-going
 
       - name: Check devShell
-        run: nix develop --accept-flake-config --command echo OK
+        run: nix develop --accept-flake-config --keep-going  --command echo OK
