@@ -11,6 +11,19 @@
                           (vim.fn.mkdir (vim.fs.dirname file) :p)
                           file)))
 
+;; Return to last edit position when opening files (You want this!))
+; autocmd BufReadPost *
+;      \ if line("'\"") > 0 && line("'\"") <= line("$") |
+;      \   exe "normal! g`\"" |
+;      \ endif
+
+(vim.api.nvim_create_autocmd :BufReadPost
+                             {:callback #(let [line vim.fn.line]
+                                           (when (and (> (line "'\"") 0)
+                                                      (<= (line "'\"")
+                                                          (line "$")))
+                                             (vim.fn.execute "normal! g`\"")))})
+
 (vim.api.nvim_create_autocmd [:BufEnter :BufWrite :BufWritePost :BufRead]
                              {:callback #(pcall vim.treesitter.start)})
 

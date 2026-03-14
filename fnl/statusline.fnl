@@ -60,10 +60,11 @@
   (local levels {:errors :Error :warnings :Warn :info :Info :hints :Hint})
   (each [k level (pairs levels)]
     (set (. count k) (vim.tbl_count (vim.diagnostic.get 0 {:severity level}))))
-  (.. (if (not= (. count :errors)   0) (shl :DiagnosticSignError (.. " " (. count :errors)))   "")
-      (if (not= (. count :warnings) 0) (shl :DiagnosticSignWarn  (.. " " (. count :warnings))) "")
-      (if (not= (. count :hints)    0) (shl :DiagnosticSignHint  (.. " " (. count :hints)))    "")
-      (if (not= (. count :info)     0) (shl :DiagnosticSignInfo  (.. " " (. count :info)))     "")
+
+  (.. (if (not= (. count :errors)   0) (shl " " (. count :errors))   "")
+      (if (not= (. count :warnings) 0) (shl " " (. count :warnings)) "")
+      (if (not= (. count :hints)    0) (shl " " (. count :hints))    "")
+      (if (not= (. count :info)     0) (shl " " (. count :info))     "")
       "%#Normal#"))
 
 ;; fnlfmt: skip
@@ -139,13 +140,13 @@
       " "
       (filename)
       " "
-      (fun)
-      " "
       (lsp)
       "%="
       (get-attached-clients)
       "%="
       (searchcount)
+      " "
+      (fun)
       " "
       (nix-shell)
       " "
@@ -158,7 +159,7 @@
       "[%P %l:%c]"))
 
 (fn Statusline.inactive []
-  (.. "%#Comment# %t%*"))
+  "%#Comment# %t%*")
 
 (local group (vim.api.nvim_create_augroup :Statusline {:clear true}))
 

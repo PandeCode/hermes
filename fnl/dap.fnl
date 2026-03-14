@@ -2,14 +2,14 @@
 
 ((. (require :nvim-dap-virtual-text) :setup))
 
-; (local dapui (require :dapui))
-; (dapui.setup)
-; (fn dap.listeners.before.attach.dapui_config [] (dapui.open))
-; (fn dap.listeners.before.launch.dapui_config [] (dapui.open))
-; (fn dap.listeners.before.event_terminated.dapui_config [] (dapui.close))
-; (fn dap.listeners.before.event_exited.dapui_config [] (dapui.close))
+; (local frontend (require :dapui))
+(local frontend (require :dap-view))
+(frontend.setup)
 
-(local dapview (require :dap-view))
+(fn dap.listeners.before.attach.dapui_config [] (frontend.open))
+(fn dap.listeners.before.launch.dapui_config [] (frontend.open))
+(fn dap.listeners.before.event_terminated.dapui_config [] (frontend.close))
+(fn dap.listeners.before.event_exited.dapui_config [] (frontend.close))
 
 (vim.keymap.set :n :<leader>db dap.toggle_breakpoint)
 (vim.keymap.set :n :<leader>dc dap.continue)

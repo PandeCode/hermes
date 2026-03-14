@@ -206,13 +206,16 @@ in
       pkgs.wrapNeovimUnstable nvim (
         neovimConfig
         // {
-          
           wrapperArgs =
             neovimConfig.wrapperArgs
             ++ [
               "--set"
               "NVIM_APPNAME"
               "hermes"
+              #"--prefix"
+              #"LUA_PATH"
+              #";"
+              #"${pkgs.luajitPackages.fennel}/share/lua/5.1"
               "--prefix"
               "PATH"
               ":"
