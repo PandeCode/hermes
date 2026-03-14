@@ -103,7 +103,7 @@ end
         "")))
 
 (fn fun []
-  (if vim.g.parinfer_enabled :infer ""))
+  (if (= 1 vim.g.parinfer_enabled) :infer ""))
 
 ;; fnlfmt: skip
 (fn Statusline.active []

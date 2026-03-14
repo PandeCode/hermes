@@ -37,7 +37,7 @@
   (n :<A-d> vim.cmd.bd noremap_silent)
   (n (leader :c<leader>) (cmd "normal gcc") noremap_silent)
   (v (leader :c<leader>) :gc noremap_silent)
-  (v (leader "`") (cmd "edit #") noremap_silent)
+  (n (leader "`") (cmd "e#") noremap_silent)
   (n (leader :gf) (cmd "e <cfile>"))
   (n (leader :<F2>) ":%s/\\<<C-r><C-w>\\>/<C-r><C-w>/g<Left><Left>")
   (x :I (fn []

@@ -56,7 +56,7 @@ package.preload["fnl.keymaps"] = package.preload["fnl.keymaps"] or function(...)
     n("<A-d>", vim.cmd.bd, noremap_silent)
     n("<leader>c<leader>", "<cmd>normal gcc<cr>", noremap_silent)
     v("<leader>c<leader>", "gc", noremap_silent)
-    v("<leader>`", "<cmd>edit #<cr>", noremap_silent)
+    n("<leader>`", "<cmd>e#<cr>", noremap_silent)
     n("<leader>gf", "<cmd>e <cfile><cr>")
     n("<leader><F2>", ":%s/\\<<C-r><C-w>\\>/<C-r><C-w>/g<Left><Left>")
     local function _2_()
@@ -562,7 +562,7 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
     end
   end
   local function fun()
-    if vim.g.parinfer_enabled then
+    if (1 == vim.g.parinfer_enabled) then
       return "infer"
     else
       return ""

@@ -6,7 +6,7 @@ in
       pkgs = nixpkgs.legacyPackages.${system};
     in
       nixpkgs.legacyPackages.${system}.mkShell {
-        buildInputs = with pkgs; [
+        packages = with pkgs; [
           nh
           alejandra
           statix
@@ -29,6 +29,8 @@ in
           emmylua-check
 
           inotify-tools
+
+          self.packages.${pkgs.system}.default
         ];
       };
 

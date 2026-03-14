@@ -1,26 +1,35 @@
-## Comamnds to run
+# hermes
+
+## Run
 
 ```bash
-nix run github:pandecode/hermes --accept-flake-config
+nix run github:pandecode/hermes#fun --accept-flake-config --extra-experimental-features flakes --extra-experimental-features nix-command --override-input nixpkgs nixpkgs
+
+
+```bash
+nix run github:pandecode/hermes
+nix run github:pandecode/hermes#minimal
+nix run github:pandecode/hermes#python
+nix run github:pandecode/hermes#cxx
+nix run github:pandecode/hermes#rust
+nix run github:pandecode/hermes#go
+nix run github:pandecode/hermes#web
+nix run github:pandecode/hermes#fun
+nix run github:pandecode/hermes#full
 ```
 
-```bash
-nix run github:pandecode/hermes --accept-flake-config --override-input nixpkgs nixpkgs
-```
+With flakes enabled and Override nixpkgs:
 
 ```bash
-nix run github:pandecode/hermes --accept-flake-config --extra-experimental-features flakes --extra-experimental-features nix-command
-```
-
-```bash
-nix run github:pandecode/hermes --accept-flake-config --extra-experimental-features flakes --extra-experimental-features nix-command --override-input nixpkgs nixpkgs
+--accept-flake-config
+--accept-flake-config --extra-experimental-features flakes --extra-experimental-features nix-command
+--accept-flake-config --override-input nixpkgs nixpkgs
+--accept-flake-config --extra-experimental-features flakes --extra-experimental-features nix-command --override-input nixpkgs nixpkgs
 ```
 
 ## Binary Cache
 
-This project uses [Cachix](https://cachix.org) for faster builds:
-
-Inside your `flake.nix`, add:
+Add to your `flake.nix`:
 
 ```nix
 {
@@ -30,30 +39,20 @@ Inside your `flake.nix`, add:
       "charon.cachix.org-1:epdetEs1ll8oi8DT8OG2jEA4whj3FDbqgPFvapEPbY8="
     ];
   };
-
-  # ... rest of the flake
 }
 ```
 
-Fennel
+## TODO
 
-# TODO
-
-for home config modules
-
-mkdir -p $HOME/.local/share/fennel-ls/docsets/
-curl -o $HOME/.local/share/fennel-ls/docsets/nvim.lua https://git.sr.ht/~micampe/fennel-ls-nvim-docs/blob/main/nvim.lua
-
-Load a ".nvimrc.lua" or ".nvimrc.vim" or ".nvimrc.fnl"
-
-Custom in client lsp for bash to do:
-
-- man $cmd || $cmd -h || $cmd --help
-
-Learn new treesitter api
-
-See if ffi can be used
-
-eval line/block of lua/fennel
-
-vlime
+- Home manager modules
+- Fennel docsets setup declarative:
+  ```bash
+  mkdir -p $HOME/.local/share/fennel-ls/docsets/
+  curl -o $HOME/.local/share/fennel-ls/docsets/nvim.lua https://git.sr.ht/~micampe/fennel-ls-nvim-docs/blob/main/nvim.lua
+  ```
+- Load `.nvimrc.lua` / `.nvimrc.vim` / `.nvimrc.fnl` from project root
+- Custom LSP handler for bash: `man $cmd || $cmd -h || $cmd --help`
+- Learn new treesitter API
+- Explore FFI usage
+- Eval line/block of lua/fennel
+- vlime

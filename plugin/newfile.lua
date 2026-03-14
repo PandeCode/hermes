@@ -29,9 +29,9 @@ local function createTemplate(pattern, text, pos, ignored)
 					false,
 					vim.split(
 						text
-						:gsub("{{cwd}}", cwd) --
-						:gsub("{{basefilename}}", basefilename)
-						:gsub("{{filename}}", filename),
+							:gsub("{{cwd}}", cwd) --
+							:gsub("{{basefilename}}", basefilename)
+							:gsub("{{filename}}", filename),
 						"\n"
 					)
 				)
