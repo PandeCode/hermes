@@ -70,10 +70,10 @@
 (fn git []
   (let [d vim.b.gitsigns_status_dict]
     (if d
-        (.. " " d.head " "
+        (.. (shl :GitSignsAdd (.. "  "  d.head )) " "
             (if (and d.added   (> d.added 0))   (shl :GitSignsAdd    (.. "+ " d.added   " ")) "")
             (if (and d.changed (> d.changed 0)) (shl :GitSignsChange (.. "~ " d.changed " ")) "")
-            (if (and d.removed (> d.removed 0)) (shl :GitSignsRemove (.. "- " d.removed " ")) ""))
+            (if (and d.removed (> d.removed 0)) (shl :GitSignsDelete (.. "- " d.removed " ")) ""))
         "")))
 
 (fn fun []
@@ -120,18 +120,6 @@
                        "⠇"
                        "⠏"])
 
-(fn lsp-progress []
-  (let [clients (vim.lsp.get_clients {:bufnr 0})]
-    (var spinning false)
-    (each [_ client (ipairs clients)]
-      (when (not (vim.tbl_isempty (or client.progress {})))
-        (set spinning true)))
-    (if spinning
-        (let [frame (% (math.floor (* (vim.fn.reltimefloat (vim.fn.reltime)) 10))
-                       (length spinner-frames))]
-          (shl :Comment (. spinner-frames (+ frame 1))))
-        "")))
-
 (fn wordcount []
   (if (vim.tbl_contains [:markdown :text :org] vim.bo.filetype)
       (shl :Comment (.. " " (. (vim.fn.wordcount) :words) :w))
@@ -166,18 +154,17 @@
       " "
       (lsp)
       "%="
-      (lsp-progress)
-      " "
-      (searchcount)
+      (get-attached-clients)
       "%="
-      (wordcount)
+      (searchcount)
       " "
       (nix-shell)
       " "
       (get-icon :file (or (vim.fn.expand "%") :default))
       " "
       "%{&filetype != '' ? &filetype : 'text'} "
-      (get-attached-clients)
+      " "
+      (wordcount)
       " "
       "[%P %l:%c]"))
 
