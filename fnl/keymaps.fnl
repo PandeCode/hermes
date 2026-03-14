@@ -25,6 +25,7 @@
   (n :<esc> (cmd :nohlsearch))
   (n (leader :fe) (fn [] (vim.cmd.edit "%") (vim.treesitter.start)))
   (n (leader :fs) (cmd :w))
+  (n (leader :sf) (cmd "source %"))
   (n (leader :fw) (cmd "noautocmd w"))
   (n (leader :li) (cmd :LspInfo) noremap_silent)
   (n (leader :lq) (cmd :LspStop) noremap_silent)

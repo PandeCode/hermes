@@ -487,8 +487,29 @@
                                    :formatting {:command [:nixfmt]}
                                    :diagnostic {:suppress [:sema-escaping-with]}}}})
 
-(vim.keymap.set :n :<leader>po ":ParinferOn<cr>")
-(vim.keymap.set :n :<leader>pf ":ParinferOff<cr>")
-; (vim.cmd :ParinferOff)
-
 (rsetup :dropbar)
+
+(fn parinfer-on []
+  (vim.cmd :ParinferOn))
+
+(fn parinfer-off []
+  (vim.cmd :ParinferOff))
+
+(fn parinfer-toggle []
+  (if (= vim.g.parinfer_enabled 1)
+      (parinfer-off)
+      (parinfer-on)))
+
+(vim.keymap.set :n :<leader>po parinfer-on)
+(vim.keymap.set :n :<leader>pf parinfer-off)
+(vim.keymap.set :n :<leader>pt parinfer-toggle)
+
+(vim.api.nvim_create_autocmd :FileType
+                             {:pattern ["*"]
+                              :callback (fn []
+                                          (if (vim.tbl_contains [:racket
+                                                                 :lisp
+                                                                 :fennel]
+                                                                vim.bo.filetype)
+                                              (parinfer-on)
+                                              (parinfer-off)))})

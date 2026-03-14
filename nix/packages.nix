@@ -206,6 +206,7 @@ in
       pkgs.wrapNeovimUnstable nvim (
         neovimConfig
         // {
+          
           wrapperArgs =
             neovimConfig.wrapperArgs
             ++ [

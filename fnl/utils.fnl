@@ -87,3 +87,22 @@ When (= ?start ?end), returns an empty iterator
                            (2 ?start ?end) (values ?start ?end 1)
                            _ ...)]
     (values range-next* [start end step] (- start step))))
+
+;; fnlfmt: skip
+(set Utils {})
+
+; function Utils.mk_ephemeral_term(cmd)
+; 	return function()
+; 		Utils.open_ephemeral_term(cmd)
+; 	end
+; end
+;
+; function Utils.open_ephemeral_term(cmd)
+; 	vim.cmd("botright split | terminal " .. cmd)
+; 	local bufnr = vim.api.nvim_win_get_buf(0)
+; 	vim.bo[bufnr].buflisted = false
+; 	vim.bo[bufnr].bufhidden = "wipe"
+; 	local h = math.floor(vim.o.lines / 4)
+; 	vim.cmd("resize " .. h)
+; 	vim.cmd("wincmd p")
+; end

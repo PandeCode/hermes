@@ -71,7 +71,7 @@
           (set_hl :NonText {:fg palette.base02 :bg :NONE})
           (set IsTransparent true)))))
 
-(ToggleBackground)
+; (ToggleBackground)
 
 (vim.keymap.set :n :<LEADER>bt ToggleBackground {:noremap true :silent true})
 
