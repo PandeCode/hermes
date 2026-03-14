@@ -91,18 +91,13 @@ When (= ?start ?end), returns an empty iterator
 ;; fnlfmt: skip
 (set Utils {})
 
-; function Utils.mk_ephemeral_term(cmd)
-; 	return function()
-; 		Utils.open_ephemeral_term(cmd)
-; 	end
-; end
-;
-; function Utils.open_ephemeral_term(cmd)
-; 	vim.cmd("botright split | terminal " .. cmd)
-; 	local bufnr = vim.api.nvim_win_get_buf(0)
-; 	vim.bo[bufnr].buflisted = false
-; 	vim.bo[bufnr].bufhidden = "wipe"
-; 	local h = math.floor(vim.o.lines / 4)
-; 	vim.cmd("resize " .. h)
-; 	vim.cmd("wincmd p")
-; end
+(fn Utils.open_tmp_term [cmd]
+  (vim.cmd (.. "botright split | terminal " cmd))
+  (local bufnr (vim.api.nvim_win_get_buf 0))
+  (vim.api.nvim_set_option_value :buflisted false {:buf bufnr})
+  (vim.api.nvim_set_option_value :bufhidden :wipe {:buf bufnr})
+  (local h (math.floor (/ vim.o.lines 4)))
+  (vim.cmd (.. "resize " h))
+  (vim.cmd "wincmd p"))
+
+(fn Utils.mk_tmp_term [cmd] #(Utils.open_tmp_term cmd))
