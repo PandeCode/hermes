@@ -1,9 +1,9 @@
 (global Tabline {})
-
 (let [p MiniBase16.config.palette]
   (vim.api.nvim_set_hl 0 :TabActive {:fg p.base00 :bg p.base0D :bold true})
   (vim.api.nvim_set_hl 0 :TabInactive {:fg p.base03 :bg p.base01})
-  (vim.api.nvim_set_hl 0 :TabModified {:fg p.base08 :bg p.base01}))
+  (vim.api.nvim_set_hl 0 :TabModified {:fg p.base08 :bg p.base01})
+  (vim.api.nvim_set_hl 0 :TabLocked {:fg p.base09 :bg p.base01}))
 
 (fn listed-bufs []
   (vim.tbl_filter (fn [b]
@@ -46,13 +46,20 @@
       (let [name (vim.fn.fnamemodify (vim.api.nvim_buf_get_name buf) ":t")
             (icon) (MiniIcons.get :file name)
             modified (= 1 (vim.fn.getbufvar buf :&modified))
+            readonly (= 1 (vim.fn.getbufvar buf :&readonly))
+            nowrite (not (vim.api.nvim_buf_get_option buf :modifiable))
+            locked (or readonly nowrite)
             active (= buf current)
             hl (if active :TabActive
+                   locked :TabLocked
                    modified :TabModified
-                   :TabInactive)]
+                   :TabInactive)
+            status (if locked " 󰌾"
+                       modified " ●"
+                       " ")]
         (set result
              (.. result "%#" hl "# " (if (<= i 9) (.. i ":") "") icon " " name
-                 (if modified " ●" " ") "%*" (buf-diag buf)))))
+                 status "%*" (buf-diag buf)))))
     (.. result "%=%#TabLineFill# " (workspace-diag) " ")))
 
 (set vim.o.tabline "%!v:lua.Tabline.render()")
