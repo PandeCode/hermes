@@ -109,17 +109,6 @@
         (.. "%#Comment#[" sc.current "/" sc.total "]%*")
         "")))
 
-(local spinner-frames ["⠋"
-                       "⠙"
-                       "⠹"
-                       "⠸"
-                       "⠼"
-                       "⠴"
-                       "⠦"
-                       "⠧"
-                       "⠇"
-                       "⠏"])
-
 (fn wordcount []
   (if (vim.tbl_contains [:markdown :text :org] vim.bo.filetype)
       (shl :Comment (.. " " (. (vim.fn.wordcount) :words) :w))
