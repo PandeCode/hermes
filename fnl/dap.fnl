@@ -62,5 +62,6 @@
 
 (set dap.configurations.c (mk :gdb))
 (set dap.configurations.cpp dap.configurations.c)
+(set dap.configurations.zig dap.configurations.c)
 
 (set dap.configurations.rust (mk :rust-gdb))

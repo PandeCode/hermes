@@ -101,3 +101,5 @@ When (= ?start ?end), returns an empty iterator
   (vim.cmd "wincmd p"))
 
 (fn Utils.mk_tmp_term [cmd] #(Utils.open_tmp_term cmd))
+(fn Utils.bind_tmp_term [bind cmd]
+  (vim.keymap.set :n bind #(Utils.open_tmp_term cmd)))
