@@ -19,6 +19,7 @@
   `((. (require ,p) :setup) (or ,t {})))
 
 (rsetup :oil)
+(rsetup :dropbar)
 
 (vim.keymap.set :n "-" :<cmd>Oil<CR>
                 {:noremap true :desc "Open Parent Directory"})
@@ -119,7 +120,7 @@
 (rsetup :noice {:lsp {; override markdown rendering so that **cmp** and other plugins use **Treesitter**
                       :override {:vim.lsp.util.convert_input_to_markdown_lines true
                                  :vim.lsp.util.stylize_markdown true}}
-                :presets {:bottom_search true
+                :presets {:bottom_search false
                           ;; use a classic bottom cmdline for search
                           :command_palette true
                           ;; position the cmdline and popupmenu together
@@ -127,7 +128,7 @@
                           ;; long messages will be sent to a split
                           :inc_rename false
                           ;; enables an input dialog for inc-rename.nvim
-                          :lsp_doc_border false
+                          :lsp_doc_border true
                           ;; add a border to hover docs and signature help
                           }})
 
@@ -240,10 +241,6 @@
                                           (MiniTrailspace.trim)
                                           (MiniTrailspace.trim_last_lines))})
 
-(local capabilities
-       ((. (require :blink.cmp) :get_lsp_capabilities) {:textDocument {:foldingRange {:dynamicRegistration false
-                                                                                      :lineFoldingOnly true}}}))
-
 (rsetup :blink.pairs)
 (rsetup :blink.indent)
 (rsetup :blink.cmp
@@ -274,226 +271,13 @@
                                                                      hl)}}}}
                       :documentation {:auto_show true}}})
 
-; {
-;   'saghen/blink.cmp',
-;   -- optional: provides snippets for the snippet source
-;   dependencies = { 'rafamadriz/friendly-snippets' },
-;
-;   -- use a release tag to download pre-built binaries
-;   version = '1.*',
-;   -- AND/OR build from source, requires nightly: https://rust-lang.github.io/rustup/concepts/channels.html#working-with-nightly-rust
-;   -- build = 'cargo build --release',
-;   -- If you use nix, you can build from source using latest nightly rust with:
-;   -- build = 'nix run .#build-plugin',
-;
-;   ---@module 'blink.cmp'
-;   ---@type blink.cmp.Config
-;   opts = {
-;     -- 'default' (recommended) for mappings similar to built-in completions (C-y to accept)
-;     -- 'super-tab' for mappings similar to vscode (tab to accept)
-;     -- 'enter' for enter to accept
-;     -- 'none' for no mappings
-;     --
-;     -- All presets have the following mappings:
-;     -- C-space: Open menu or open docs if already open
-;     -- C-n/C-p or Up/Down: Select next/previous item
-;     -- C-e: Hide menu
-;     -- C-k: Toggle signature help (if signature.enabled = true)
-;     --
-;     -- See :h blink-cmp-config-keymap for defining your own keymap
-;     keymap = { preset = 'default' },
-;
-;     appearance = {
-;       -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
-;       -- Adjusts spacing to ensure icons are aligned
-;       nerd_font_variant = 'mono'
-;     },
-;
-;     -- (Default) Only show the documentation popup when manually triggered
-;     completion = { documentation = { auto_show = false } },
-;
-;     -- Default list of enabled providers defined so that you can extend it
-;     -- elsewhere in your config, without redefining it, due to `opts_extend`
-;     sources = {
-;       default = { 'lsp', 'path', 'snippets', 'buffer' },
-;     },
-;
-;     -- (Default) Rust fuzzy matcher for typo resistance and significantly better performance
-;     -- You may use a lua implementation instead by using `implementation = "lua"` or fallback to the lua implementation,
-;     -- when the Rust fuzzy matcher is not available, by using `implementation = "prefer_rust"`
-;     --
-;     -- See the fuzzy documentation for more information
-;     fuzzy = { implementation = "prefer_rust_with_warning" }
-;   },
-;   opts_extend = { "sources.default" }
-; }
-;
-; {
-;   'neovim/nvim-lspconfig',
-;   dependencies = { 'saghen/blink.cmp' },
-;
-;   -- example using `opts` for defining servers
-;   opts = {
-;     servers = {
-;       lua_ls = {}
-;     }
-;   },
-;   config = function(_, opts)
-;     local lspconfig = require('lspconfig')
-;     for server, config in pairs(opts.servers) do
-;       -- passing config.capabilities to blink.cmp merges with the capabilities in your
-;       -- `opts[server].capabilities, if you've defined it
-;       config.capabilities = require('blink.cmp').get_lsp_capabilities(config.capabilities)
-;       lspconfig[server].setup(config)
-;     end
-;   end
-;
-;  -- example calling setup directly for each LSP
-;   config = function()
-;     local capabilities = require('blink.cmp').get_lsp_capabilities()
-;     local lspconfig = require('lspconfig')
-;
-;     lspconfig['lua_ls'].setup({ capabilities = capabilities })
-;   end
-; }
-
-(local null_ls (require :null-ls))
-
-(local problems [{:pattern "​" :name "ZERO WIDTH SPACE" :replacement ""}
-                 ;; ​ (U+200B)
-                 {:pattern " " :name "NON-BREAKING SPACE" :replacement " "}
-                 ;;   (U+00A0)
-                 {:pattern "﻿" :name "BYTE ORDER MARK" :replacement ""}
-                 ;; ﻿ (U+FEFF)
-                 {:pattern "‍" :name "ZERO WIDTH JOINER" :replacement ""}
-                 ;; ‍ (U+200D)
-                 {:pattern "‎" :name "RIGHT-TO-LEFT MARK" :replacement ""}
-                 ;; ‎ (U+200E)
-                 {:pattern "‏" :name "LEFT-TO-RIGHT MARK" :replacement ""}
-                 ;; ‏ (U+200F)
-                 ])
-
-(local no_problems {:method null_ls.methods.DIAGNOSTICS
-                    :filetypes ["*"]
-                    :generator {:fn (fn [params]
-                                      (local diagnostics {})
-                                      (each [i line (ipairs params.content)]
-                                        (each [_ problem (ipairs problems)]
-                                          (local [col end_col]
-                                                 (line:find problem.pattern))
-                                          (when (and col end_col)
-                                            (table.insert diagnostics
-                                                          {:row i
-                                                           : col
-                                                           :end_col (+ end_col
-                                                                       1)
-                                                           :source :no-problems
-                                                           :message problem.name
-                                                           :severity vim.diagnostic.severity.WARN}))))
-                                      diagnostics)}})
-
-(null_ls.setup {:sources [; Formatting
-                          null_ls.builtins.formatting.fnlfmt
-                          null_ls.builtins.formatting.stylua
-                          null_ls.builtins.formatting.gofmt
-                          null_ls.builtins.formatting.black
-                          null_ls.builtins.formatting.isort
-                          null_ls.builtins.formatting.alejandra
-                          null_ls.builtins.formatting.nixfmt
-                          null_ls.builtins.formatting.clang_format
-                          null_ls.builtins.formatting.typstyle
-                          null_ls.builtins.formatting.just
-                          null_ls.builtins.formatting.gdformat
-                          null_ls.builtins.formatting.dart_format
-                          null_ls.builtins.formatting.prettierd
-                          null_ls.builtins.formatting.cmake_format
-                          null_ls.builtins.diagnostics.gdlint
-                          (null_ls.builtins.diagnostics.glslc.with {:extra_args [:--target-env=opengl]
-                                                                    ; use opengl instead of vulkan1.0
-                                                                    })
-                          null_ls.builtins.diagnostics.qmllint
-                          null_ls.builtins.diagnostics.vale
-                          null_ls.builtins.diagnostics.markdownlint
-                          null_ls.builtins.diagnostics.checkmake
-                          null_ls.builtins.diagnostics.cmake_lint
-                          null_ls.builtins.diagnostics.statix
-                          null_ls.builtins.diagnostics.deadnix
-                          null_ls.builtins.diagnostics.fish
-                          null_ls.builtins.hover.dictionary
-                          null_ls.builtins.hover.printenv
-                          null_ls.builtins.completion.spell
-                          null_ls.builtins.code_actions.statix
-                          null_ls.builtins.code_actions.ts_node_action]})
-
-(null_ls.register no_problems)
-
-(fn lsp_format_with_fallback [opts]
-  (vim.lsp.buf.format {:bufnr (or opts.bufnr 0)
-                       :async (or opts.async false)
-                       :timeout_ms (or opts.timeout_ms 1000)}))
-
-(vim.api.nvim_create_autocmd :BufWritePre
-                             {:pattern "*"
-                              :callback #(lsp_format_with_fallback {:timeout_ms 500})})
-
-(vim.keymap.set [:n :v] :<leader>cf #(lsp_format_with_fallback))
-
-(vim.lsp.inlay_hint.enable)
-
-(local noice (require :noice.lsp))
-(local snacks (require :snacks))
-
-(fn n [k f d]
-  (if d (vim.keymap.set :n k f {:desc (.. "LSP: " d)}) (vim.keymap.set :n k f)))
-
-(n :gr #(snacks.picker.lsp_references) "[G]oto [R]eferences")
-(n :gI #(snacks.picker.lsp_implementations) "[G]oto [I]mplementation")
-;; TODO fix
-(n :<leader>lds #(snacks.picker.lsp_symbols) "[D]ocument [S]ymbols")
-
-(n :<leader>ws #(snacks.picker.lsp_workspace_symbols) "[W]orkspace [S]ymbols")
-
-(n :<leader>ei
-   #(vim.lsp.inlay_hint.enable (not (vim.lsp.inlay_hint.is_enabled)))
-   "Toggle Inlay")
-
-(n :K noice.hover "Hover Documentation")
-;; TODO fix
-;; nmap("<C-k>", noice.signature, "Signature Documentation")
-;; TODO fix
-(n :<leader>ltd vim.lsp.buf.type_definition "Type [D]efinition")
-(n :<space>cl vim.lsp.codelens.run "[C]ode [L]ens")
-(n :<F2> vim.lsp.buf.rename "[R]e[n]ame")
-(n :<leader>ca vim.lsp.buf.code_action "[C]ode [A]ction")
-
-(n :gd vim.lsp.buf.definition "[G]oto [D]efinition")
-(n :gD vim.lsp.buf.declaration "[G]oto [D]eclaration")
-
-(each [_ k (ipairs [:emmylua_ls
-                    :fennel_ls
-                    :nixd
-                    :pyright
-                    :neocmake
-                    :zls
-                    :racket_langserver
-                    :gopls])]
-  (vim.lsp.enable k))
-
-(vim.lsp.config :nixd
-                {:settings {:nixd {:nixpkgs {:expr (or vim.g.nix_nixd_nixpkgs
-                                                       "import <nixpkgs> {}")}
-                                   :options {:nixos {:expr vim.g.nix_nixd_nixos_options}
-                                             :home-manager {:expr vim.g.nix_nixd_home_manager_options}}
-                                   :formatting {:command [:nixfmt]}
-                                   :diagnostic {:suppress [:sema-escaping-with]}}}})
-
-(rsetup :dropbar)
-
 (fn parinfer-on []
-  (vim.cmd :ParinferOn))
+  (vim.cmd :ParinferOn)
+  (vim.cmd.redrawstatus))
 
 (fn parinfer-off []
-  (vim.cmd :ParinferOff))
+  (vim.cmd :ParinferOff)
+  (vim.cmd.redrawstatus))
 
 (fn parinfer-toggle []
   (if (= vim.g.parinfer_enabled 1)

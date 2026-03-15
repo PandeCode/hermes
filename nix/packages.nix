@@ -212,10 +212,10 @@ in
               "--set"
               "NVIM_APPNAME"
               "hermes"
-              #"--prefix"
-              #"LUA_PATH"
-              #";"
-              #"${pkgs.luajitPackages.fennel}/share/lua/5.1"
+              "--prefix"
+              "LUA_PATH"
+              ":"
+              "${pkgs.luajitPackages.fennel}/share/lua/5.1"
               "--prefix"
               "PATH"
               ":"
@@ -257,6 +257,21 @@ in
     # editor variants
 
     editors = let
+      luaEnv = [
+        "--prefix"
+        "LUA_PATH"
+        ";"
+        (
+          pkgs.lib.concatMapStringsSep ";" (
+            p: "${p}/share/lua/5.1/?.lua;${p}/share/lua/5.1/?/init.lua"
+          )
+          (
+            with pkgs.luajitPackages; [
+              fennel
+            ]
+          )
+        )
+      ];
       lldbEnv = [
         "--set"
         "CODELLDB_PATH"
@@ -271,7 +286,7 @@ in
         "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}"
       ];
     in {
-      full = mkEditor "full" profiles.full (lldbEnv ++ rustEnv);
+      full = mkEditor "full" profiles.full (lldbEnv ++ rustEnv ++ luaEnv);
       minimal = mkEditor "minimal" profiles.minimal [];
 
       python = mkEditor "python" profiles.python [];

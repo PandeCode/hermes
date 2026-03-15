@@ -1,4 +1,9 @@
+(vim.api.nvim_create_autocmd [:TermRequest :ModeChanged]
+                             {:desc "Refresh tabline"
+                              :callback #(vim.cmd.redrawtabline)})
+
 (global Tabline {})
+
 (let [p MiniBase16.config.palette]
   (vim.api.nvim_set_hl 0 :TabActive {:fg p.base00 :bg p.base0D :bold true})
   (vim.api.nvim_set_hl 0 :TabInactive {:fg p.base03 :bg p.base01})

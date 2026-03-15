@@ -30,7 +30,7 @@
 (vim.api.nvim_create_autocmd :TextYankPost {:callback vim.hl.on_yank})
 
 ;; Make parent folders if they don't exist
-(vim.api.nvim_create_autocmd [:BufWritePre]
+(vim.api.nvim_create_autocmd :BufWritePre
                              {:pattern "*"
                               :callback #(vim.fn.mkdir (vim.fn.expand "<afile>:p:h")
                                                        :p)})
@@ -97,3 +97,46 @@ cnoreabbrev gitadd Gitadd
 cnoreabbrev chmodx Chmodx
 cnoreabbrev rmf Rmf
 ")
+
+;; https://www.reddit.com/r/neovim/comments/1jpbc7s/disable_virtual_text_if_there_is_diagnostic_in/
+
+(vim.diagnostic.config {:virtual_text true
+                        :virtual_lines {:current_line true}
+                        :underline true
+                        :update_in_insert false})
+
+(var og_virt_text nil)
+(var og_virt_line nil)
+
+(vim.api.nvim_create_autocmd [:CursorMoved :DiagnosticChanged]
+                             {:group (vim.api.nvim_create_augroup :diagnostic_only_virtlines
+                                                                  {})
+                              :callback (fn []
+                                          (when (= og_virt_line nil)
+                                            (set og_virt_line
+                                                 (. (vim.diagnostic.config)
+                                                    :virtual_lines)))
+                                          ;; ignore if virtual_lines.current_line is disabled
+                                          (when (not (and og_virt_line
+                                                          og_virt_line.current_line))
+                                            (when og_virt_text
+                                              (vim.diagnostic.config {:virtual_text og_virt_text})
+                                              (set og_virt_text nil))
+                                            (lua :return))
+                                          (when (= og_virt_text nil)
+                                            (set og_virt_text
+                                                 (. (vim.diagnostic.config)
+                                                    :virtual_text)))
+                                          (local lnum
+                                                 (- (. (vim.api.nvim_win_get_cursor 0)
+                                                       1)
+                                                    1))
+                                          (if (vim.tbl_isempty (vim.diagnostic.get 0
+                                                                                   {: lnum}))
+                                              (vim.diagnostic.config {:virtual_text og_virt_text})
+                                              (vim.diagnostic.config {:virtual_text false})))})
+
+(vim.api.nvim_create_autocmd :ModeChanged
+                             {:group (vim.api.nvim_create_augroup :diagnostic_redraw
+                                                                  {})
+                              :callback #(pcall vim.diagnostic.show)})
