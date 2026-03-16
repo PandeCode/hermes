@@ -140,3 +140,23 @@ cnoreabbrev rmf Rmf
                              {:group (vim.api.nvim_create_augroup :diagnostic_redraw
                                                                   {})
                               :callback #(pcall vim.diagnostic.show)})
+
+(local bad-names ["^:w$" "^:wq$" :^f$ :^fe$])
+
+(fn bad-name? [name]
+  (accumulate [found false _ pat (ipairs bad-names) &until found]
+    (not= nil (name:match pat))))
+
+(vim.api.nvim_create_autocmd :BufWritePre
+                             {:pattern "*"
+                              :callback (fn []
+                                          (let [name (vim.fn.expand "%:t")]
+                                            (when (bad-name? name)
+                                              (vim.notify (.. "Blocked: refusing to save file named "
+                                                              " .. name .. " "")
+                                                          vim.log.levels.ERROR)
+                                              (vim.api.nvim_feedkeys (vim.api.nvim_replace_termcodes :<Esc>
+                                                                                                     true
+                                                                                                     false
+                                                                                                     true)
+                                                                     :n false))))})
