@@ -15,6 +15,7 @@
 (include :fnl.theme)
 (include :fnl.statusline)
 (include :fnl.tabline)
+(include :fnl.statuscol)
 
 (include :fnl.lsp)
 (include :fnl.dap)

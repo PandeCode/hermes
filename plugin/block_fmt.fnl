@@ -28,6 +28,8 @@
 
 (wrap-format-stop [:cpp :c] "// clang-format off" "// clang-format on")
 
+(wrap-format-stop :zig "// zig fmt: off" "// zig fmt: on")
+
 (top-format-stop [:js
                   :ts
                   :tsx
