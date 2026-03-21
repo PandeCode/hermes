@@ -100,21 +100,21 @@
 
 ;; fnlfmt: skip
 (each [_ v (ipairs [[:<leader>ff (sk :files) "Find Files"]
-                      [:<leader>fr (sk :grep) :Grep]
-                      [:<leader>fm (sk :marks) :Marks]
-                      [:<leader>fn (sk :man) :Man]
-                      [:<leader><space> (sk :smart) "Smart Find Files"]
-                      [:<leader>fb (sk :buffers) :Buffers]
-                      [:<leader>ch (sk :cliphist) :cliphist]
-                      [:<leader>fll (sk :loclist) :loclist]
-                      [:<leader>fq (sk :qflist) :qflist]
-                      [:<leader>fld (sk :lsp_declarations) :lsp_declarations]
-                      [:<leader>fle (sk :lsp_definitions) :lsp_definitions]
-                      [:<leader>fli (sk :lsp_implementations) :lsp_implementations]
-                      [:<leader>flr (sk :lsp_references) :lsp_references]
-                      [:<leader>fls (sk :lsp_symbols) :lsp_symbols]
-                      [:<leader>nh Snacks.notifier.hide "Notifier Hide"]
-                      [:<leader>nh Snacks.notifier.show_history "Notifier Show"]])]
+                    [:<leader>fr (sk :grep) :Grep]
+                    [:<leader>fm (sk :marks) :Marks]
+                    [:<leader>fn (sk :man) :Man]
+                    [:<leader><space> (sk :smart) "Smart Find Files"]
+                    [:<leader>fb (sk :buffers) :Buffers]
+                    [:<leader>ch (sk :cliphist) :cliphist]
+                    [:<leader>fll (sk :loclist) :loclist]
+                    [:<leader>fq (sk :qflist) :qflist]
+                    [:<leader>fld (sk :lsp_declarations) :lsp_declarations]
+                    [:<leader>fle (sk :lsp_definitions) :lsp_definitions]
+                    [:<leader>fli (sk :lsp_implementations) :lsp_implementations]
+                    [:<leader>flr (sk :lsp_references) :lsp_references]
+                    [:<leader>fls (sk :lsp_symbols) :lsp_symbols]
+                    [:<leader>nh Snacks.notifier.hide "Notifier Hide"]
+                    [:<leader>nh Snacks.notifier.show_history "Notifier Show"]])]
   (vim.keymap.set :n (. v 1) (. v 2) {:desc (. v 3)}))
 
 (rsetup :noice {:lsp {; override markdown rendering so that **cmp** and other plugins use **Treesitter**
@@ -128,9 +128,9 @@
                           ;; long messages will be sent to a split
                           :inc_rename false
                           ;; enables an input dialog for inc-rename.nvim
-                          :lsp_doc_border true
-                          ;; add a border to hover docs and signature help
-                          }})
+                          :lsp_doc_border true}})
+
+;; add a border to hover docs and signature help
 
 (rsetup :mini.icons)
 (rsetup :mini.cursorword)
@@ -272,11 +272,11 @@
                       :documentation {:auto_show true}}})
 
 (fn parinfer-on []
-  (vim.cmd :ParinferOn)
+  (pcall vim.cmd :ParinferOn)
   (vim.cmd.redrawstatus))
 
 (fn parinfer-off []
-  (vim.cmd :ParinferOff)
+  (pcall vim.cmd :ParinferOff)
   (vim.cmd.redrawstatus))
 
 (fn parinfer-toggle []

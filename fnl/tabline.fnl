@@ -43,16 +43,19 @@
   (let [buf (. (listed-bufs) n)]
     (when buf (vim.api.nvim_set_current_buf buf))))
 
+(macro shl [g s]
+  `(.. "%#" ,g "#" (tostring ,s) "%*"))
+
 (fn Tabline.render []
   (let [current (vim.api.nvim_get_current_buf)
         bufs (listed-bufs)]
     (var result "")
     (each [i buf (ipairs bufs)]
       (let [name (vim.fn.fnamemodify (vim.api.nvim_buf_get_name buf) ":t")
-            (icon) (MiniIcons.get :file name)
+            (icon hl) (MiniIcons.get :file name)
             modified (= 1 (vim.fn.getbufvar buf :&modified))
             readonly (= 1 (vim.fn.getbufvar buf :&readonly))
-            nowrite (not (vim.api.nvim_buf_get_option buf :modifiable))
+            nowrite (not (vim.bo.modifiable buf))
             locked (or readonly nowrite)
             active (= buf current)
             hl (if active :TabActive
@@ -62,9 +65,9 @@
             status (if locked " 󰌾"
                        modified " ●"
                        " ")]
-        (set result
-             (.. result "%#" hl "# " (if (<= i 9) (.. i ":") "") icon " " name
-                 status "%*" (buf-diag buf)))))
+        (set result (.. (shl hl icon) result "%#" hl "# "
+                        (if (<= i 9) (.. i ":") "") " " name status "%*"
+                        (buf-diag buf)))))
     (.. result "%=%#TabLineFill# " (workspace-diag) " ")))
 
 (set vim.o.tabline "%!v:lua.Tabline.render()")
