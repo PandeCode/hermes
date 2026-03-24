@@ -847,7 +847,7 @@ package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
       local icon, hl = MiniIcons.get("file", name)
       local modified = (1 == vim.fn.getbufvar(buf, "&modified"))
       local readonly = (1 == vim.fn.getbufvar(buf, "&readonly"))
-      local nowrite = not vim.bo.modifiable(buf)
+      local nowrite = not vim.bo.modifiable
       local locked = (readonly or nowrite)
       local active = (buf == current)
       local hl0

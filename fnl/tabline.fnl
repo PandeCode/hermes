@@ -55,7 +55,7 @@
             (icon hl) (MiniIcons.get :file name)
             modified (= 1 (vim.fn.getbufvar buf :&modified))
             readonly (= 1 (vim.fn.getbufvar buf :&readonly))
-            nowrite (not (vim.bo.modifiable buf))
+            nowrite (not vim.bo.modifiable)
             locked (or readonly nowrite)
             active (= buf current)
             hl (if active :TabActive
