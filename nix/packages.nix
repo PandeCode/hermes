@@ -96,6 +96,7 @@ in
         ripgrep
         fd
         proselint
+        ast-grep
       ];
 
       lua = with pkgs; [
@@ -131,6 +132,7 @@ in
 
       cxx = with pkgs;
         [
+          asm-lsp
           ccls
           clang-tools
           neocmakelsp
@@ -165,6 +167,7 @@ in
         tailwindcss-language-server
         emmet-ls
         mermaid-cli
+        wasm-language-tools
       ];
 
       fun = with pkgs;

@@ -121,6 +121,11 @@
                     :neocmake
                     :zls
                     :racket_langserver
+                    :wgsl_analyzer
+                    :glsl_analyzer
+                    :wasm_language_tools
+                    :asm_lsp
+                    :ast_grep
                     :gopls])]
   (vim.lsp.enable k))
 
