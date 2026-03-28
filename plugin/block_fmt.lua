@@ -80,19 +80,35 @@ do
 end
 do
   local fts_2_auto
+  if (type("typst") == "table") then
+    fts_2_auto = "typst"
+  else
+    fts_2_auto = {"typst"}
+  end
+  local function _17_(tbl_2_auto)
+    return vim.keymap.set("v", "<space>fo", ("<esc>`<i" .. "/* @typstyle off */" .. "<esc>"), {buffer = tbl_2_auto.buf})
+  end
+  vim.api.nvim_create_autocmd("Filetype", {callback = _17_, pattern = fts_2_auto})
+  local function _18_(tbl_2_auto)
+    return vim.keymap.set("n", "<space>fo", ("<esc>{o" .. "/* @typstyle off */" .. "<esc>"), {buffer = tbl_2_auto.buf})
+  end
+  vim.api.nvim_create_autocmd("Filetype", {callback = _18_, pattern = fts_2_auto})
+end
+do
+  local fts_2_auto
   if (type({"js", "ts", "tsx", "jsx", "vue", "json", "svelte", "javascript", "typescript", "javascriptreact", "typescriptreact"}) == "table") then
     fts_2_auto = {"js", "ts", "tsx", "jsx", "vue", "json", "svelte", "javascript", "typescript", "javascriptreact", "typescriptreact"}
   else
     fts_2_auto = {{"js", "ts", "tsx", "jsx", "vue", "json", "svelte", "javascript", "typescript", "javascriptreact", "typescriptreact"}}
   end
-  local function _17_(tbl_2_auto)
+  local function _20_(tbl_2_auto)
     return vim.keymap.set("v", "<space>fo", ("<esc>`<i" .. "// prettier-ignore" .. "<esc>"), {buffer = tbl_2_auto.buf})
   end
-  vim.api.nvim_create_autocmd("Filetype", {callback = _17_, pattern = fts_2_auto})
-  local function _18_(tbl_2_auto)
+  vim.api.nvim_create_autocmd("Filetype", {callback = _20_, pattern = fts_2_auto})
+  local function _21_(tbl_2_auto)
     return vim.keymap.set("n", "<space>fo", ("<esc>{o" .. "// prettier-ignore" .. "<esc>"), {buffer = tbl_2_auto.buf})
   end
-  vim.api.nvim_create_autocmd("Filetype", {callback = _18_, pattern = fts_2_auto})
+  vim.api.nvim_create_autocmd("Filetype", {callback = _21_, pattern = fts_2_auto})
 end
 do
   local fts_2_auto
@@ -101,14 +117,14 @@ do
   else
     fts_2_auto = {"rust"}
   end
-  local function _20_(tbl_2_auto)
+  local function _23_(tbl_2_auto)
     return vim.keymap.set("v", "<space>fo", ("<esc>`<i" .. "#[rustfmt::skip]" .. "<esc>"), {buffer = tbl_2_auto.buf})
   end
-  vim.api.nvim_create_autocmd("Filetype", {callback = _20_, pattern = fts_2_auto})
-  local function _21_(tbl_2_auto)
+  vim.api.nvim_create_autocmd("Filetype", {callback = _23_, pattern = fts_2_auto})
+  local function _24_(tbl_2_auto)
     return vim.keymap.set("n", "<space>fo", ("<esc>{o" .. "#[rustfmt::skip]" .. "<esc>"), {buffer = tbl_2_auto.buf})
   end
-  vim.api.nvim_create_autocmd("Filetype", {callback = _21_, pattern = fts_2_auto})
+  vim.api.nvim_create_autocmd("Filetype", {callback = _24_, pattern = fts_2_auto})
 end
 local fts_2_auto
 if (type("fennel") == "table") then
@@ -116,11 +132,11 @@ if (type("fennel") == "table") then
 else
   fts_2_auto = {"fennel"}
 end
-local function _23_(tbl_2_auto)
+local function _26_(tbl_2_auto)
   return vim.keymap.set("v", "<space>fo", ("<esc>`<i" .. ";; fnlfmt: skip" .. "<esc>"), {buffer = tbl_2_auto.buf})
 end
-vim.api.nvim_create_autocmd("Filetype", {callback = _23_, pattern = fts_2_auto})
-local function _24_(tbl_2_auto)
+vim.api.nvim_create_autocmd("Filetype", {callback = _26_, pattern = fts_2_auto})
+local function _27_(tbl_2_auto)
   return vim.keymap.set("n", "<space>fo", ("<esc>{o" .. ";; fnlfmt: skip" .. "<esc>"), {buffer = tbl_2_auto.buf})
 end
-return vim.api.nvim_create_autocmd("Filetype", {callback = _24_, pattern = fts_2_auto})
+return vim.api.nvim_create_autocmd("Filetype", {callback = _27_, pattern = fts_2_auto})

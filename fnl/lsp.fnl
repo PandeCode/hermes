@@ -114,18 +114,34 @@
 (n :gd vim.lsp.buf.definition "[G]oto [D]efinition")
 (n :gD vim.lsp.buf.declaration "[G]oto [D]eclaration")
 
+;; lsps that i dont want to turn on automatically
 (each [_ k (ipairs [:emmylua_ls
-                    :fennel_ls
-                    :nixd
-                    :pyright
-                    :neocmake
-                    :zls
-                    :racket_langserver
-                    :wgsl_analyzer
-                    :glsl_analyzer
-                    :wasm_language_tools
                     :asm_lsp
                     :ast_grep
+                    :bashls
+                    :cir_lsp_server
+                    :clojure_lsp
+                    ; :cmake ; in python vs rust
+                    :neocmakelsp
+                    :fennel_ls
+                    :glsl_analyzer
+                    :neocmake
+                    :nixd
+                    :html
+                    :cssls
+                    :fish_lsp
+                    :omnisharp
+                    :tinymist
+                    :ocamllsp
+                    :nushell
+                    :denols
+                    :jsonls
+                    :pyright
+                    :racket_langserver
+                    :wasm_language_tools
+                    :wgsl_analyzer
+                    :zls
+                    :matlab_ls
                     :gopls])]
   (vim.lsp.enable k))
 

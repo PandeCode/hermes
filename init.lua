@@ -985,7 +985,7 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
   n("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")
   n("gd", vim.lsp.buf.definition, "[G]oto [D]efinition")
   n("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
-  for _, k in ipairs({"emmylua_ls", "fennel_ls", "nixd", "pyright", "neocmake", "zls", "racket_langserver", "wgsl_analyzer", "glsl_analyzer", "wasm_language_tools", "asm_lsp", "ast_grep", "gopls"}) do
+  for _, k in ipairs({"emmylua_ls", "asm_lsp", "ast_grep", "bashls", "cir_lsp_server", "clojure_lsp", "neocmakelsp", "fennel_ls", "glsl_analyzer", "neocmake", "nixd", "html", "cssls", "fish_lsp", "omnisharp", "tinymist", "ocamllsp", "nushell", "denols", "jsonls", "pyright", "racket_langserver", "wasm_language_tools", "wgsl_analyzer", "zls", "matlab_ls", "gopls"}) do
     vim.lsp.enable(k)
   end
   return vim.lsp.config("nixd", {settings = {nixd = {nixpkgs = {expr = (vim.g.nix_nixd_nixpkgs or "import <nixpkgs> {}")}, options = {nixos = {expr = vim.g.nix_nixd_nixos_options}, ["home-manager"] = {expr = vim.g.nix_nixd_home_manager_options}}, formatting = {command = {"nixfmt"}}, diagnostic = {suppress = {"sema-escaping-with"}}}}})

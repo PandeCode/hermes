@@ -30,6 +30,9 @@
 
 (wrap-format-stop :zig "// zig fmt: off" "// zig fmt: on")
 
+; // @typstyle off or /* @typstyle off */
+(top-format-stop :typst "/* @typstyle off */")
+
 (top-format-stop [:js
                   :ts
                   :tsx
