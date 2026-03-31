@@ -67,12 +67,12 @@
                           null_ls.builtins.hover.dictionary
                           null_ls.builtins.hover.printenv
                           null_ls.builtins.completion.spell
-                          null_ls.builtins.code_actions.statix
-                          null_ls.builtins.code_actions.ts_node_action]})
+                          null_ls.builtins.code_actions.statix]})
 
 (null_ls.register no_problems)
 
-(fn lsp_format_with_fallback [opts]
+(fn lsp_format_with_fallback [_opts]
+  (local opts (or _opts {}))
   (vim.lsp.buf.format {:bufnr (or opts.bufnr 0)
                        :async (or opts.async false)
                        :timeout_ms (or opts.timeout_ms 1000)}))

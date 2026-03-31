@@ -10,7 +10,7 @@ local function get_parent_dirs(_path)
   return dirs
 end
 local function load_file(path)
-  vim.notify(("Sourcing custom config from: " .. path), vim.log.levels.INFO)
+  vim.print(("Sourcing custom config from: " .. path), vim.log.levels.INFO)
   local ok, err = pcall(dofile, path)
   if not ok then
     return vim.notify(("Error sourcing custom config: " .. err), vim.log.levels.ERROR)

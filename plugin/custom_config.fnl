@@ -9,7 +9,7 @@
   dirs)
 
 (fn load_file [path]
-  (vim.notify (.. "Sourcing custom config from: " path) vim.log.levels.INFO)
+  (vim.print (.. "Sourcing custom config from: " path) vim.log.levels.INFO)
   (let [(ok err) (pcall dofile path)]
     (when (not ok)
       (vim.notify (.. "Error sourcing custom config: " err)
