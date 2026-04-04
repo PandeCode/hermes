@@ -30,7 +30,17 @@ in
       trouble-nvim
       dropbar-nvim
 
-      blink-cmp
+      # glsl_analyzer breaks, wait till next blink release
+      (blink-cmp.overrideAttrs (_old: {
+        src = pkgs.fetchFromGitHub {
+          owner = "Saghen";
+          repo = "blink.cmp";
+          rev = "6731979aa370be0e5c7cc73258ce945730a515c9";
+          # rev = "main";
+          hash = "sha256-zADARdkrmh0bqsbvt9d+eJYpoI5y45FDa3OHQAuu4EU=";
+        };
+      }))
+
       blink-pairs
       blink-indent
 
