@@ -1,4 +1,7 @@
 (vim.filetype.add {:extension {:fnl :fennel}})
+(vim.api.nvim_create_autocmd :Filetype
+                             {:pattern [:wgsl :glsl]
+                              :callback #(set vim.bo.commentstring "// %s")})
 
 (set vim.g.no_plugin_maps true)
 
