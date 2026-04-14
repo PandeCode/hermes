@@ -48,6 +48,8 @@
 
 ;; fnlfmt: skip
 (vim.cmd "
+
+
 if argc() > 1
 	silent blast \" load last buffer
 	silent bfirst \" switch back to the first
@@ -141,22 +143,13 @@ cnoreabbrev rmf Rmf
                                                                   {})
                               :callback #(pcall vim.diagnostic.show)})
 
-(local bad-names ["^:w$" "^:wq$" :^f$ :^fe$])
-
-(fn bad-name? [name]
-  (accumulate [found false _ pat (ipairs bad-names) &until found]
-    (not= nil (name:match pat))))
-
-(vim.api.nvim_create_autocmd :BufWritePre
+(vim.api.nvim_create_autocmd :BufWritePost
                              {:pattern "*"
                               :callback (fn []
-                                          (let [name (vim.fn.expand "%:t")]
-                                            (when (bad-name? name)
-                                              (vim.notify (.. "Blocked: refusing to save file named "
-                                                              " .. name .. " "")
-                                                          vim.log.levels.ERROR)
-                                              (vim.api.nvim_feedkeys (vim.api.nvim_replace_termcodes :<Esc>
-                                                                                                     true
-                                                                                                     false
-                                                                                                     true)
-                                                                     :n false))))})
+                                          (local name (vim.fn.expand :<afile>))
+                                          (when (or (name:match :fe)
+                                                    (name:match :^f$)
+                                                    (name:match :^e$))
+                                            (error (.. "Forbidden file name: "
+                                                       name))
+                                            (vim.system [:rm name])))})

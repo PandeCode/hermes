@@ -276,7 +276,7 @@ package.preload["fnl.autocmds"] = package.preload["fnl.autocmds"] or function(..
     return nil
   end
   vim.api.nvim_create_autocmd("InsertLeave", {pattern = "*", callback = _28_})
-  vim.cmd("\nif argc() > 1\n\tsilent blast \" load last buffer\n\tsilent bfirst \" switch back to the first\nendif\n\nif exists('+termguicolors')\n\tlet &t_8f=\"\\<Esc>[38;2;%lu;%lu;%lum\"\n\tlet &t_8b=\"\\<Esc>[48;2;%lu;%lu;%lum\"\n\tset termguicolors\nendif\n\nsyntax sync minlines=256\n\n\" Allow saving of files as sudo when I forgot to start vim using sudo.\ncnoremap w!! execute 'write !sudo tee % >/dev/null' <bar> edit!\n")
+  vim.cmd("\n\n\nif argc() > 1\n\tsilent blast \" load last buffer\n\tsilent bfirst \" switch back to the first\nendif\n\nif exists('+termguicolors')\n\tlet &t_8f=\"\\<Esc>[38;2;%lu;%lu;%lum\"\n\tlet &t_8b=\"\\<Esc>[48;2;%lu;%lu;%lum\"\n\tset termguicolors\nendif\n\nsyntax sync minlines=256\n\n\" Allow saving of files as sudo when I forgot to start vim using sudo.\ncnoremap w!! execute 'write !sudo tee % >/dev/null' <bar> edit!\n")
   local function _29_()
     local filename = vim.fn.expand("%")
     vim.cmd("!git add %")
@@ -327,25 +327,16 @@ package.preload["fnl.autocmds"] = package.preload["fnl.autocmds"] or function(..
     return pcall(vim.diagnostic.show)
   end
   vim.api.nvim_create_autocmd("ModeChanged", {group = vim.api.nvim_create_augroup("diagnostic_redraw", {}), callback = _38_})
-  local bad_names = {"^:w$", "^:wq$", "^f$", "^fe$"}
-  local function bad_name_3f(name)
-    local found = false
-    for _, pat in ipairs(bad_names) do
-      if found then break end
-      found = (nil ~= name:match(pat))
-    end
-    return found
-  end
   local function _39_()
-    local name = vim.fn.expand("%:t")
-    if bad_name_3f(name) then
-      vim.notify(("Blocked: refusing to save file named " .. " .. name .. " .. ""), vim.log.levels.ERROR)
-      return vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
+    local name = vim.fn.expand("<afile>")
+    if (name:match("fe") or name:match("^f$") or name:match("^e$")) then
+      error(("Forbidden file name: " .. name))
+      return vim.system({"rm", name})
     else
       return nil
     end
   end
-  return vim.api.nvim_create_autocmd("BufWritePre", {pattern = "*", callback = _39_})
+  return vim.api.nvim_create_autocmd("BufWritePost", {pattern = "*", callback = _39_})
 end
 require("fnl.autocmds")
 package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)

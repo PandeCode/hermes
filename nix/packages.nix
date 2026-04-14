@@ -107,6 +107,7 @@ in
         fd
         proselint
         ast-grep
+        harper
       ];
 
       lua = with pkgs; [
@@ -183,6 +184,8 @@ in
       fun = with pkgs;
         [
           sbcl
+
+          matlab-language-server
 
           haskell-language-server
           cabal-install
