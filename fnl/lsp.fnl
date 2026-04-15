@@ -145,6 +145,12 @@
                     :gopls])]
   (vim.lsp.enable k))
 
+(vim.lsp.config :matlab_ls
+                {:settings {:MATLAB {:indexWorkspace true
+                                     :installPath (vim.fn.expand "~/apps/matlab/installation/")
+                                     :matlabConnectionTiming :onStart
+                                     :telemetry true}}})
+
 (vim.lsp.config :nixd
                 {:settings {:nixd {:nixpkgs {:expr (or vim.g.nix_nixd_nixpkgs
                                                        "import <nixpkgs> {}")}
