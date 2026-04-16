@@ -91,7 +91,11 @@ in
       },
     '';
 
-    neovimConfig = pkgs.neovimUtils.makeNeovimConfig {inherit plugins;};
+    neovimConfig = pkgs.neovimUtils.makeNeovimConfig {
+      inherit plugins;
+      viAlias = true;
+      vimAlias = true;
+    };
 
     # toolsets
 
