@@ -93,8 +93,8 @@ in
 
     neovimConfig = pkgs.neovimUtils.makeNeovimConfig {
       inherit plugins;
-      viAlias = true;
-      vimAlias = true;
+      # viAlias = true;
+      # vimAlias = true;
     };
 
     # toolsets
