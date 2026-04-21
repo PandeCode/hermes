@@ -91,12 +91,6 @@ in
       },
     '';
 
-    neovimConfig = pkgs.neovimUtils.makeNeovimConfig {
-      inherit plugins;
-      # viAlias = true;
-      # vimAlias = true;
-    };
-
     # toolsets
 
     tools = let
@@ -223,56 +217,53 @@ in
     # editor builder
 
     mkEditor = profile: packages: profileEnv:
-      pkgs.wrapNeovimUnstable nvim (
-        neovimConfig
-        // {
-          wrapperArgs =
-            neovimConfig.wrapperArgs
-            ++ [
-              "--set"
-              "NVIM_APPNAME"
-              "hermes"
-              "--prefix"
-              "LUA_PATH"
-              ":"
-              "${pkgs.luajitPackages.fennel}/share/lua/5.1"
-              "--prefix"
-              "PATH"
-              ":"
-              "${pkgs.lib.makeBinPath packages}"
-            ]
-            ++ profileEnv;
+      pkgs.wrapNeovimUnstable nvim {
+        inherit plugins;
+        viAlias = true;
+        vimAlias = true;
+        wrapperArgs =
+          [
+            "--set"
+            "NVIM_APPNAME"
+            "hermes"
+            "--prefix"
+            "LUA_PATH"
+            ":"
+            "${pkgs.luajitPackages.fennel}/share/lua/5.1"
+            "--prefix"
+            "PATH"
+            ":"
+            "${pkgs.lib.makeBinPath packages}"
+          ]
+          ++ profileEnv;
 
-          luaRcContent =
+        luaRcContent =
+          (
+            if builtins.hasAttr "self" inputs
+            then ''
+              vim.g.nix_nixd_nixos_options = "(builtins.getFlake "path:${toString inputs.self.outPath}").nixosConfigurations.configname.options"
+              vim.g.nix_nixd_home_manager_options = "(builtins.getFlake "path:${toString inputs.self.outPath}").homeConfigurations.configname.options"
             ''
-              vim.opt.runtimepath:prepend([[${self}]])
+            else ""
+          )
+          + ''
+            vim.opt.runtimepath:prepend([[${self}]])
 
-              vim.g.nix_profile = "${profile}"
+            vim.g.nix_profile = "${profile}"
 
-              vim.g.nix_nixd_nixpkgs = "import ${pkgs.path} {}"
+            vim.g.nix_nixd_nixpkgs = "import ${pkgs.path} {}"
 
-            ''
-            + (
-              if builtins.hasAttr "self" inputs
-              then ''
-                vim.g.nix_nixd_nixos_options = "(builtins.getFlake "path:${toString inputs.self.outPath}").nixosConfigurations.configname.options"
-                vim.g.nix_nixd_home_manager_options = "(builtins.getFlake "path:${toString inputs.self.outPath}").homeConfigurations.configname.options"
-              ''
-              else ""
-            )
-            + ''
-              vim.g.nix_plugins = {
-                ${builtins.concatStringsSep "\n          " (
-                (map (toPluginEntry false) eagerPlugins)
-                ++ (map (toPluginEntry true) lazyPlugins)
-              )}
-              }
 
-              dofile([[${self}/init.lua]])
-            ''
-            + (neovimConfig.luaRcContent or "");
-        }
-      );
+            vim.g.nix_plugins = {
+              ${builtins.concatStringsSep "\n          " (
+              (map (toPluginEntry false) eagerPlugins)
+              ++ (map (toPluginEntry true) lazyPlugins)
+            )}
+            }
+
+            dofile([[${self}/init.lua]])
+          '';
+      };
 
     # editor variants
 

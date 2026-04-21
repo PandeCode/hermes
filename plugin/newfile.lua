@@ -52,11 +52,14 @@ local templates = {
 		[[const std = @import("std");
 
 pub fn build(b: *std.Build) void {
+    const target = b.standardTargetOptions(.{}),
+    const optimize = b.standardOptimizeOption(.{}),
+
     const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
         .link_libc = true,
-        .target = b.standardTargetOptions(.{}),
-        .optimize = b.standardOptimizeOption(.{}),
+        .target = target,
+        .optimize = optimize,
     });
     const exe = b.addExecutable(.{ .name = "{{cwd}}", .root_module = exe_mod });
     exe.linkLibC();
@@ -197,6 +200,37 @@ int main() {
   ]
 }]],
 		{ 7, 5 },
+	},
+	{
+		"*.typ",
+		[[#show heading: set align(center)
+// #include "@preview/physica:0.8.0"
+// #import "@preview/fletcher:0.5.8" as fletcher: diagram, edge, node, shapes
+#set enum(numbering: a => [*#a |*])
+#let cros = math.times
+#let vec = math.arrow
+#let int = math.integral
+#let grad = vec(math.nabla)
+#let eps = math.epsilon
+#let ab(x) = block(
+  width: 100%,
+  stroke: (top: (dash: "dashed", paint: gray, thickness: 1pt), bottom: 1pt),
+  inset: 5pt,
+  fill: rgb(100, 150, 200, 15),
+  x,
+)
+#let ans = rect
+#let lap = $nabla^2$
+#set math.mat(delim: "[")
+#set footnote(numbering: "*")
+#show link: set text(blue)
+#show link: underline
+#align(center, [
+  #text(22pt, [TITLE]) \
+  _SUBTITLE_
+])
+#set text(font: "Libertinus Sans")
+		]],
 	},
 }
 

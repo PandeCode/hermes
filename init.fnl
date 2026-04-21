@@ -19,3 +19,5 @@
 
 (include :fnl.lsp)
 (include :fnl.dap)
+
+(vim.keymap.del :i :<c-k>)

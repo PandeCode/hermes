@@ -140,6 +140,7 @@ package.preload["fnl.keymaps"] = package.preload["fnl.keymaps"] or function(...)
     end
     n("<leader>fe", _15_)
     n("<leader>fs", "<cmd>w<cr>")
+    n("g.", "`.")
     n("<leader>fw", "<cmd>noautocmd w<cr>")
     n("<leader>li", "<cmd>lsp info<cr>", noremap_silent)
     n("<leader>lq", "<cmd>lsp stop<cr>", noremap_silent)
@@ -1047,4 +1048,5 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   end
   return nil
 end
-return require("fnl.dap")
+require("fnl.dap")
+return vim.keymap.del("i", "<c-k>")
