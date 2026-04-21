@@ -425,7 +425,7 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
     local _, hl, _0 = MiniIcons.get("lsp", ctx.kind)
     return hl
   end
-  require("blink.cmp").setup(({signature = {enabled = true, window = {show_documentation = true}}, completion = {menu = {draw = {treesitter = {"lsp"}, columns = {{"kind_icon"}, {"label", "label_description", gap = 1}, {"kind"}}, components = {kind_icon = {text = _49_, highlight = _50_}, kind = {highlight = _51_}}}}, documentation = {auto_show = true}}} or {}))
+  require("blink.cmp").setup(({fuzzy = {implementation = "prefer_rust"}, signature = {enabled = true, window = {show_documentation = true}}, completion = {menu = {draw = {treesitter = {"lsp"}, columns = {{"kind_icon"}, {"label", "label_description", gap = 1}, {"kind"}}, components = {kind_icon = {text = _49_, highlight = _50_}, kind = {highlight = _51_}}}}, documentation = {auto_show = true}}} or {}))
   local function parinfer_on()
     pcall(vim.cmd, "ParinferOn")
     return vim.cmd.redrawstatus()
@@ -492,7 +492,7 @@ package.preload["fnl.theme"] = package.preload["fnl.theme"] or function(...)
     return vim.api.nvim_set_hl(0, gp, opt)
   end
   local function ToggleBackground()
-    local palette = MiniBase16.config.palette
+    local palette = require("mini.base16").config.palette
     if IsTransparent0 then
       set_hl0("Normal", {fg = palette.base05, bg = palette.base00})
       set_hl0("LineNr", {fg = palette.base03, bg = palette.base00})
@@ -1048,5 +1048,4 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   end
   return nil
 end
-require("fnl.dap")
-return vim.keymap.del("i", "<c-k>")
+return require("fnl.dap")

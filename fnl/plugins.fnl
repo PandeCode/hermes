@@ -247,7 +247,8 @@
 (rsetup :blink.pairs)
 (rsetup :blink.indent)
 (rsetup :blink.cmp
-        {:signature {:enabled true :window {:show_documentation true}}
+        {:fuzzy {:implementation :prefer_rust}
+         :signature {:enabled true :window {:show_documentation true}}
          :completion {:menu {:draw {:treesitter [:lsp]
                                     :columns [[:kind_icon]
                                               {1 :label

@@ -56,7 +56,7 @@
 (fn set_hl [gp opt] (vim.api.nvim_set_hl 0 gp opt))
 
 (fn ToggleBackground []
-  (let [palette MiniBase16.config.palette]
+  (let [palette (. (. (require :mini.base16) :config) :palette)]
     (if IsTransparent
         (do
           (set_hl :Normal {:fg palette.base05 :bg palette.base00})
