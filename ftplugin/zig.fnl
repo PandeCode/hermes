@@ -15,6 +15,6 @@
 (vim.keymap.set :n :<leader>za zig_add_gpa
                 {:desc "Add Zig allocator param to current function"})
 
-(when (= 1 (vim.fn.filereadable :build.zig))
-  (vim.keymap.set :n :<leader>mr (Utils.mk_tmp_term "zig build run"))
-  (vim.keymap.set :n :<leader>mt (Utils.mk_tmp_term "zig build run -- -t")))
+; (when (= 1 (vim.fn.filereadable :build.zig))
+;   (vim.keymap.set :n :<leader>mr (Utils.mk_tmp_term "zig build run"))
+;   (vim.keymap.set :n :<leader>mt (Utils.mk_tmp_term "zig build run -- -t")))
