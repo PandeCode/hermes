@@ -411,7 +411,6 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
     return MiniTrailspace.trim_last_lines()
   end
   vim.api.nvim_create_autocmd({"BufWritePre"}, {pattern = "*", callback = _48_})
-  require("blink.pairs").setup((nil or {}))
   require("blink.indent").setup((nil or {}))
   local function _49_(ctx)
     local kind_icon, _, _0 = MiniIcons.get("lsp", ctx.kind)
