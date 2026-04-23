@@ -89,9 +89,7 @@ When (= ?start ?end), returns an empty iterator
     (values range-next* [start end step] (- start step))))
 
 ;; fnlfmt: skip
-(set Utils {})
-
-(fn Utils.open_tmp_term [cmd]
+(fn open_tmp_term [cmd]
   (vim.cmd (.. "botright split | terminal " cmd))
   (local bufnr (vim.api.nvim_win_get_buf 0))
   (vim.api.nvim_set_option_value :buflisted false {:buf bufnr})
@@ -100,20 +98,15 @@ When (= ?start ?end), returns an empty iterator
   (vim.cmd (.. "resize " h))
   (vim.cmd "wincmd p"))
 
-(fn Utils.mk_tmp_term [cmd] #(Utils.open_tmp_term cmd))
-(fn Utils.bind_tmp_term [bind cmd]
+(set Utils {})
+
+(fn Utils.bind_term [bind cmd]
   (vim.keymap.set :n bind #(Utils.open_tmp_term cmd)))
 
-(fn Utils.bind_tmux [binding cmd]
-  (vim.keymap.set :n binding
-                  #(vim.fn.jobstart [:sh
-                                     :-c
-                                     (.. "tmux split-window -l 10 '" cmd
-                                         " && exit 0 || cat'; tmux last-pane")])))
+(fn Utils.bind_job [bind cmd]
+  (vim.keymap.set :n bind #(vim.fn.jobstart [:sh :-c cmd])))
 
-(fn Utils.bind_job [binding cmd]
-  (vim.keymap.set :n binding #(vim.fn.jobstart [:sh :-c cmd])))
-
-(fn Utils.bind_term [binding cmd]
-  (vim.keymap.set :n binding (Utils.bind_tmp_term :<leader>mu "make upload")))
-
+(fn Utils.bind_tmux [bind cmd]
+  (Utils.bind_job bind
+                  (.. "tmux split-window -l 10 '" cmd
+                      " && exit 0 || tmux last-pane & cat'; tmux copy-mode; tmux last-pane")))
