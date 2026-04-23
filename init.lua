@@ -90,7 +90,7 @@ package.preload["fnl.utils"] = package.preload["fnl.utils"] or function(...)
   Utils.bind_tmux = function(bind, cmd)
     return Utils.bind_job(bind, ("tmux split-window -l 10 '" .. cmd .. " && exit 0 || tmux last-pane & cat'; tmux copy-mode; tmux last-pane"))
   end
-  return Utils.bind_tmux
+  return Utils.bind_term("<leader>to", "tmux kill-pane -a")
 end
 require("fnl.utils")
 package.preload["fnl.options"] = package.preload["fnl.options"] or function(...)
