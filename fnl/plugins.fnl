@@ -244,7 +244,7 @@
                                           (MiniTrailspace.trim)
                                           (MiniTrailspace.trim_last_lines))})
 
-(rsetup :blink.pairs)
+; (rsetup :blink.pairs)
 (rsetup :blink.indent)
 (rsetup :blink.cmp
         {:fuzzy {:implementation :prefer_rust}
