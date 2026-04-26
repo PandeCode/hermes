@@ -109,6 +109,6 @@ When (= ?start ?end), returns an empty iterator
 (fn Utils.bind_tmux [bind cmd]
   (Utils.bind_job bind
                   (.. "tmux split-window -l 10 '" cmd
-                      " && exit 0 || tmux last-pane & cat'; tmux copy-mode; tmux last-pane")))
+                      " && exit 0 || tmux last-pane & tmux copy-mode & cat'; tmux last-pane")))
 
 (Utils.bind_term :<leader>to "tmux kill-pane -a")

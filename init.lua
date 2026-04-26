@@ -88,7 +88,7 @@ package.preload["fnl.utils"] = package.preload["fnl.utils"] or function(...)
     return vim.keymap.set("n", bind, _13_)
   end
   Utils.bind_tmux = function(bind, cmd)
-    return Utils.bind_job(bind, ("tmux split-window -l 10 '" .. cmd .. " && exit 0 || tmux last-pane & cat'; tmux copy-mode; tmux last-pane"))
+    return Utils.bind_job(bind, ("tmux split-window -l 10 '" .. cmd .. " && exit 0 || tmux last-pane & tmux copy-mode & cat'; tmux last-pane"))
   end
   return Utils.bind_term("<leader>to", "tmux kill-pane -a")
 end
@@ -428,7 +428,7 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
     local _, hl, _0 = MiniIcons.get("lsp", ctx.kind)
     return hl
   end
-  require("blink.cmp").setup(({fuzzy = {implementation = "prefer_rust"}, signature = {enabled = true, window = {show_documentation = true}}, sources = {providers = {snippets = {opts = {search_paths = vim.fn.expand("~/hermes/snippets")}}}}, completion = {menu = {draw = {treesitter = {"lsp"}, columns = {{"kind_icon"}, {"label", "label_description", gap = 1}, {"kind"}}, components = {kind_icon = {text = _49_, highlight = _50_}, kind = {highlight = _51_}}}}, documentation = {auto_show = true}}} or {}))
+  require("blink.cmp").setup(({fuzzy = {implementation = "prefer_rust"}, signature = {enabled = true, window = {show_documentation = true}}, sources = {providers = {snippets = {opts = {search_paths = {vim.fn.expand("~/hermes/snippets")}}}}}, completion = {menu = {draw = {treesitter = {"lsp"}, columns = {{"kind_icon"}, {"label", "label_description", gap = 1}, {"kind"}}, components = {kind_icon = {text = _49_, highlight = _50_}, kind = {highlight = _51_}}}}, documentation = {auto_show = true}}} or {}))
   local function parinfer_on()
     pcall(vim.cmd, "ParinferOn")
     return vim.cmd.redrawstatus()
