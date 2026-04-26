@@ -4,6 +4,7 @@
 
 ```bash
 nix run github:pandecode/hermes#fun --accept-flake-config --extra-experimental-features flakes --extra-experimental-features nix-command --override-input nixpkgs nixpkgs
+```
 
 
 ```bash
