@@ -414,6 +414,7 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
     return MiniTrailspace.trim_last_lines()
   end
   vim.api.nvim_create_autocmd({"BufWritePre"}, {pattern = "*", callback = _48_})
+  require("blink.pairs").setup((nil or {}))
   require("blink.indent").setup((nil or {}))
   local function _49_(ctx)
     local kind_icon, _, _0 = MiniIcons.get("lsp", ctx.kind)
@@ -427,7 +428,7 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
     local _, hl, _0 = MiniIcons.get("lsp", ctx.kind)
     return hl
   end
-  require("blink.cmp").setup(({fuzzy = {implementation = "prefer_rust"}, signature = {enabled = true, window = {show_documentation = true}}, completion = {menu = {draw = {treesitter = {"lsp"}, columns = {{"kind_icon"}, {"label", "label_description", gap = 1}, {"kind"}}, components = {kind_icon = {text = _49_, highlight = _50_}, kind = {highlight = _51_}}}}, documentation = {auto_show = true}}} or {}))
+  require("blink.cmp").setup(({fuzzy = {implementation = "prefer_rust"}, signature = {enabled = true, window = {show_documentation = true}}, sources = {providers = {snippets = {opts = {search_paths = vim.fn.expand("~/hermes/snippets")}}}}, completion = {menu = {draw = {treesitter = {"lsp"}, columns = {{"kind_icon"}, {"label", "label_description", gap = 1}, {"kind"}}, components = {kind_icon = {text = _49_, highlight = _50_}, kind = {highlight = _51_}}}}, documentation = {auto_show = true}}} or {}))
   local function parinfer_on()
     pcall(vim.cmd, "ParinferOn")
     return vim.cmd.redrawstatus()

@@ -244,11 +244,12 @@
                                           (MiniTrailspace.trim)
                                           (MiniTrailspace.trim_last_lines))})
 
-; (rsetup :blink.pairs)
+(rsetup :blink.pairs)
 (rsetup :blink.indent)
 (rsetup :blink.cmp
         {:fuzzy {:implementation :prefer_rust}
          :signature {:enabled true :window {:show_documentation true}}
+         :sources {:providers {:snippets {:opts {:search_paths [(vim.fn.expand "~/hermes/snippets")]}}}}
          :completion {:menu {:draw {:treesitter [:lsp]
                                     :columns [[:kind_icon]
                                               {1 :label

@@ -1,0 +1,22 @@
+{
+    "io": {
+        "prefix": "io",
+        "body": [
+            "var threaded: std.Io.Threaded = .init_single_threaded;",
+            "const io = threaded.io();"
+        ],
+        "description": "get an io"
+    },
+    "rand": {
+        "prefix": "rand",
+        "body": [
+            "var prng: std.Random.DefaultPrng = .init(blk: {",
+            "    var seed: u64 = undefined;",
+            "    try std.posix.getrandom(std.mem.asBytes(&seed));",
+            "    break :blk seed;",
+            "});",
+            "const rand = prng.random();"
+        ],
+        "description": "get a rand"
+    }
+}
