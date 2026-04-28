@@ -332,15 +332,13 @@ package.preload["fnl.autocmds"] = package.preload["fnl.autocmds"] or function(..
   end
   vim.api.nvim_create_autocmd("ModeChanged", {group = vim.api.nvim_create_augroup("diagnostic_redraw", {}), callback = _38_})
   local function _39_()
-    local name = vim.fn.expand("<afile>")
-    if (name:match("fe") or name:match("^f$") or name:match("^e$")) then
-      error(("Forbidden file name: " .. name))
-      return vim.system({"rm", name})
-    else
-      return nil
-    end
+    return vim.system({"rm", "fe"})
   end
-  return vim.api.nvim_create_autocmd("BufWritePost", {pattern = "*", callback = _39_})
+  vim.api.nvim_create_autocmd("BufWritePost", {pattern = "fe", callback = _39_})
+  local function _40_()
+    return vim.system({"rm", "f"})
+  end
+  return vim.api.nvim_create_autocmd("BufWritePost", {pattern = "f", callback = _40_})
 end
 require("fnl.autocmds")
 package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)

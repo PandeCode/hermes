@@ -144,12 +144,7 @@ cnoreabbrev rmf Rmf
                               :callback #(pcall vim.diagnostic.show)})
 
 (vim.api.nvim_create_autocmd :BufWritePost
-                             {:pattern "*"
-                              :callback (fn []
-                                          (local name (vim.fn.expand :<afile>))
-                                          (when (or (name:match :fe)
-                                                    (name:match :^f$)
-                                                    (name:match :^e$))
-                                            (error (.. "Forbidden file name: "
-                                                       name))
-                                            (vim.system [:rm name])))})
+                             {:pattern :fe :callback #(vim.system [:rm :fe])})
+
+(vim.api.nvim_create_autocmd :BufWritePost
+                             {:pattern :f :callback #(vim.system [:rm :f])})

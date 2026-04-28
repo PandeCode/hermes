@@ -52,8 +52,8 @@ local templates = {
 		[[const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const target = b.standardTargetOptions(.{}),
-    const optimize = b.standardOptimizeOption(.{}),
+    const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
 
     const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
@@ -62,7 +62,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     const exe = b.addExecutable(.{ .name = "{{cwd}}", .root_module = exe_mod });
-    exe.linkLibC();
 
     b.installArtifact(exe);
 
@@ -77,10 +76,10 @@ pub fn build(b: *std.Build) void {
     }
 
     const exe_check = b.addExecutable(.{
-        .name = "__check",
+        .name = "check",
         .root_module = exe_mod,
     });
-    const check = b.step("__check", "Check if project compiles");
+    const check = b.step("check", "Check if project compiles");
     check.dependOn(&exe_check.step);
 }]],
 		{ 4, 44 },
@@ -98,10 +97,21 @@ const c = @cImport({
 
 const print = std.debug.print;
 
-pub fn main() !void {
-	// var gpa = std.heap.DebugAllocator(.{}){};
-	// const allocator = gpa.allocator();
-	print("hello {{cwd}}", .{});
+pub fn main(init: std.process.Init) !void {
+    const gpa = init.gpa;
+    const io = init.io;
+
+    const ptr = try gpa.create(i32);
+    defer gpa.destroy(ptr);
+
+    try std.Io.File.stdout().writeStreamingAll(io, "Hello, {{cwd}}!\n");
+
+    const args = try init.minimal.args.toSlice(init.arena.allocator());
+    for (args, 0..) |arg, i| {
+        std.log.info("arg[{d}] = {s}", .{ i, arg });
+    }
+
+    std.log.info("{d} env vars", .{init.environ_map.count()});
 }]],
 		{ 12, 1 },
 	},
