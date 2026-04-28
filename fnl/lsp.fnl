@@ -115,7 +115,7 @@
 (n :gD vim.lsp.buf.declaration "[G]oto [D]eclaration")
 
 ;; lsps that i dont want to turn on automatically
-(each [_ k (ipairs [:emmylua_ls
+(each [_ k (ipairs [;:emmylua_ls
                     :asm_lsp
                     :ast_grep
                     :bashls
