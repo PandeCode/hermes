@@ -65,6 +65,7 @@ package.preload["fnl.utils"] = package.preload["fnl.utils"] or function(...)
     end
     return range_next_2a, {start, _end, step}, (start - step)
   end
+  Utils = {}
   Utils.open_tmp_term = function(cmd)
     vim.cmd(("botright split | terminal " .. cmd))
     local bufnr = vim.api.nvim_win_get_buf(0)
@@ -74,7 +75,6 @@ package.preload["fnl.utils"] = package.preload["fnl.utils"] or function(...)
     vim.cmd(("resize " .. h))
     return vim.cmd("wincmd p")
   end
-  Utils = {}
   Utils.bind_term = function(bind, cmd)
     local function _12_()
       return Utils.open_tmp_term(cmd)

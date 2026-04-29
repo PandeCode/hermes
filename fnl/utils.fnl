@@ -89,6 +89,8 @@ When (= ?start ?end), returns an empty iterator
     (values range-next* [start end step] (- start step))))
 
 ;; fnlfmt: skip
+(set Utils {})
+
 (fn Utils.open_tmp_term [cmd]
   (vim.cmd (.. "botright split | terminal " cmd))
   (local bufnr (vim.api.nvim_win_get_buf 0))
@@ -97,8 +99,6 @@ When (= ?start ?end), returns an empty iterator
   (local h (math.floor (/ vim.o.lines 4)))
   (vim.cmd (.. "resize " h))
   (vim.cmd "wincmd p"))
-
-(set Utils {})
 
 (fn Utils.bind_term [bind cmd]
   (vim.keymap.set :n bind #(Utils.open_tmp_term cmd)))
