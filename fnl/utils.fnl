@@ -89,7 +89,7 @@ When (= ?start ?end), returns an empty iterator
     (values range-next* [start end step] (- start step))))
 
 ;; fnlfmt: skip
-(fn open_tmp_term [cmd]
+(fn Utils.open_tmp_term [cmd]
   (vim.cmd (.. "botright split | terminal " cmd))
   (local bufnr (vim.api.nvim_win_get_buf 0))
   (vim.api.nvim_set_option_value :buflisted false {:buf bufnr})
