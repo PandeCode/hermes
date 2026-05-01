@@ -28,7 +28,7 @@ in
       snacks-nvim
 
       trouble-nvim
-      dropbar-nvim
+      nvim-navic
 
       blink-cmp
       # glsl_analyzer breaks, wait till next blink release

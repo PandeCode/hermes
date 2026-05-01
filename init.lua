@@ -350,7 +350,7 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
   local plugins = {}
   vim.pack.add(plugins, {load = require("lz.n").load})
   require("oil").setup((nil or {}))
-  require("dropbar").setup((nil or {}))
+  require("nvim-navic").setup((nil or {}))
   vim.keymap.set("n", "-", "<cmd>Oil<CR>", {noremap = true, desc = "Open Parent Directory"})
   vim.keymap.set("n", "<leader>-", "<cmd>Oil .<CR>", {noremap = true, desc = "Open nvim root directory"})
   local function _42_()
