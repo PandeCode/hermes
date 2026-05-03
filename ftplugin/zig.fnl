@@ -22,13 +22,17 @@
 (set vim.g.zig_fmt_parse_errors 0)
 (set vim.g.zig_fmt_autosave 0)
 
+(set vim.g.zig_bad false)
+
 (vim.api.nvim_create_autocmd :BufWritePre
                              {:pattern [:*.zig :*.zon]
                               :callback (fn [_]
-                                          (vim.lsp.buf.code_action {:context {:only [:source.fixAll]}
-                                                                    :apply true})
-                                          (vim.lsp.buf.code_action {:context {:only [:source.organizeImports]}
-                                                                    :apply true}))})
+                                          (when vim.g.zig_bad
+                                            (do
+                                              (vim.lsp.buf.code_action {:context {:only [:source.fixAll]}
+                                                                        :apply true})
+                                              (vim.lsp.buf.code_action {:context {:only [:source.organizeImports]}
+                                                                        :apply true}))))})
 
 ; -- https://zigtools.org/zls/configure/
 ; -- https://zigtools.org/zls/guides/build-on-save/
