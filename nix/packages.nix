@@ -28,7 +28,6 @@ in
       snacks-nvim
 
       trouble-nvim
-      nvim-navic
 
       blink-cmp
       # glsl_analyzer breaks, wait till next blink release
@@ -55,6 +54,8 @@ in
     ];
 
     lazyPlugins = with pkgs.vimPlugins; [
+      zig-vim
+
       nvim-dap
 
       # nvim-dap-ui

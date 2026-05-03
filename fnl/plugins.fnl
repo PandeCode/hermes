@@ -22,7 +22,6 @@
   `((. (require ,p) :setup) (or ,t {})))
 
 (rsetup :oil)
-(rsetup :nvim-navic)
 
 (vim.keymap.set :n "-" :<cmd>Oil<CR>
                 {:noremap true :desc "Open Parent Directory"})
