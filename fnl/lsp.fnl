@@ -136,7 +136,7 @@
                     :nushell
                     :denols
                     :jsonls
-                    :pyright
+                    :pyrefly
                     :racket_langserver
                     :wasm_language_tools
                     :wgsl_analyzer
