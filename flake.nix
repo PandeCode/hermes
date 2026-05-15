@@ -52,9 +52,12 @@
     nix.nixPath = ["nixpkgs=${inputs.nixpkgs}"];
 
     nixosModules.default = {pkgs, ...}: {
-      environment.systemPackages = [
-        inputs.self.packages.${pkgs.system}.default
-      ];
+      environment = {
+        systemPackages = [
+          inputs.self.packages.${pkgs.system}.default
+        ];
+        sessionVariables.EDITOR = pkgs.lib.mkDefault "nvim";
+      };
     };
     # homeConfigurations = (import ./nix/homeConfigurations.nix) extras;
     # checks = forAllSystems ((import ./nix/checks.nix) extras);

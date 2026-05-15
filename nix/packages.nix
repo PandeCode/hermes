@@ -136,8 +136,9 @@ in
       ];
 
       python = with pkgs; [
-        pyright
+        pyrefly
         ruff
+        basedpyright
         black
       ];
 

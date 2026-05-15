@@ -16,7 +16,6 @@
 (macro cmd [v] (.. :<cmd> v :<cr>))
 (macro leader [v] (.. :<leader> v))
 
-(local silent {:silent true})
 (local noremap {:noremap true})
 (local noremap_expr {:noremap true :expr true})
 (local noremap_silent {:silent true :noremap true})
@@ -30,7 +29,8 @@
   (n (leader :li) (cmd "lsp info") noremap_silent)
   (n (leader :lq) (cmd "lsp stop") noremap_silent)
   (n (leader :lr) (cmd "lsp restart") noremap_silent)
-  (n (leader :ls) (cmd "lsp start") noremap_silent)
+  (n (leader :le) (cmd "lsp enable") noremap_silent)
+  (n (leader :ld) (cmd "lsp disable") noremap_silent)
   (n (leader :me) vim.cmd.messages nil)
   (n (leader :bp) vim.cmd.bp noremap_silent)
   (n (leader :bn) vim.cmd.bn noremap_silent)
@@ -100,16 +100,7 @@
   (v "]" "<ESC>`>a]<ESC>`<i[<ESC>" noremap)
   (v "<c-}>" "<ESC>`>a}<ESC>`<i{<ESC>" noremap)
   (x "/" "<Esc>/\\%V")
-  (i :<c-f> "<c-g>u<Esc>[s1z=gi<c-g>u" noremap)
-  (n (leader :tt) (fn []
-                    (if (or (= vim.g.showtabline nil) (= vim.g.showtabline 2))
-                        (do
-                          (set vim.g.showtabline 0)
-                          (vim.cmd "set showtabline=0"))
-                        (do
-                          (set vim.g.showtabline 2)
-                          (vim.cmd "set showtabline=2"))))
-     noremap))
+  (i :<c-f> "<c-g>u<Esc>[s1z=gi<c-g>u" noremap))
 
 ; noremap Y "+y
 ; nnoremap YY "+yy
