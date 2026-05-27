@@ -57,6 +57,7 @@ in
       zig-vim
 
       nvim-dap
+      nvim-dap-python
 
       # nvim-dap-ui
       nvim-dap-view
