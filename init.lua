@@ -374,7 +374,8 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
   require("mini.move").setup((nil or {}))
   require("mini.splitjoin").setup((nil or {}))
   require("mini.trailspace").setup((nil or {}))
-  require("mini.clue").setup((nil or {}))
+  local miniclue = require("mini.clue")
+  require("mini.clue").setup(({triggers = {{mode = {"n", "x"}, keys = "<leader>"}, {mode = {"n", "x"}, keys = "g"}, {mode = {"n", "x"}, keys = "z"}, {mode = {"n", "x"}, keys = "<c-w>"}, {mode = {"n", "x"}, keys = "'"}, {mode = {"n", "x"}, keys = "`"}, {mode = {"n", "x"}, keys = "\""}}, clues = {miniclue.gen_clues.square_brackets(), miniclue.gen_clues.builtin_completion(), miniclue.gen_clues.marks(), miniclue.gen_clues.registers(), miniclue.gen_clues.windows(), miniclue.gen_clues.z(), miniclue.gen_clues.g()}} or {}))
   local hipatterns = require("mini.hipatterns")
   local function _43_(_, _0, data)
     return MiniHipatterns.compute_hex_color_group(data.full_match:gsub("0x", "#"), "bg")
@@ -1033,12 +1034,12 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   dap.listeners.before.event_exited.dapui_config = function()
     return frontend.close()
   end
-  vim.keymap.set("n", "<leader>db", dap.toggle_breakpoint)
-  vim.keymap.set("n", "<leader>dc", dap.continue)
-  vim.keymap.set("n", "<leader>do", dap.step_over)
-  vim.keymap.set("n", "<leader>di", dap.step_into)
-  vim.keymap.set("n", "<leader>di", dap.terminate)
-  vim.keymap.set("n", "<leader>dr", dap.repl.open)
+  vim.keymap.set("n", "<leader>db", dap.toggle_breakpoint, {desc = "Dap toggle_breakpoint"})
+  vim.keymap.set("n", "<leader>dc", dap.continue, {desc = "Dap continue"})
+  vim.keymap.set("n", "<leader>do", dap.step_over, {desc = "Dap step_over"})
+  vim.keymap.set("n", "<leader>di", dap.step_into, {desc = "Dap step_into"})
+  vim.keymap.set("n", "<leader>di", dap.terminate, {desc = "Dap terminate"})
+  vim.keymap.set("n", "<leader>dr", dap.repl.open, {desc = "Dap repl.open"})
   dap.listeners.before.event_terminated["my-plugin"] = function(session, body)
     return vim.notify(("Session terminated" .. vim.inspect(session) .. vim.inspect(body)))
   end
@@ -1070,6 +1071,44 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
     end
     dap.configurations.rust = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _150_, program = pick_2_auto, request = "attach", type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "rust-gdb"}}
   end
+  local keymap_restore = {}
+  
+  dap.listeners.after['event_initialized']['me'] = function()
+    for _, buf in pairs(vim.api.nvim_list_bufs()) do
+      local keymaps = vim.api.nvim_buf_get_keymap(buf, 'n')
+      for _, keymap in pairs(keymaps) do
+        if keymap.lhs == 'K' then
+          table.insert(keymap_restore, keymap)
+          vim.api.nvim_buf_del_keymap(buf, 'n', 'K')
+        end
+      end
+    end
+    vim.api.nvim_set_keymap(
+                        'n', 'K', '<Cmd>lua require("dap.ui.widgets ").hover()<CR>', { silent = true})
+  end
+  
+  dap.listeners.after['event_terminated']['me'] = function()
+    for _, keymap in pairs(keymap_restore) do
+      if keymap.rhs then
+        vim.api.nvim_buf_set_keymap(
+                                keymap.buffer,
+                                keymap.mode,
+                                keymap.lhs,
+                                keymap.rhs,
+                                { silent = keymap.silent == 1})
+  
+      elseif keymap.callback then
+        vim.keymap.set(
+                       keymap.mode,
+                       keymap.lhs,
+                       keymap.callback,
+                       { buffer = keymap.buffer, silent = keymap.silent == 1})
+  
+      end
+    end
+    keymap_restore = {}
+  end
+  
   return nil
 end
 return require("fnl.dap")

@@ -141,7 +141,22 @@
 (rsetup :mini.move)
 (rsetup :mini.splitjoin)
 (rsetup :mini.trailspace)
-(rsetup :mini.clue)
+
+(local miniclue (require :mini.clue))
+(rsetup :mini.clue {:triggers [{:mode [:n :x] :keys :<leader>}
+                               {:mode [:n :x] :keys :g}
+                               {:mode [:n :x] :keys :z}
+                               {:mode [:n :x] :keys :<c-w>}
+                               {:mode [:n :x] :keys "'"}
+                               {:mode [:n :x] :keys "`"}
+                               {:mode [:n :x] :keys "\""}]
+                    :clues [(miniclue.gen_clues.square_brackets)
+                            (miniclue.gen_clues.builtin_completion)
+                            (miniclue.gen_clues.marks)
+                            (miniclue.gen_clues.registers)
+                            (miniclue.gen_clues.windows)
+                            (miniclue.gen_clues.z)
+                            (miniclue.gen_clues.g)]})
 
 (local hipatterns (require :mini.hipatterns))
 (rsetup :mini.hipatterns

@@ -11,15 +11,14 @@
 (fn dap.listeners.before.event_terminated.dapui_config [] (frontend.close))
 (fn dap.listeners.before.event_exited.dapui_config [] (frontend.close))
 
-(vim.keymap.set :n :<leader>db dap.toggle_breakpoint)
-(vim.keymap.set :n :<leader>dc dap.continue)
+(vim.keymap.set :n :<leader>db dap.toggle_breakpoint
+                {:desc "Dap toggle_breakpoint"})
 
-(vim.keymap.set :n :<leader>do dap.step_over)
-(vim.keymap.set :n :<leader>di dap.step_into)
-
-(vim.keymap.set :n :<leader>di dap.terminate)
-
-(vim.keymap.set :n :<leader>dr dap.repl.open)
+(vim.keymap.set :n :<leader>dc dap.continue {:desc "Dap continue"})
+(vim.keymap.set :n :<leader>do dap.step_over {:desc "Dap step_over"})
+(vim.keymap.set :n :<leader>di dap.step_into {:desc "Dap step_into"})
+(vim.keymap.set :n :<leader>di dap.terminate {:desc "Dap terminate"})
+(vim.keymap.set :n :<leader>dr dap.repl.open {:desc "Dap repl.open"})
 
 (fn dap.listeners.before.event_terminated.my-plugin [session body]
   (vim.notify (.. "Session terminated" (vim.inspect session) (vim.inspect body))))
@@ -65,3 +64,58 @@
 (set dap.configurations.zig dap.configurations.c)
 
 (set dap.configurations.rust (mk :rust-gdb))
+
+(local keymap_restore {})
+
+; (set dap.listeners.after.event_initialized.me
+;      (fn []
+;        (each [_ buf (pairs (vim.api.nvim_list_bufs))]
+;          (local keymaps (vim.api.nvim_buf_get_keymap buf :n))
+;          (each [_ keymap (pairs keymaps)] nil
+;            (when (= keymaps.lhs :K)
+;              (table.insert keymap_restore keymap)
+;              (vim.api.nvim_buf_del_keymap buf :n :K))))
+;        (vim.api.nvim_set_keymap :n :K
+;                                 "<CMD>lua require('dap.ui.widgets').hover()<CR>")))
+;
+; (set dap.listeners.after.event_terminated.me
+;      (fn []
+;        nil))
+
+(lua "
+dap.listeners.after['event_initialized']['me'] = function()
+  for _, buf in pairs(vim.api.nvim_list_bufs()) do
+    local keymaps = vim.api.nvim_buf_get_keymap(buf, 'n')
+    for _, keymap in pairs(keymaps) do
+      if keymap.lhs == 'K' then
+        table.insert(keymap_restore, keymap)
+        vim.api.nvim_buf_del_keymap(buf, 'n', 'K')
+      end
+    end
+  end
+  vim.api.nvim_set_keymap(
+                      'n', 'K', '<Cmd>lua require(\"dap.ui.widgets \").hover()<CR>', { silent = true})
+end
+
+dap.listeners.after['event_terminated']['me'] = function()
+  for _, keymap in pairs(keymap_restore) do
+    if keymap.rhs then
+      vim.api.nvim_buf_set_keymap(
+                              keymap.buffer,
+                              keymap.mode,
+                              keymap.lhs,
+                              keymap.rhs,
+                              { silent = keymap.silent == 1})
+
+    elseif keymap.callback then
+      vim.keymap.set(
+                     keymap.mode,
+                     keymap.lhs,
+                     keymap.callback,
+                     { buffer = keymap.buffer, silent = keymap.silent == 1})
+
+    end
+  end
+  keymap_restore = {}
+end
+")
