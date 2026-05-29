@@ -4,7 +4,7 @@
 
 ; (local frontend (require :dapui))
 (local frontend (require :dap-view))
-(frontend.setup {:winbar {:controls {:enable true}}})
+(frontend.setup {:winbar {:controls {:enabled true}}})
 
 (fn dap.listeners.before.attach.dapui_config [] (frontend.open))
 (fn dap.listeners.before.launch.dapui_config [] (frontend.open))

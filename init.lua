@@ -1022,7 +1022,7 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   local dap = require("dap")
   require("nvim-dap-virtual-text").setup()
   local frontend = require("dap-view")
-  frontend.setup({winbar = {controls = {enable = true}}})
+  frontend.setup({winbar = {controls = {enabled = true}}})
   dap.listeners.before.attach.dapui_config = function()
     return frontend.open()
   end
