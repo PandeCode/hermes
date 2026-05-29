@@ -11,24 +11,6 @@
 (fn dap.listeners.before.event_terminated.dapui_config [] (frontend.close))
 (fn dap.listeners.before.event_exited.dapui_config [] (frontend.close))
 
-(vim.keymap.set :n :<leader>db dap.toggle_breakpoint
-                {:desc "Dap toggle_breakpoint"})
-
-(vim.keymap.set :n :<leader>dc dap.continue {:desc "Dap continue"})
-(vim.keymap.set :n :<leader>do dap.step_over {:desc "Dap step_over"})
-(vim.keymap.set :n :<leader>di dap.step_into {:desc "Dap step_into"})
-(vim.keymap.set :n :<leader>di dap.terminate {:desc "Dap terminate"})
-(vim.keymap.set :n :<leader>dr dap.repl.open {:desc "Dap repl.open"})
-
-(vim.keymap.set :n :<M-c> dap.continue {:desc "Dap continue."})
-(vim.keymap.set :n :<M-o> dap.step_over {:desc "Dap step_over."})
-(vim.keymap.set :n :<M-i> dap.step_into {:desc "Dap step_into."})
-(vim.keymap.set :n :<M-t> dap.terminate {:desc "Dap terminate."})
-(vim.keymap.set :n :<M-r> dap.repl.open {:desc "Dap repl.open."})
-
-(vim.keymap.set :n :<leader>dui frontend.open {:desc "Dap ui open"})
-(vim.keymap.set :n :<leader>dux frontend.close {:desc "Dap ui close"})
-
 (fn dap.listeners.before.event_terminated.my-plugin [session body]
   (vim.notify (.. "Session terminated" (vim.inspect session) (vim.inspect body))))
 
@@ -128,3 +110,21 @@ dap.listeners.after['event_terminated']['me'] = function()
   keymap_restore = {}
 end
 ")
+
+(vim.keymap.set :n :<leader>db dap.toggle_breakpoint
+                {:desc "Dap toggle_breakpoint"})
+
+(vim.keymap.set :n :<leader>dc dap.continue {:desc "Dap continue"})
+(vim.keymap.set :n :<leader>do dap.step_over {:desc "Dap step_over"})
+(vim.keymap.set :n :<leader>di dap.step_into {:desc "Dap step_into"})
+(vim.keymap.set :n :<leader>di dap.terminate {:desc "Dap terminate"})
+(vim.keymap.set :n :<leader>dr dap.repl.open {:desc "Dap repl.open"})
+
+(vim.keymap.set :n :<M-c> dap.continue {:desc "Dap continue."})
+(vim.keymap.set :n :<M-o> dap.step_over {:desc "Dap step_over."})
+(vim.keymap.set :n :<M-i> dap.step_into {:desc "Dap step_into."})
+(vim.keymap.set :n :<M-t> dap.terminate {:desc "Dap terminate."})
+(vim.keymap.set :n :<M-r> dap.repl.open {:desc "Dap repl.open."})
+
+(vim.keymap.set :n :<leader>dui frontend.open {:desc "Dap ui open"})
+(vim.keymap.set :n :<leader>dux frontend.close {:desc "Dap ui close"})
