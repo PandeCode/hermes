@@ -4,7 +4,7 @@
 
 ; (local frontend (require :dapui))
 (local frontend (require :dap-view))
-(frontend.setup)
+(frontend.setup {:winbar {:controls {:enable true}}})
 
 (fn dap.listeners.before.attach.dapui_config [] (frontend.open))
 (fn dap.listeners.before.launch.dapui_config [] (frontend.open))
@@ -19,6 +19,15 @@
 (vim.keymap.set :n :<leader>di dap.step_into {:desc "Dap step_into"})
 (vim.keymap.set :n :<leader>di dap.terminate {:desc "Dap terminate"})
 (vim.keymap.set :n :<leader>dr dap.repl.open {:desc "Dap repl.open"})
+
+(vim.keymap.set :n :<M-c> dap.continue {:desc "Dap continue"})
+(vim.keymap.set :n :<M-o> dap.step_over {:desc "Dap step_over"})
+(vim.keymap.set :n :<M-i> dap.step_into {:desc "Dap step_into"})
+(vim.keymap.set :n :<M-t> dap.terminate {:desc "Dap terminate"})
+(vim.keymap.set :n :<M-r> dap.repl.open {:desc "Dap repl.open"})
+
+(vim.keymap.set :n :<leader>dui frontend.open {:desc "Dap ui open"})
+(vim.keymap.set :n :<leader>dux frontend.close {:desc "Dap ui close"})
 
 (fn dap.listeners.before.event_terminated.my-plugin [session body]
   (vim.notify (.. "Session terminated" (vim.inspect session) (vim.inspect body))))

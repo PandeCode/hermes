@@ -897,7 +897,8 @@ package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
       return tabline_update()
     end
   end
-  return vim.keymap.set("n", "<leader>tt", _128_, {desc = "Toggle tabline"})
+  Tabline.toggle = _128_
+  return vim.keymap.set("n", "<leader>tt", Tabline.toggle, {desc = "Toggle tabline"})
 end
 require("fnl.tabline")
 package.preload["fnl.statuscol"] = package.preload["fnl.statuscol"] or function(...)
@@ -1021,7 +1022,7 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   local dap = require("dap")
   require("nvim-dap-virtual-text").setup()
   local frontend = require("dap-view")
-  frontend.setup()
+  frontend.setup({winbar = {controls = {enable = true}}})
   dap.listeners.before.attach.dapui_config = function()
     return frontend.open()
   end
@@ -1040,6 +1041,13 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   vim.keymap.set("n", "<leader>di", dap.step_into, {desc = "Dap step_into"})
   vim.keymap.set("n", "<leader>di", dap.terminate, {desc = "Dap terminate"})
   vim.keymap.set("n", "<leader>dr", dap.repl.open, {desc = "Dap repl.open"})
+  vim.keymap.set("n", "<M-c>", dap.continue, {desc = "Dap continue"})
+  vim.keymap.set("n", "<M-o>", dap.step_over, {desc = "Dap step_over"})
+  vim.keymap.set("n", "<M-i>", dap.step_into, {desc = "Dap step_into"})
+  vim.keymap.set("n", "<M-t>", dap.terminate, {desc = "Dap terminate"})
+  vim.keymap.set("n", "<M-r>", dap.repl.open, {desc = "Dap repl.open"})
+  vim.keymap.set("n", "<leader>dui", frontend.open, {desc = "Dap ui open"})
+  vim.keymap.set("n", "<leader>dux", frontend.close, {desc = "Dap ui close"})
   dap.listeners.before.event_terminated["my-plugin"] = function(session, body)
     return vim.notify(("Session terminated" .. vim.inspect(session) .. vim.inspect(body)))
   end

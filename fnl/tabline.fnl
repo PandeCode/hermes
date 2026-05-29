@@ -85,7 +85,8 @@
 (vim.api.nvim_create_autocmd [:BufAdd :BufDelete :BufEnter]
                              {:callback #(tabline-update)})
 
-(vim.keymap.set :n :<leader>tt
-                #(if (= vim.o.showtabline 2)
-                     (set vim.o.showtabline 0)
-                     (tabline-update)) {:desc "Toggle tabline"})
+(set Tabline.toggle #(if (= vim.o.showtabline 2)
+                         (set vim.o.showtabline 0)
+                         (tabline-update)))
+
+(vim.keymap.set :n :<leader>tt Tabline.toggle {:desc "Toggle tabline"})
