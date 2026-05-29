@@ -117,7 +117,7 @@ end
 (vim.keymap.set :n :<leader>dc dap.continue {:desc "Dap continue"})
 (vim.keymap.set :n :<leader>do dap.step_over {:desc "Dap step_over"})
 (vim.keymap.set :n :<leader>di dap.step_into {:desc "Dap step_into"})
-(vim.keymap.set :n :<leader>di dap.terminate {:desc "Dap terminate"})
+(vim.keymap.set :n :<leader>dt dap.terminate {:desc "Dap terminate"})
 (vim.keymap.set :n :<leader>dr dap.repl.open {:desc "Dap repl.open"})
 
 (vim.keymap.set :n :<M-c> dap.continue {:desc "Dap continue."})
@@ -128,3 +128,5 @@ end
 
 (vim.keymap.set :n :<leader>dui frontend.open {:desc "Dap ui open"})
 (vim.keymap.set :n :<leader>dux frontend.close {:desc "Dap ui close"})
+(vim.keymap.set :n :<leader>det :<cmd>DapViewVirtualTextToggle<cr>
+                {:desc "Dap virt text toggle"})
