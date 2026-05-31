@@ -24,9 +24,6 @@ in
       nui-nvim
       noice-nvim
 
-      mini-nvim
-      snacks-nvim
-
       trouble-nvim
 
       blink-cmp
@@ -51,6 +48,11 @@ in
       oil-nvim
 
       cord-nvim
+
+      vim-abolish # tpope is the og goat
+      vim-eunuch
+      snacks-nvim # thank you folke
+      mini-nvim # than you echasnovski
     ];
 
     lazyPlugins = with pkgs.vimPlugins; [

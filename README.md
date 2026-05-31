@@ -57,3 +57,22 @@ Add to your `flake.nix`:
 - Explore FFI usage
 - Eval line/block of lua/fennel
 - vlime
+
+#### make stock vim better
+
+Vim is installed by default on alot of systems, stock vim is annoying to use
+
+`TODO` have a function in lua that dumps all keymaps that are not (lua plain functions or calls to lua functions)
+
+for now when i ssh into a new server:
+```bash
+rm -fr ~/.vimrc
+curl https://raw.githubusercontent.com/tpope/vim-sleuth/refs/heads/master/plugin/sleuth.vim >> ~/.vimrc
+curl https://raw.githubusercontent.com/tpope/vim-abolish/refs/heads/master/plugin/abolish.vim >> ~/.vimrc
+curl https://raw.githubusercontent.com/tpope/vim-sensible/refs/heads/master/plugin/sensible.vim >> ~/.vimrc
+curl https://raw.githubusercontent.com/tpope/vim-unimpaired/refs/heads/master/plugin/unimpaired.vim >> ~/.vimrc
+curl https://raw.githubusercontent.com/tpope/vim-surround/refs/heads/master/plugin/surround.vim >> ~/.vimrc
+curl https://raw.githubusercontent.com/tpope/vim-commentary/refs/heads/master/plugin/commentary.vim >> ~/.vimrc
+```
+
+there's also this `tpope/vim-fugitive` but its not as simple, ill probably write a script to install a bunch more plugins
