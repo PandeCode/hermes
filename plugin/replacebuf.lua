@@ -1,10 +1,11 @@
-local function replace_buffer_with_command(cmd)
+local function replace_buffer_with_command(cmd, ft)
 	local file = vim.fn.expand("%:p")
 
 	vim.bo.buftype = "nofile"
 	vim.bo.bufhidden = "wipe"
 	vim.bo.swapfile = false
 	vim.bo.modifiable = true
+	vim.bo.filetype = ft
 
 	local full_cmd = cmd:gsub("%%", vim.fn.shellescape(file))
 	local output = vim.fn.systemlist(full_cmd)
@@ -13,17 +14,18 @@ local function replace_buffer_with_command(cmd)
 	vim.bo.modifiable = false
 end
 
-local function setup_filetype_view(extension, cmd)
+local function setup_filetype_view(extension, cmd, ft)
 	vim.api.nvim_create_autocmd("BufReadPost", {
 		pattern = extension,
 		callback = function()
-			replace_buffer_with_command(cmd)
+			replace_buffer_with_command(cmd, ft)
 		end,
 	})
 end
 
 setup_filetype_view(
 	"*.so,*.so.2",
-	"objdump --disassembler-color=extended-color --visualize-jumps=extended-color -M intel -T %"
+	"objdump --disassembler-color=extended-color --visualize-jumps=extended-color -M intel -T %",
+	"asm"
 )
-setup_filetype_view("*.o,*.obj", "objdump --disassembler-color=extended-color -M intel -D %")
+setup_filetype_view("*.o,*.obj", "objdump --disassembler-color=extended-color -M intel -D %", "asm")
