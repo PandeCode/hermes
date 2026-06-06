@@ -58,21 +58,6 @@
 
 (local keymap_restore {})
 
-; (set dap.listeners.after.event_initialized.me
-;      (fn []
-;        (each [_ buf (pairs (vim.api.nvim_list_bufs))]
-;          (local keymaps (vim.api.nvim_buf_get_keymap buf :n))
-;          (each [_ keymap (pairs keymaps)] nil
-;            (when (= keymaps.lhs :K)
-;              (table.insert keymap_restore keymap)
-;              (vim.api.nvim_buf_del_keymap buf :n :K))))
-;        (vim.api.nvim_set_keymap :n :K
-;                                 "<CMD>lua require('dap.ui.widgets').hover()<CR>")))
-;
-; (set dap.listeners.after.event_terminated.me
-;      (fn []
-;        nil))
-
 (lua "
 dap.listeners.after['event_initialized']['me'] = function()
   for _, buf in pairs(vim.api.nvim_list_bufs()) do
@@ -85,7 +70,7 @@ dap.listeners.after['event_initialized']['me'] = function()
     end
   end
   vim.api.nvim_set_keymap(
-                      'n', 'K', '<Cmd>lua require(\"dap.ui.widgets \").hover()<CR>', { silent = true})
+                      'n', 'K', '<Cmd>lua require(\"dap-view\").hover()', { silent = true})
 end
 
 dap.listeners.after['event_terminated']['me'] = function()
@@ -128,5 +113,27 @@ end
 
 (vim.keymap.set :n :<leader>dui frontend.open {:desc "Dap ui open"})
 (vim.keymap.set :n :<leader>dux frontend.close {:desc "Dap ui close"})
-(vim.keymap.set :n :<leader>det :<cmd>DapViewVirtualTextToggle<cr>
+(vim.keymap.set :n :<leader>det frontend.virtual_text_toggle
                 {:desc "Dap virt text toggle"})
+
+(each [name sign (pairs {:DapBreakpoint {:text ""
+                                         :texthl :DiagnosticError
+                                         :linehl ""
+                                         :numhl ""}
+                         :DapBreakpointCondition {:text ""
+                                                  :texthl :DiagnosticWarn
+                                                  :linehl ""
+                                                  :numhl ""}
+                         :DapBreakpointRejected {:text ""
+                                                 :texthl :DiagnosticError
+                                                 :linehl ""
+                                                 :numhl ""}
+                         :DapLogPoint {:text "󰆈"
+                                       :texthl :DiagnosticInfo
+                                       :linehl ""
+                                       :numhl ""}
+                         :DapStopped {:text ""
+                                      :texthl :DiagnosticWarn
+                                      :linehl :CursorLine
+                                      :numhl :DiagnosticWarn}})]
+  (vim.fn.sign_define name sign))

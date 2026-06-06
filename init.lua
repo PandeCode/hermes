@@ -144,6 +144,8 @@ package.preload["fnl.keymaps"] = package.preload["fnl.keymaps"] or function(...)
     n("<leader>fs", "<cmd>w<cr>")
     n("g.", "`.")
     n("<leader>co", "<cmd>copen<cr>")
+    n("<leader>cc", "<cmd>cclose<cr>")
+    n("<leader>re", "<cmd>reg<cr>")
     n("<leader>fw", "<cmd>noautocmd w<cr>")
     n("<leader>li", "<cmd>lsp info<cr>", noremap_silent)
     n("<leader>lq", "<cmd>lsp stop<cr>", noremap_silent)
@@ -436,7 +438,7 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
   vim.keymap.set("n", "<leader>pf", parinfer_off)
   vim.keymap.set("n", "<leader>pt", parinfer_toggle)
   local function _51_()
-    if vim.tbl_contains({"racket", "lisp", "fennel"}, vim.bo.filetype) then
+    if vim.tbl_contains({"racket", "lisp", "wat", "wasm", "fennel"}, vim.bo.filetype) then
       return parinfer_on()
     else
       return parinfer_off()
@@ -834,21 +836,21 @@ package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
     local result = ""
     for i, buf in ipairs(bufs) do
       local name = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":t")
-      local icon, hl = MiniIcons.get("file", name)
+      local icon, ihl = MiniIcons.get("file", name)
       local modified = (1 == vim.fn.getbufvar(buf, "&modified"))
       local readonly = (1 == vim.fn.getbufvar(buf, "&readonly"))
       local nowrite = not vim.bo.modifiable
       local locked = (readonly or nowrite)
       local active = (buf == current)
-      local hl0
+      local hl
       if active then
-        hl0 = "TabActive"
+        hl = "TabActive"
       elseif locked then
-        hl0 = "TabLocked"
+        hl = "TabLocked"
       elseif modified then
-        hl0 = "TabModified"
+        hl = "TabModified"
       else
-        hl0 = "TabInactive"
+        hl = "TabInactive"
       end
       local status
       if locked then
@@ -864,7 +866,7 @@ package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
       else
         _123_ = ""
       end
-      result = (("%#" .. hl0 .. "#" .. tostring(icon) .. "%*") .. result .. "%#" .. hl0 .. "# " .. _123_ .. " " .. name .. status .. "%*" .. buf_diag(buf))
+      result = ("%#" .. hl .. "# " .. _123_ .. " " .. ("%#" .. ihl .. "#" .. tostring(icon) .. "%*") .. " " .. name .. status .. " " .. "%#TabLineFill#\238\130\176%*" .. buf_diag(buf))
     end
     return (result .. "%=%#TabLineFill# " .. workspace_diag() .. " ")
   end
@@ -1080,7 +1082,7 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
       end
     end
     vim.api.nvim_set_keymap(
-                        'n', 'K', '<Cmd>lua require("dap.ui.widgets ").hover()<CR>', { silent = true})
+                        'n', 'K', '<Cmd>lua require("dap-view").hover()', { silent = true})
   end
   
   dap.listeners.after['event_terminated']['me'] = function()
@@ -1118,6 +1120,10 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   vim.keymap.set("n", "<M-r>", dap.repl.open, {desc = "Dap repl.open."})
   vim.keymap.set("n", "<leader>dui", frontend.open, {desc = "Dap ui open"})
   vim.keymap.set("n", "<leader>dux", frontend.close, {desc = "Dap ui close"})
-  return vim.keymap.set("n", "<leader>det", "<cmd>DapViewVirtualTextToggle<cr>", {desc = "Dap virt text toggle"})
+  vim.keymap.set("n", "<leader>det", frontend.virtual_text_toggle, {desc = "Dap virt text toggle"})
+  for name, sign in pairs({DapBreakpoint = {text = "\239\134\146", texthl = "DiagnosticError", linehl = "", numhl = ""}, DapBreakpointCondition = {text = "\239\129\153", texthl = "DiagnosticWarn", linehl = "", numhl = ""}, DapBreakpointRejected = {text = "\239\129\170", texthl = "DiagnosticError", linehl = "", numhl = ""}, DapLogPoint = {text = "\243\176\134\136", texthl = "DiagnosticInfo", linehl = "", numhl = ""}, DapStopped = {text = "\239\129\161", texthl = "DiagnosticWarn", linehl = "CursorLine", numhl = "DiagnosticWarn"}}) do
+    vim.fn.sign_define(name, sign)
+  end
+  return nil
 end
 return require("fnl.dap")

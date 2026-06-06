@@ -52,7 +52,7 @@
     (var result "")
     (each [i buf (ipairs bufs)]
       (let [name (vim.fn.fnamemodify (vim.api.nvim_buf_get_name buf) ":t")
-            (icon hl) (MiniIcons.get :file name)
+            (icon ihl) (MiniIcons.get :file name)
             modified (= 1 (vim.fn.getbufvar buf :&modified))
             readonly (= 1 (vim.fn.getbufvar buf :&readonly))
             nowrite (not vim.bo.modifiable)
@@ -65,8 +65,8 @@
             status (if locked " 󰌾"
                        modified " ●"
                        " ")]
-        (set result (.. (shl hl icon) result "%#" hl "# "
-                        (if (<= i 9) (.. i ":") "") " " name status "%*"
+        (set result (.. "%#" hl "# " (if (<= i 9) (.. i ":") "") " "
+                        (shl ihl icon) " " name status " " "%#TabLineFill#%*"
                         (buf-diag buf)))))
     (.. result "%=%#TabLineFill# " (workspace-diag) " ")))
 

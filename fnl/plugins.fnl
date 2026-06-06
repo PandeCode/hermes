@@ -312,6 +312,8 @@
                               :callback (fn []
                                           (if (vim.tbl_contains [:racket
                                                                  :lisp
+                                                                 :wat
+                                                                 :wasm
                                                                  :fennel]
                                                                 vim.bo.filetype)
                                               (parinfer-on)
