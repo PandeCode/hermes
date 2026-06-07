@@ -27,21 +27,15 @@
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nixutils = {
+      url = "github:PandeCode/nixutils";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    ...
-  } @ inputs: let
-    systems = {
-      x86_64-linux = "x86_64-linux";
-      # aarch64-linux = "aarch64-linux";
-      # x86_64-darwin = "x86_64-darwin";
-      # aarch64-darwin = "aarch64-darwin";
-    };
-    supportedSystems = builtins.attrNames systems;
-    forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+  outputs = {self, ...} @ inputs: let
+    inherit (inputs.nixutils.lib) forAllSystems;
 
     extras =
       self
@@ -59,8 +53,6 @@
         sessionVariables.EDITOR = pkgs.lib.mkDefault "nvim";
       };
     };
-    # homeConfigurations = (import ./nix/homeConfigurations.nix) extras;
-    # checks = forAllSystems ((import ./nix/checks.nix) extras);
     devShells = forAllSystems ((import ./nix/devShells.nix) extras);
     packages = forAllSystems ((import ./nix/packages.nix) extras);
   };
