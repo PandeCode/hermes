@@ -1,15 +1,21 @@
-;; fn fucn() void {
+;; fn func() void {
 ; // if i im here
 ; }
 ; ->
-; fn fucn(gpa: std.heap.Allocator) void {
+; fn func(gpa: std.heap.Allocator) void {
 ;   _ = gpa;
 ; // if i im here
 ; }
 
 (fn zig_add_gpa []
   (local node (vim.treesitter.get_node))
-  nil)
+  (if node
+      (do
+        (var parent node)
+        (while (= (parent:type) :function)
+          (print (vim.inspect (parent:name)))
+          (set parent (node:parent))))
+      (print "Invalid node                   ")))
 
 (vim.api.nvim_create_user_command :HermesZigAddGPA zig_add_gpa {})
 (vim.keymap.set :n :<leader>za zig_add_gpa

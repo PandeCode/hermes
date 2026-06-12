@@ -1,6 +1,6 @@
 (vim.api.nvim_create_autocmd :BufWritePost
                              {:pattern :*.fnl
-                              :callback #(vim.fn.jobstart [:./compile.sh]
+                              :callback #(vim.fn.jobstart [:make]
                                                           {:stdout_buffered true
                                                            :stderr_buffered true
                                                            :on_stderr (fn [_

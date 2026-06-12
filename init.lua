@@ -904,56 +904,18 @@ package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
   return vim.keymap.set("n", "<leader>tt", Tabline.toggle, {desc = "Toggle tabline"})
 end
 require("fnl.tabline")
-package.preload["fnl.statuscol"] = package.preload["fnl.statuscol"] or function(...)
-  local M = {}
-  _G.StatusCol = M
-  M.get_signs = function()
-    local buf = vim.api.nvim_win_get_buf(vim.g.statusline_winid)
-    local function _130_()
-      return vim.fn.sign_getdefined[1]
-    end
-    return vim.tbl_map(_130_, vim.fn.sign_getplaced(buf, {group = "*", lnum = vim.v.lnum})[1].signs)
-  end
-  M.column = function()
-    local sign = nil
-    local git_sign = nil
-    for _, s in ipairs(M.get_signs()) do
-      if s.name:find("GitSign") then
-        git_sign = s
-      else
-        sign = s
-      end
-    end
-    local _132_
-    if sign then
-      _132_ = ("%#" .. sign.texthl .. "#" .. sign.text .. "%*")
-    else
-      _132_ = " "
-    end
-    local _134_
-    if git_sign then
-      _134_ = ("%#" .. git_sign.texthl .. "#" .. git_sign.text .. "%*")
-    else
-      _134_ = " "
-    end
-    return (_132_ .. "%=" .. "%{&nu?(&rnu&&v:relnum?v:relnum:v:lnum):''} " .. _134_)
-  end
-  vim.opt.statuscolumn = "%!v:lua.StatusCol.column()"
-  return M
-end
-require("fnl.statuscol")
 package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
   local capabilities = require("blink.cmp").get_lsp_capabilities({textDocument = {foldingRange = {lineFoldingOnly = true, dynamicRegistration = false}}})
   local null_ls = require("null-ls")
   local problems = {{pattern = "\226\128\139", name = "ZERO WIDTH SPACE", replacement = ""}, {pattern = "\194\160", name = "NON-BREAKING SPACE", replacement = " "}, {pattern = "\239\187\191", name = "BYTE ORDER MARK", replacement = ""}, {pattern = "\226\128\141", name = "ZERO WIDTH JOINER", replacement = ""}, {pattern = "\226\128\142", name = "RIGHT-TO-LEFT MARK", replacement = ""}, {pattern = "\226\128\143", name = "LEFT-TO-RIGHT MARK", replacement = ""}}
   local no_problems
-  local function _136_(params)
+  local function _130_(params)
     local diagnostics = {}
     for i, line in ipairs(params.content) do
       for _, problem in ipairs(problems) do
-        local _local_137_ = line:find(problem.pattern)
-        local col = _local_137_[1]
-        local end_col = _local_137_[2]
+        local _local_131_ = line:find(problem.pattern)
+        local col = _local_131_[1]
+        local end_col = _local_131_[2]
         if (col and end_col) then
           table.insert(diagnostics, {row = i, col = col, end_col = (end_col + 1), source = "no-problems", message = problem.name, severity = vim.diagnostic.severity.WARN})
         else
@@ -962,21 +924,21 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
     end
     return diagnostics
   end
-  no_problems = {method = null_ls.methods.DIAGNOSTICS, filetypes = {"*"}, generator = {fn = _136_}}
+  no_problems = {method = null_ls.methods.DIAGNOSTICS, filetypes = {"*"}, generator = {fn = _130_}}
   null_ls.setup({sources = {null_ls.builtins.formatting.fnlfmt, null_ls.builtins.formatting.stylua, null_ls.builtins.formatting.gofmt, null_ls.builtins.formatting.black, null_ls.builtins.formatting.isort, null_ls.builtins.formatting.alejandra, null_ls.builtins.formatting.nixfmt, null_ls.builtins.formatting.clang_format, null_ls.builtins.formatting.typstyle, null_ls.builtins.formatting.just, null_ls.builtins.formatting.gdformat, null_ls.builtins.formatting.dart_format, null_ls.builtins.formatting.prettierd, null_ls.builtins.formatting.cmake_format, null_ls.builtins.diagnostics.gdlint, null_ls.builtins.diagnostics.glslc.with({extra_args = {"--target-env=opengl"}}), null_ls.builtins.diagnostics.qmllint, null_ls.builtins.diagnostics.vale, null_ls.builtins.diagnostics.markdownlint, null_ls.builtins.diagnostics.checkmake, null_ls.builtins.diagnostics.cmake_lint, null_ls.builtins.diagnostics.statix, null_ls.builtins.diagnostics.deadnix, null_ls.builtins.diagnostics.fish, null_ls.builtins.hover.dictionary, null_ls.builtins.hover.printenv, null_ls.builtins.completion.spell, null_ls.builtins.code_actions.statix}})
   null_ls.register(no_problems)
   local function lsp_format_with_fallback(_opts)
     local opts = (_opts or {})
     return vim.lsp.buf.format({bufnr = (opts.bufnr or 0), async = (opts.async or false), timeout_ms = (opts.timeout_ms or 1000)})
   end
-  local function _139_()
+  local function _133_()
     return lsp_format_with_fallback({timeout_ms = 500})
   end
-  vim.api.nvim_create_autocmd("BufWritePre", {pattern = "*", callback = _139_})
-  local function _140_()
+  vim.api.nvim_create_autocmd("BufWritePre", {pattern = "*", callback = _133_})
+  local function _134_()
     return lsp_format_with_fallback()
   end
-  vim.keymap.set({"n", "v"}, "<leader>cf", _140_)
+  vim.keymap.set({"n", "v"}, "<leader>cf", _134_)
   vim.lsp.inlay_hint.enable()
   local noice = require("noice.lsp")
   local snacks = require("snacks")
@@ -987,26 +949,26 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
       return vim.keymap.set("n", k, f)
     end
   end
-  local function _142_()
+  local function _136_()
     return snacks.picker.lsp_references()
   end
-  n("gr", _142_, "[G]oto [R]eferences")
-  local function _143_()
+  n("gr", _136_, "[G]oto [R]eferences")
+  local function _137_()
     return snacks.picker.lsp_implementations()
   end
-  n("gI", _143_, "[G]oto [I]mplementation")
-  local function _144_()
+  n("gI", _137_, "[G]oto [I]mplementation")
+  local function _138_()
     return snacks.picker.lsp_symbols()
   end
-  n("<leader>lds", _144_, "[D]ocument [S]ymbols")
-  local function _145_()
+  n("<leader>lds", _138_, "[D]ocument [S]ymbols")
+  local function _139_()
     return snacks.picker.lsp_workspace_symbols()
   end
-  n("<leader>ws", _145_, "[W]orkspace [S]ymbols")
-  local function _146_()
+  n("<leader>ws", _139_, "[W]orkspace [S]ymbols")
+  local function _140_()
     return vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
   end
-  n("<leader>ei", _146_, "Toggle Inlay")
+  n("<leader>ei", _140_, "Toggle Inlay")
   n("K", noice.hover, "Hover Documentation")
   n("<leader>ltd", vim.lsp.buf.type_definition, "Type [D]efinition")
   n("<space>cl", vim.lsp.codelens.run, "[C]ode [L]ens")
@@ -1045,29 +1007,29 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   dap.adapters["rust-gdb"] = {type = "executable", command = "rust-gdb", args = {"--interpreter=dap", "--eval-command", "set print pretty on"}}
   do
     local pick_2_auto
-    local function _147_()
+    local function _141_()
       return vim.fn.input("Path to executable: ", (vim.fn.getcwd() .. "/"), "file")
     end
-    pick_2_auto = _147_
-    local function _148_()
+    pick_2_auto = _141_
+    local function _142_()
       local name_3_auto = vim.fn.input("Executable name (filter): ")
       return require("dap.utils").pick_process({filter = name_3_auto})
     end
-    dap.configurations.c = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _148_, program = pick_2_auto, request = "attach", type = "gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "gdb"}}
+    dap.configurations.c = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _142_, program = pick_2_auto, request = "attach", type = "gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "gdb"}}
   end
   dap.configurations.cpp = dap.configurations.c
   dap.configurations.zig = dap.configurations.c
   do
     local pick_2_auto
-    local function _149_()
+    local function _143_()
       return vim.fn.input("Path to executable: ", (vim.fn.getcwd() .. "/"), "file")
     end
-    pick_2_auto = _149_
-    local function _150_()
+    pick_2_auto = _143_
+    local function _144_()
       local name_3_auto = vim.fn.input("Executable name (filter): ")
       return require("dap.utils").pick_process({filter = name_3_auto})
     end
-    dap.configurations.rust = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _150_, program = pick_2_auto, request = "attach", type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "rust-gdb"}}
+    dap.configurations.rust = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _144_, program = pick_2_auto, request = "attach", type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "rust-gdb"}}
   end
   local keymap_restore = {}
   
