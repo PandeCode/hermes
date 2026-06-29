@@ -242,6 +242,23 @@ int main() {
 #set text(font: "Libertinus Sans")
 		]],
 	},
+	{ ".envrc", [[
+if has flake; then
+  use flake
+else
+	if has nix; then
+	  use nix
+	fi
+fi
+	]] },
+	{
+		".nvimrc.lua",
+		[[Utils.bind_term("<leader>mr", "zig build run")]],
+	},
+	{
+		".nvimrc.fnl",
+		[[(Utils.bind_term "<leader>mr"  "zig build run")]],
+	},
 }
 
 for _, template in ipairs(templates) do

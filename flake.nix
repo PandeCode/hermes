@@ -28,6 +28,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    vlime = {
+      url = "github:vlime/vlime";
+      flake = false;
+    };
+
     nixutils = {
       url = "github:PandeCode/nixutils";
       inputs.nixpkgs.follows = "nixpkgs";

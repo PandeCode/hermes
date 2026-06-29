@@ -14,6 +14,54 @@
 (fn dap.listeners.before.event_terminated.my-plugin [session body]
   (vim.notify (.. "Session terminated" (vim.inspect session) (vim.inspect body))))
 
+(set dap.adapters.firefox
+     {:type :executable
+      :command :node
+      :args [(.. (os.getenv :VSCODE_FIREFOX_DEBUG) :/dist/adapter.bundle.js)]})
+
+(set dap.adapters.chrome
+     {:type :executable
+      :command :node
+      :args [(.. (os.getenv :VSCODE_CHROME_DEBUG) :/out/src/chromeDebug.js)]})
+
+(set dap.configurations.typescript
+     [{:name "Launch Chrome"
+       :type :chrome
+       :request :attach
+       :program "${file}"
+       :cwd (vim.fn.getcwd)
+       :sourceMaps true
+       :protocol :inspector
+       :port 9222
+       :webRoot "${workspaceFolder}"}
+      {:name "Attach Chrome"
+       :type :chrome
+       :request :attach
+       :program "${file}"
+       :cwd (vim.fn.getcwd)
+       :sourceMaps true
+       :protocol :inspector
+       :port 9222
+       :webRoot "${workspaceFolder}"}
+      {:name "Debug Firefox"
+       :type :firefox
+       :request :launch
+       :reAttach true
+       :url "http://localhost:8080"
+       :webRoot "${workspaceFolder}"
+       :firefoxExecutable (or (os.getenv :BROWSER) :firefox)}
+      {:name "Attach Firefox"
+       :type :firefox
+       :request :attach
+       :reAttach true
+       :url "http://localhost:8080"
+       :webRoot "${workspaceFolder}"
+       :firefoxExecutable (or (os.getenv :BROWSER) :firefox)}])
+
+(set dap.configurations.javascript dap.configurations.typescript)
+(set dap.configurations.javascriptreact dap.configurations.typescript)
+(set dap.configurations.typescriptreact dap.configurations.typescript)
+
 (set dap.adapters.gdb {:type :executable
                        :command :gdb
                        :args [:--interpreter=dap

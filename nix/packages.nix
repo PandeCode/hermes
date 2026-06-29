@@ -3,8 +3,16 @@ self: let
   inherit (inputs) nixpkgs;
 in
   system: let
-    pkgs = nixpkgs.legacyPackages.${system};
+    pkgs = import nixpkgs {
+      inherit system;
+      config.allowUnfree = true;
+    };
     nvim = inputs.neovim-nightly-overlay.packages.${pkgs.system}.default;
+
+    vlime = pkgs.vimUtils.buildVimPlugin {
+      name = "vlime";
+      src = inputs.vlime;
+    };
 
     eagerPlugins = with pkgs.vimPlugins; [
       lz-n
@@ -69,7 +77,7 @@ in
 
       vim-wakatime
       vim-visual-multi
-      # vim-wordmotion
+      vim-wordmotion
       vim-sleuth
 
       haskell-tools-nvim
@@ -77,8 +85,7 @@ in
 
       firenvim
 
-      # vlime
-
+      vlime
       refactoring-nvim
     ];
 
@@ -302,8 +309,13 @@ in
         "RUST_SRC_PATH"
         "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}"
       ];
+      webEnv = [
+        "--set"
+        "VSCODE_FIREFOX_DEBUG"
+        "${pkgs.vscode-extensions.firefox-devtools.vscode-firefox-debug}/share/vscode/extensions/firefox-devtools.vscode-firefox-debug"
+      ];
     in {
-      full = mkEditor "full" profiles.full (lldbEnv ++ rustEnv ++ luaEnv);
+      full = mkEditor "full" profiles.full (lldbEnv ++ rustEnv ++ luaEnv ++ webEnv);
       minimal = mkEditor "minimal" profiles.minimal [];
 
       python = mkEditor "python" profiles.python [];
@@ -311,7 +323,7 @@ in
       rust = mkEditor "rust" profiles.rust (lldbEnv ++ rustEnv);
       cxx = mkEditor "cxx" profiles.cxx lldbEnv;
       go = mkEditor "go" profiles.go lldbEnv;
-      web = mkEditor "web" profiles.web lldbEnv;
+      web = mkEditor "web" profiles.web webEnv;
       fun = mkEditor "fun" profiles.fun lldbEnv;
     };
   in {
