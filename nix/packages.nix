@@ -19,6 +19,8 @@ in
       mini-nvim
       snacks-nvim
 
+      neogen
+
       lz-n
       nvim-lspconfig
       none-ls-nvim

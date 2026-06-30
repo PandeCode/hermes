@@ -318,3 +318,7 @@
                                                                 vim.bo.filetype)
                                               (parinfer-on)
                                               (parinfer-off)))})
+
+(rsetup :neogen)
+(vim.keymap.set :n :<Leader>nf ":lua require('neogen').generate()<CR>"
+                {:noremap true :silent true})

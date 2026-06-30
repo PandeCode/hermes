@@ -444,7 +444,9 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
       return parinfer_off()
     end
   end
-  return vim.api.nvim_create_autocmd("FileType", {pattern = {"*"}, callback = _51_})
+  vim.api.nvim_create_autocmd("FileType", {pattern = {"*"}, callback = _51_})
+  require("neogen").setup((nil or {}))
+  return vim.keymap.set("n", "<Leader>nf", ":lua require('neogen').generate()<CR>", {noremap = true, silent = true})
 end
 require("fnl.plugins")
 package.preload["fnl.theme"] = package.preload["fnl.theme"] or function(...)
@@ -1003,6 +1005,12 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   dap.listeners.before.event_terminated["my-plugin"] = function(session, body)
     return vim.notify(("Session terminated" .. vim.inspect(session) .. vim.inspect(body)))
   end
+  dap.adapters.firefox = {type = "executable", command = "node", args = {(os.getenv("VSCODE_FIREFOX_DEBUG") .. "/dist/adapter.bundle.js")}}
+  dap.adapters.chrome = {type = "executable", command = "node", args = {(os.getenv("VSCODE_CHROME_DEBUG") .. "/out/src/chromeDebug.js")}}
+  dap.configurations.typescript = {{name = "Launch Chrome", type = "chrome", request = "attach", program = "${file}", cwd = vim.fn.getcwd(), sourceMaps = true, protocol = "inspector", port = 9222, webRoot = "${workspaceFolder}"}, {name = "Attach Chrome", type = "chrome", request = "attach", program = "${file}", cwd = vim.fn.getcwd(), sourceMaps = true, protocol = "inspector", port = 9222, webRoot = "${workspaceFolder}"}, {name = "Debug Firefox", type = "firefox", request = "launch", reAttach = true, url = "http://localhost:8080", webRoot = "${workspaceFolder}", firefoxExecutable = (os.getenv("BROWSER") or "firefox")}, {name = "Attach Firefox", type = "firefox", request = "attach", reAttach = true, url = "http://localhost:8080", webRoot = "${workspaceFolder}", firefoxExecutable = (os.getenv("BROWSER") or "firefox")}}
+  dap.configurations.javascript = dap.configurations.typescript
+  dap.configurations.javascriptreact = dap.configurations.typescript
+  dap.configurations.typescriptreact = dap.configurations.typescript
   dap.adapters.gdb = {type = "executable", command = "gdb", args = {"--interpreter=dap", "--eval-command", "set print pretty on"}}
   dap.adapters["rust-gdb"] = {type = "executable", command = "rust-gdb", args = {"--interpreter=dap", "--eval-command", "set print pretty on"}}
   do
