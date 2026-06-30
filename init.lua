@@ -1006,8 +1006,7 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
     return vim.notify(("Session terminated" .. vim.inspect(session) .. vim.inspect(body)))
   end
   dap.adapters.firefox = {type = "executable", command = "node", args = {(os.getenv("VSCODE_FIREFOX_DEBUG") .. "/dist/adapter.bundle.js")}}
-  dap.adapters.chrome = {type = "executable", command = "node", args = {(os.getenv("VSCODE_CHROME_DEBUG") .. "/out/src/chromeDebug.js")}}
-  dap.configurations.typescript = {{name = "Launch Chrome", type = "chrome", request = "attach", program = "${file}", cwd = vim.fn.getcwd(), sourceMaps = true, protocol = "inspector", port = 9222, webRoot = "${workspaceFolder}"}, {name = "Attach Chrome", type = "chrome", request = "attach", program = "${file}", cwd = vim.fn.getcwd(), sourceMaps = true, protocol = "inspector", port = 9222, webRoot = "${workspaceFolder}"}, {name = "Debug Firefox", type = "firefox", request = "launch", reAttach = true, url = "http://localhost:8080", webRoot = "${workspaceFolder}", firefoxExecutable = (os.getenv("BROWSER") or "firefox")}, {name = "Attach Firefox", type = "firefox", request = "attach", reAttach = true, url = "http://localhost:8080", webRoot = "${workspaceFolder}", firefoxExecutable = (os.getenv("BROWSER") or "firefox")}}
+  dap.configurations.typescript = {{name = "Debug Firefox", type = "firefox", request = "launch", reAttach = true, url = "http://localhost:8080", webRoot = "${workspaceFolder}", firefoxExecutable = (os.getenv("BROWSER") or "firefox")}, {name = "Attach Firefox", type = "firefox", request = "attach", reAttach = true, url = "http://localhost:8080", webRoot = "${workspaceFolder}", firefoxExecutable = (os.getenv("BROWSER") or "firefox")}}
   dap.configurations.javascript = dap.configurations.typescript
   dap.configurations.javascriptreact = dap.configurations.typescript
   dap.configurations.typescriptreact = dap.configurations.typescript

@@ -19,31 +19,8 @@
       :command :node
       :args [(.. (os.getenv :VSCODE_FIREFOX_DEBUG) :/dist/adapter.bundle.js)]})
 
-(set dap.adapters.chrome
-     {:type :executable
-      :command :node
-      :args [(.. (os.getenv :VSCODE_CHROME_DEBUG) :/out/src/chromeDebug.js)]})
-
 (set dap.configurations.typescript
-     [{:name "Launch Chrome"
-       :type :chrome
-       :request :attach
-       :program "${file}"
-       :cwd (vim.fn.getcwd)
-       :sourceMaps true
-       :protocol :inspector
-       :port 9222
-       :webRoot "${workspaceFolder}"}
-      {:name "Attach Chrome"
-       :type :chrome
-       :request :attach
-       :program "${file}"
-       :cwd (vim.fn.getcwd)
-       :sourceMaps true
-       :protocol :inspector
-       :port 9222
-       :webRoot "${workspaceFolder}"}
-      {:name "Debug Firefox"
+     [{:name "Debug Firefox"
        :type :firefox
        :request :launch
        :reAttach true
