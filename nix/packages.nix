@@ -30,6 +30,8 @@ in
       nvim-treesitter-context
       nvim-treesitter-textobjects
 
+      rainbow-delimiters-nvim
+
       nvim-notify
       nui-nvim
       noice-nvim
