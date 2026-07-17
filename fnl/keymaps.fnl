@@ -75,8 +75,6 @@
   (n :<c-x> :<c-c>d)
   (i :<c-x> :<c-c>d)
   (c :<c-x> :<c-c>d)
-  ;; use <c-r> to insert original character without triggering things like auto-pairs
-  (i :<c-r> :<c-v> noremap)
   (n :n :nzzzv noremap)
   (n :N :Nzzzv noremap)
   (n :J "mzJ`z" noremap)
