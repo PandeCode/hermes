@@ -6,15 +6,18 @@
   `(fn [tbl#]
      (vim.keymap.set ,mode ,key ,rhs {:buffer tbl#.buf})))
 
-(macro wrap-format-stop [filetypes start stop]
+(macro wrap-format-stop-bind [filetypes start stop bind]
   `(let [fts# (if (= (type ,filetypes) :table) ,filetypes [,filetypes])]
      (autocmd-ft fts#
-                 (keymap-ft :v :<space>fo
-                            (.. "vnoremap <buffer> <SPACE>fo <esc>`>a" ,stop
+                 (keymap-ft :v ,bind
+                            (.. "vnoremap <buffer> " ,bind " <esc>`>a" ,stop
                                 "<esc>`<i" ,start :<esc>)))
      (autocmd-ft fts#
-                 (keymap-ft :n :<space>fo
+                 (keymap-ft :n ,bind
                             (.. "<esc>{o" ,start "<esc>}O" ,stop :<esc>)))))
+
+(macro wrap-format-stop [filetypes start stop]
+  `(wrap-format-stop-bind ,filetypes ,start ,stop :<space>fo))
 
 (macro top-format-stop [filetypes top]
   `(let [fts# (if (= (type ,filetypes) :table) ,filetypes [,filetypes])]
@@ -47,3 +50,6 @@
 
 (top-format-stop :rust "#[rustfmt::skip]")
 (top-format-stop :fennel ";; fnlfmt: skip")
+
+(wrap-format-stop-bind :python "_t=perf_counter()"
+                       "print(f'_t:{perf_counter()-_t:.2f}s')" :<leader>wt)

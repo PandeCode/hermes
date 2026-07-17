@@ -6,7 +6,7 @@ do
     fts_2_auto = {"lua"}
   end
   local function _2_(tbl_2_auto)
-    return vim.keymap.set("v", "<space>fo", ("vnoremap <buffer> <SPACE>fo <esc>`>a" .. "-- stylua: ignore end" .. "<esc>`<i" .. "-- stylua: ignore start" .. "<esc>"), {buffer = tbl_2_auto.buf})
+    return vim.keymap.set("v", "<space>fo", ("vnoremap <buffer> " .. "<space>fo" .. " <esc>`>a" .. "-- stylua: ignore end" .. "<esc>`<i" .. "-- stylua: ignore start" .. "<esc>"), {buffer = tbl_2_auto.buf})
   end
   vim.api.nvim_create_autocmd("Filetype", {callback = _2_, pattern = fts_2_auto})
   local function _3_(tbl_2_auto)
@@ -22,7 +22,7 @@ do
     fts_2_auto = {"python"}
   end
   local function _5_(tbl_2_auto)
-    return vim.keymap.set("v", "<space>fo", ("vnoremap <buffer> <SPACE>fo <esc>`>a" .. "# fmt: on" .. "<esc>`<i" .. "# fmt: off" .. "<esc>"), {buffer = tbl_2_auto.buf})
+    return vim.keymap.set("v", "<space>fo", ("vnoremap <buffer> " .. "<space>fo" .. " <esc>`>a" .. "# fmt: on" .. "<esc>`<i" .. "# fmt: off" .. "<esc>"), {buffer = tbl_2_auto.buf})
   end
   vim.api.nvim_create_autocmd("Filetype", {callback = _5_, pattern = fts_2_auto})
   local function _6_(tbl_2_auto)
@@ -38,7 +38,7 @@ do
     fts_2_auto = {{"haskell", "lhaskell"}}
   end
   local function _8_(tbl_2_auto)
-    return vim.keymap.set("v", "<space>fo", ("vnoremap <buffer> <SPACE>fo <esc>`>a" .. "{- ORMOLU_ENABLE -}" .. "<esc>`<i" .. "{- ORMOLU_DISABLE -}" .. "<esc>"), {buffer = tbl_2_auto.buf})
+    return vim.keymap.set("v", "<space>fo", ("vnoremap <buffer> " .. "<space>fo" .. " <esc>`>a" .. "{- ORMOLU_ENABLE -}" .. "<esc>`<i" .. "{- ORMOLU_DISABLE -}" .. "<esc>"), {buffer = tbl_2_auto.buf})
   end
   vim.api.nvim_create_autocmd("Filetype", {callback = _8_, pattern = fts_2_auto})
   local function _9_(tbl_2_auto)
@@ -54,7 +54,7 @@ do
     fts_2_auto = {{"cpp", "c"}}
   end
   local function _11_(tbl_2_auto)
-    return vim.keymap.set("v", "<space>fo", ("vnoremap <buffer> <SPACE>fo <esc>`>a" .. "// clang-format on" .. "<esc>`<i" .. "// clang-format off" .. "<esc>"), {buffer = tbl_2_auto.buf})
+    return vim.keymap.set("v", "<space>fo", ("vnoremap <buffer> " .. "<space>fo" .. " <esc>`>a" .. "// clang-format on" .. "<esc>`<i" .. "// clang-format off" .. "<esc>"), {buffer = tbl_2_auto.buf})
   end
   vim.api.nvim_create_autocmd("Filetype", {callback = _11_, pattern = fts_2_auto})
   local function _12_(tbl_2_auto)
@@ -70,7 +70,7 @@ do
     fts_2_auto = {"zig"}
   end
   local function _14_(tbl_2_auto)
-    return vim.keymap.set("v", "<space>fo", ("vnoremap <buffer> <SPACE>fo <esc>`>a" .. "// zig fmt: on" .. "<esc>`<i" .. "// zig fmt: off" .. "<esc>"), {buffer = tbl_2_auto.buf})
+    return vim.keymap.set("v", "<space>fo", ("vnoremap <buffer> " .. "<space>fo" .. " <esc>`>a" .. "// zig fmt: on" .. "<esc>`<i" .. "// zig fmt: off" .. "<esc>"), {buffer = tbl_2_auto.buf})
   end
   vim.api.nvim_create_autocmd("Filetype", {callback = _14_, pattern = fts_2_auto})
   local function _15_(tbl_2_auto)
@@ -126,17 +126,33 @@ do
   end
   vim.api.nvim_create_autocmd("Filetype", {callback = _24_, pattern = fts_2_auto})
 end
+do
+  local fts_2_auto
+  if (type("fennel") == "table") then
+    fts_2_auto = "fennel"
+  else
+    fts_2_auto = {"fennel"}
+  end
+  local function _26_(tbl_2_auto)
+    return vim.keymap.set("v", "<space>fo", ("<esc>`<i" .. ";; fnlfmt: skip" .. "<esc>"), {buffer = tbl_2_auto.buf})
+  end
+  vim.api.nvim_create_autocmd("Filetype", {callback = _26_, pattern = fts_2_auto})
+  local function _27_(tbl_2_auto)
+    return vim.keymap.set("n", "<space>fo", ("<esc>{o" .. ";; fnlfmt: skip" .. "<esc>"), {buffer = tbl_2_auto.buf})
+  end
+  vim.api.nvim_create_autocmd("Filetype", {callback = _27_, pattern = fts_2_auto})
+end
 local fts_2_auto
-if (type("fennel") == "table") then
-  fts_2_auto = "fennel"
+if (type("python") == "table") then
+  fts_2_auto = "python"
 else
-  fts_2_auto = {"fennel"}
+  fts_2_auto = {"python"}
 end
-local function _26_(tbl_2_auto)
-  return vim.keymap.set("v", "<space>fo", ("<esc>`<i" .. ";; fnlfmt: skip" .. "<esc>"), {buffer = tbl_2_auto.buf})
+local function _29_(tbl_2_auto)
+  return vim.keymap.set("v", "<leader>wt", ("vnoremap <buffer> " .. "<leader>wt" .. " <esc>`>a" .. "print(f'_t:{perf_counter()-_t:.2f}s')" .. "<esc>`<i" .. "_t=perf_counter()" .. "<esc>"), {buffer = tbl_2_auto.buf})
 end
-vim.api.nvim_create_autocmd("Filetype", {callback = _26_, pattern = fts_2_auto})
-local function _27_(tbl_2_auto)
-  return vim.keymap.set("n", "<space>fo", ("<esc>{o" .. ";; fnlfmt: skip" .. "<esc>"), {buffer = tbl_2_auto.buf})
+vim.api.nvim_create_autocmd("Filetype", {callback = _29_, pattern = fts_2_auto})
+local function _30_(tbl_2_auto)
+  return vim.keymap.set("n", "<leader>wt", ("<esc>{o" .. "_t=perf_counter()" .. "<esc>}O" .. "print(f'_t:{perf_counter()-_t:.2f}s')" .. "<esc>"), {buffer = tbl_2_auto.buf})
 end
-return vim.api.nvim_create_autocmd("Filetype", {callback = _27_, pattern = fts_2_auto})
+return vim.api.nvim_create_autocmd("Filetype", {callback = _30_, pattern = fts_2_auto})
