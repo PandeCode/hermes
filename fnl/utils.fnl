@@ -91,17 +91,18 @@ When (= ?start ?end), returns an empty iterator
 ;; fnlfmt: skip
 (set Utils {})
 
-(fn Utils.open_tmp_term [cmd]
+(fn Utils.open_tmp_term [cmd fb]
   (vim.cmd (.. "botright split | terminal " cmd))
   (local bufnr (vim.api.nvim_win_get_buf 0))
   (vim.api.nvim_set_option_value :buflisted false {:buf bufnr})
   (vim.api.nvim_set_option_value :bufhidden :wipe {:buf bufnr})
   (local h (math.floor (/ vim.o.lines 4)))
   (vim.cmd (.. "resize " h))
-  (vim.cmd "wincmd p"))
+  (vim.cmd "wincmd p")
+  (when (not= fb nil) (fb bufnr)))
 
-(fn Utils.bind_term [bind cmd]
-  (vim.keymap.set :n bind #(Utils.open_tmp_term cmd)))
+(fn Utils.bind_term [bind cmd fb]
+  (vim.keymap.set :n bind #(Utils.open_tmp_term cmd fb)))
 
 (fn Utils.bind_job [bind cmd]
   (vim.keymap.set :n bind #(vim.fn.jobstart [:sh :-c cmd])))
