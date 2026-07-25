@@ -184,11 +184,21 @@ pkgs.mkShell {
 if __name__ == "__main__":
     main()]], { 2, 7 } },
 	{
+		"main.c",
+		[[#include <stdio.h>
+
+int main() {
+    printf("Hello, {{cwd}}!");
+    return 0;
+}]],
+		{ 3, 5 },
+	},
+	{
 		"main.cpp",
 		[[#include <iostream>
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    std::cout << "Hello, {{cwd}}!" << std::endl;
     return 0;
 }]],
 		{ 3, 5 },

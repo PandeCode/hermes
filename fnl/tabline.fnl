@@ -4,11 +4,19 @@
 
 (global Tabline {})
 
+(fn merge-icon-hl [src dst]
+  (let [fg (. (vim.api.nvim_get_hl 0 {:name src :link false}) :fg)
+        bg (. (vim.api.nvim_get_hl 0 {:name dst :link false}) :bg)
+        group (.. src dst)]
+    (when (and fg bg)
+      (vim.api.nvim_set_hl 0 group {: fg : bg}))
+    group))
+
 (let [p MiniBase16.config.palette]
   (vim.api.nvim_set_hl 0 :TabActive {:fg p.base00 :bg p.base0D :bold true})
-  (vim.api.nvim_set_hl 0 :TabInactive {:fg p.base03 :bg p.base01})
-  (vim.api.nvim_set_hl 0 :TabModified {:fg p.base08 :bg p.base01})
-  (vim.api.nvim_set_hl 0 :TabLocked {:fg p.base09 :bg p.base01}))
+  (vim.api.nvim_set_hl 0 :TabInactive {:fg p.base05 :bg p.base02})
+  (vim.api.nvim_set_hl 0 :TabModified {:fg p.base08 :bg p.base02})
+  (vim.api.nvim_set_hl 0 :TabLocked {:fg p.base09 :bg p.base02}))
 
 (fn listed-bufs []
   (vim.tbl_filter (fn [b]
@@ -52,22 +60,23 @@
     (var result "")
     (each [i buf (ipairs bufs)]
       (let [name (vim.fn.fnamemodify (vim.api.nvim_buf_get_name buf) ":t")
-            (icon ihl) (MiniIcons.get :file name)
+            (icon icon-hl) (MiniIcons.get :file name)
             modified (= 1 (vim.fn.getbufvar buf :&modified))
             readonly (= 1 (vim.fn.getbufvar buf :&readonly))
-            nowrite (not vim.bo.modifiable)
+            nowrite (not (= 1 (vim.fn.getbufvar buf :modifiable)))
             locked (or readonly nowrite)
             active (= buf current)
             hl (if active :TabActive
                    locked :TabLocked
                    modified :TabModified
                    :TabInactive)
+            icon-group (merge-icon-hl icon-hl hl)
             status (if locked " 󰌾"
                        modified " ●"
-                       " ")]
-        (set result (.. "%#" hl "# " (if (<= i 9) (.. i ":") "") " "
-                        (shl ihl icon) " " name status " " "%#TabLineFill#%*"
-                        (buf-diag buf)))))
+                       "")]
+        (set result (.. result "%#" hl "# " (if (<= i 9) (.. i ":") "") " "
+                        "%#" icon-group "#" icon "%*%#" hl "# " name status " "
+                        (buf-diag buf) " %*"))))
     (.. result "%=%#TabLineFill# " (workspace-diag) " ")))
 
 (set vim.o.tabline "%!v:lua.Tabline.render()")
