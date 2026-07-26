@@ -20,3 +20,11 @@
 (include :fnl.dap)
 
 ; (vim.keymap.del :i :<c-k>)
+;
+
+(vim.api.nvim_create_user_command :Fnl
+                                  (fn [opts]
+                                    (Fennel.eval (table.concat opts.fargs)
+                                                 {:nargs 1})))
+
+(vim.cmd "cnoreabbrev fnl Fnl")

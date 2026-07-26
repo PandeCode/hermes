@@ -1110,4 +1110,9 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   end
   return nil
 end
-return require("fnl.dap")
+require("fnl.dap")
+local function _147_(opts)
+  return Fennel.eval(table.concat(opts.fargs), {nargs = 1})
+end
+vim.api.nvim_create_user_command("Fnl", _147_)
+return vim.cmd("cnoreabbrev fnl Fnl")
