@@ -84,7 +84,7 @@ in
       vim-wordmotion
       vim-sleuth
 
-      haskell-tools-nvim
+      # haskell-tools-nvim
       rustaceanvim
 
       firenvim
@@ -202,7 +202,7 @@ in
 
           matlab-language-server
 
-          haskell-language-server
+          # haskell-language-server
           cabal-install
           stack
           ghc
