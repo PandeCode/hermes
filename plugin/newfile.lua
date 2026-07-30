@@ -263,11 +263,17 @@ fi
 	]] },
 	{
 		".nvimrc.lua",
-		[[Utils.bind_term("<leader>mr", "zig build run")]],
+		[[
+		Utils.bind_term("<leader>mr", "zig build run -freference-trace=10 -j$(nproc)")
+		vim.lsp.enable("ccls")
+		]],
 	},
 	{
 		".nvimrc.fnl",
-		[[(Utils.bind_term "<leader>mr"  "zig build run")]],
+		[[
+		(Utils.bind_term "<leader>mr" "zig build run -freference-trace=10 -j$(nproc)")
+		(vim.lsp.enable :ccls)
+		]],
 	},
 }
 
