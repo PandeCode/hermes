@@ -303,9 +303,9 @@
       (parinfer-off)
       (parinfer-on)))
 
-(vim.keymap.set :n :<leader>po parinfer-on)
-(vim.keymap.set :n :<leader>pf parinfer-off)
-(vim.keymap.set :n :<leader>pt parinfer-toggle)
+(vim.keymap.set :n :<leader>po parinfer-on {:desc :parinfer-on})
+(vim.keymap.set :n :<leader>pf parinfer-off {:desc :parinfer-off})
+(vim.keymap.set :n :<leader>pt parinfer-toggle {:desc :parinfer-toggle})
 
 (vim.api.nvim_create_autocmd :FileType
                              {:pattern ["*"]

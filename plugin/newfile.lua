@@ -1,3 +1,5 @@
+-- TODO change newfile based on what is in cwd, eg if build.zig then do .nvimrc.fnl for zig, but if makefile then have some make run
+
 -- Template function to insert text into new files
 ---@param pattern string Pattern to match filenames
 ---@param text string Template text to insert
@@ -43,6 +45,17 @@ local function createTemplate(pattern, text, pos, ignored)
 			end
 		end,
 	})
+end
+
+local function cwd_has_switch(sets)
+	for _, set in pairs(sets) do
+		local file = set[1]
+		local cont = set[2]
+		if vim.fn.filereadable("") == 1 then
+			return cont
+		end
+	end
+	return ""
 end
 
 local templates = {
@@ -263,17 +276,45 @@ fi
 	]] },
 	{
 		".nvimrc.lua",
-		[[
-		Utils.bind_term("<leader>mr", "zig build run -freference-trace=10 -j$(nproc)")
-		vim.lsp.enable("ccls")
+		cwd_has_switch({
+			{
+				"build.zig",
+				[[
+Utils.bind_term("<leader>mr", "zig build run -freference-trace=10 -j$(nproc)")
+vim.lsp.enable("ccls")
+vim.g.zig_organise_imports = false
+vim.g.zig_fix_all = false
 		]],
+			},
+		}),
 	},
 	{
 		".nvimrc.fnl",
-		[[
-		(Utils.bind_term "<leader>mr" "zig build run -freference-trace=10 -j$(nproc)")
-		(vim.lsp.enable :ccls)
+		cwd_has_switch({
+			{
+				"build.zig",
+				[[
+(Utils.bind_term "<leader>mr" "zig build run -freference-trace=10 -j$(nproc)")
+(vim.lsp.enable :ccls)
+(set vim.g.zig_organise_imports false)
+(set vim.g.zig_fix_all false)
 		]],
+			},
+		}),
+	},
+
+	{
+		".gitignore",
+		cwd_has_switch({ {
+			"build.zig",
+			[[
+zig-pkg
+.zig-cache
+zig-out
+.clangd
+.ccls-cache
+			]],
+		} }),
 	},
 }
 

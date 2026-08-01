@@ -32,5 +32,30 @@
             "var stdout_writer = std.Io.File.stdout().writer(init.io, &stdout_buffer);",
             "const stdout = &stdout_writer.interface;"
         ]
+    },
+    "panic": {
+        "prefix": "panic",
+        "description": "zig custom panic",
+        "body": [
+            "pub const panic = std.debug.FullPanic(struct {",
+            "    extern",
+            "    pub fn crashed(msg: []const u8, trace: ?usize) noreturn {",
+            "        var buf: [",
+            "                        4098",
+            "                    ]u8 = undefined;",
+            "        const s = std.fmt.bufPrintSentinel(&buf,",
+            "                    \"zenity --error --text '{s}'\", .{msg",
+            "                    },",
+            "                    0) catch",
+            "            std.debug.defaultPanic(msg, trace);",
+            "",
+            "        _ = c_std.system(s.ptr);",
+            "        std.debug.defaultPanic(msg, trace);",
+            "                }",
+            "            }.crashed);",
+            "        ]",
+            "    }",
+            "}"
+        ]
     }
 }
