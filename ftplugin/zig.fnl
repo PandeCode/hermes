@@ -4,8 +4,6 @@
 (set vim.g.zig_organise_imports false)
 (set vim.g.zig_fix_all false)
 
-(fn bool->str [bool] (if bool :true :false))
-
 (fn table_keys [tbl]
   (local keys [])
   (var n 0)
@@ -13,6 +11,8 @@
     (set n (+ n 1))
     (set (. keys n) key))
   keys)
+
+(fn get_from [sr sc er ec] (vim.api.nvim_buf_get_lines 0 sr er false))
 
 (fn insert_at [row col text]
   (let [buf 0
@@ -35,16 +35,19 @@
 (fn find_ancestor_by_type [node ancestor]
   (find_ancestor_by node ancestor (fn [n] (n:type))))
 
-(fn find_child_by_type [parent child]
+(fn find_child_by [parent child query]
   (if (not= nil parent)
       (do
         (var rnode nil)
         (each [node _ (parent:iter_children)
                &until (do
                         (set rnode node)
-                        (= (node:type) child))]
+                        (= (query node) child))]
           nil)
         rnode)))
+
+(fn find_child_by_type [parent child]
+  (find_child_by parent child (fn [n] (n:type))))
 
 ;; fn func() void {
 ; // if i im here
@@ -92,13 +95,18 @@
 ; }
 ; updates error set
 (fn zig_gen_errs []
-  (let [cur_node (vim.treesitter.get_node)] nil))
+  (let [cur_node (vim.treesitter.get_node)
+        parent_fn (find_ancestor_by_type cur_node :function_declaration)
+        (_ body) (. (parent_fn:field :body) 0)
+        (start_row start_col _ end_row end_col _) (body:range)
+        fn_body (get_from start_row start_col end_row end_col)]
+    (vim.notify (vim.inspect fn_body))))
 
 (fn def_ui [tbl opts?]
   (vim.ui.select (table_keys tbl) (or opts? {}) (fn [choice] ((. tbl choice)))))
 
 (fn zig_ui []
-  (def_ui {:Errors (fn [])
+  (def_ui {:Errors zig_gen_errs
            :Toggle_FixAll #(do
                              (set vim.g.zig_fix_all (not vim.g.zig_fix_all))
                              (vim.print "Zig FixAll is now: " vim.g.zig_fix_all))

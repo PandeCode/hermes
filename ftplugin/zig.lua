@@ -2,13 +2,6 @@ vim.g.zig_fmt_parse_errors = 0
 vim.g.zig_fmt_autosave = 0
 vim.g.zig_organise_imports = false
 vim.g.zig_fix_all = false
-local function bool__3estr(bool)
-  if bool then
-    return "true"
-  else
-    return "false"
-  end
-end
 local function table_keys(tbl)
   local keys = {}
   local n = 0
@@ -38,21 +31,21 @@ local function find_ancestor_by(node, ancestor, query)
   end
 end
 local function find_ancestor_by_type(node, ancestor)
-  local function _3_(n)
+  local function _2_(n)
     return n:type()
   end
-  return find_ancestor_by(node, ancestor, _3_)
+  return find_ancestor_by(node, ancestor, _2_)
 end
 local function find_child_by_type(parent, child)
   if (nil ~= parent) then
     local rnode = nil
     for node, _ in parent:iter_children() do
-      local _4_
+      local _3_
       do
         rnode = node
-        _4_ = (node:type() == child)
+        _3_ = (node:type() == child)
       end
-      if _4_ then break end
+      if _3_ then break end
     end
     return rnode
   else
@@ -77,52 +70,52 @@ local function zig_add_param(param)
   end
 end
 local zig_add_io
-local function _8_()
+local function _7_()
   return zig_add_param("io: std.Io")
 end
-zig_add_io = _8_
+zig_add_io = _7_
 local zig_add_alloc
-local function _9_()
+local function _8_()
   return zig_add_param("gpa: std.mem.Allocator")
 end
-zig_add_alloc = _9_
+zig_add_alloc = _8_
 vim.keymap.set("n", "<leader>zz", zig_add_io, {desc = "My zig options"})
 local function zig_gen_errs()
   local cur_node = vim.treesitter.get_node()
   return nil
 end
 local function def_ui(tbl, opts_3f)
-  local function _10_(choice)
+  local function _9_(choice)
     return tbl[choice]()
   end
-  return vim.ui.select(table_keys(tbl), (opts_3f or {}), _10_)
+  return vim.ui.select(table_keys(tbl), (opts_3f or {}), _9_)
 end
 local function zig_ui()
-  local function _11_()
+  local function _10_()
   end
-  local function _12_()
+  local function _11_()
     vim.g.zig_fix_all = not vim.g.zig_fix_all
     return vim.print("Zig FixAll is now: ", vim.g.zig_fix_all)
   end
-  return def_ui({Errors = _11_, Toggle_FixAll = _12_, Add_Io = zig_add_io, Add_Allocator = zig_add_alloc})
+  return def_ui({Errors = _10_, Toggle_FixAll = _11_, Add_Io = zig_add_io, Add_Allocator = zig_add_alloc})
 end
 vim.api.nvim_create_user_command("HermesZig", zig_ui, {})
 vim.keymap.set("n", "<leader>zu", zig_ui, {desc = "My zig options"})
-local function _13_(_)
+local function _12_(_)
   if vim.g.zig_organise_imports then
     return vim.lsp.buf.code_action({context = {only = {"source.organizeImports"}}, apply = true})
   else
     return nil
   end
 end
-vim.api.nvim_create_autocmd("BufWritePre", {pattern = {"*.zig", "*.zon"}, callback = _13_})
-local function _15_(_)
+vim.api.nvim_create_autocmd("BufWritePre", {pattern = {"*.zig", "*.zon"}, callback = _12_})
+local function _14_(_)
   if vim.g.zig_fix_all then
     return vim.lsp.buf.code_action({context = {only = {"source.fixAll"}}, apply = true})
   else
     return nil
   end
 end
-vim.api.nvim_create_autocmd("BufWritePre", {pattern = {"*.zig", "*.zon"}, callback = _15_})
+vim.api.nvim_create_autocmd("BufWritePre", {pattern = {"*.zig", "*.zon"}, callback = _14_})
 vim.lsp.config.zls = {settings = {zls = {enable_build_on_save = true, inlay_hints_hide_redundant_param_names = true, inlay_hints_hide_redundant_param_names_last_token = true, warn_style = true, highlight_global_var_declarations = true, build_on_save_args = {"-fincremental", "-j4"}}}}
 return nil

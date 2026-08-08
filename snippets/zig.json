@@ -1,4 +1,50 @@
 {
+    "fetch": {
+        "prefix": "fetch",
+        "body": [
+            "var body: std.Io.Writer.Allocating = .init(gpa);",
+            "defer body.deinit();",
+            "const fetch_res = try client.fetch(.{",
+            "    .location = .{ .url = url },",
+            "    .method = .GET,",
+            "    .response_writer = &body.writer,",
+            "});",
+            "if (fetch_res.status != .ok) {",
+            "    return error.ReqFail;",
+            "}",
+            "const res_body = try body.toOwnedSlice();"
+        ],
+        "description": "fetch"
+    },
+    "translate c": {
+        "prefix": "translate",
+        "body": [
+            "const somelib = b.addTranslateC(.{",
+            ".root_source_file = blk: {",
+            "const wf = b.addWriteFiles();",
+            "const wf_path = wf.add(\"c_somelib.h\",",
+            "// c",
+            "\\\\#include \"somelib_c.h\"",
+            ");",
+            "break :blk wf_path;",
+            "},",
+            ".optimize = optimize,",
+            ".target = target,",
+            "});",
+            "exe_mod.linkSystemLibrary(\"somelib\", .{});"
+        ],
+        "description": "translate c"
+    },
+    "run": {
+        "prefix": "std.process.run",
+        "body": [
+            "const run_result = try std.process.run(gpa, io, .{ .argv = &.{} });",
+            "defer gpa.free(run_result.stderr);",
+            "defer gpa.free(run_result.stdout);",
+            "if (run_result.term != .exited) return error.Failed;"
+        ],
+        "description": "run a process and free"
+    },
     "io": {
         "prefix": "io",
         "body": [
@@ -30,7 +76,8 @@
         "body": [
             "var stdout_buffer: [1024]u8 = undefined;",
             "var stdout_writer = std.Io.File.stdout().writer(init.io, &stdout_buffer);",
-            "const stdout = &stdout_writer.interface;"
+            "const stdout = &stdout_writer.interface;",
+            "defer stdout.flush();"
         ]
     },
     "panic": {
