@@ -110,9 +110,10 @@ in
     # toolsets
 
     tools = let
-      lldbTools = with pkgs; [
+      sysTools = with pkgs; [
         vscode-extensions.vadimcn.vscode-lldb
         lldb
+        gdb
       ];
     in {
       base = with pkgs; [
@@ -164,9 +165,8 @@ in
           neocmakelsp
           cmake-format
           cmake-lint
-          gdb
         ]
-        ++ lldbTools;
+        ++ sysTools;
 
       rust = with pkgs;
         [
@@ -174,7 +174,14 @@ in
           rust-analyzer
           rustc
         ]
-        ++ lldbTools;
+        ++ sysTools;
+
+      zig = with pkgs;
+        [
+          zig # idk pin, 17 is a good months away
+          zls
+        ]
+        ++ sysTools;
 
       go = with pkgs;
         [
@@ -183,7 +190,7 @@ in
           gotools
           go-tools
         ]
-        ++ lldbTools;
+        ++ sysTools;
 
       web = with pkgs; [
         bun
@@ -211,7 +218,7 @@ in
           ocamlPackages.ocaml-lsp
           # dune_3
         ]
-        ++ lldbTools;
+        ++ sysTools;
     };
 
     # profile definitions
@@ -228,7 +235,7 @@ in
       go = flatten [minimal tools.go];
       web = flatten [minimal tools.web];
       fun = flatten [minimal tools.fun];
-      full = flatten [minimal tools.python tools.cxx tools.rust tools.go tools.web tools.fun];
+      full = flatten [minimal tools.python tools.cxx tools.rust tools.go tools.web tools.fun tools.zig];
     };
 
     # editor builder
@@ -326,6 +333,7 @@ in
 
       rust = mkEditor "rust" profiles.rust (lldbEnv ++ rustEnv);
       cxx = mkEditor "cxx" profiles.cxx lldbEnv;
+      zig = mkEditor "zig" profiles.zig lldbEnv;
       go = mkEditor "go" profiles.go lldbEnv;
       web = mkEditor "web" profiles.web webEnv;
       fun = mkEditor "fun" profiles.fun lldbEnv;
@@ -339,6 +347,7 @@ in
       python
       cxx
       rust
+      zig
       go
       web
       fun
