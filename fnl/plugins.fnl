@@ -262,6 +262,7 @@
 (rsetup :blink.indent)
 (rsetup :blink.cmp
         {:fuzzy {:implementation :prefer_rust}
+         :keymap {:<C-k> {}}
          :signature {:enabled true :window {:show_documentation true}}
          :sources {:providers {:snippets {:opts {:search_paths [(vim.fn.expand "~/hermes/snippets")]}}}}
          :completion {:menu {:draw {:treesitter [:lsp]

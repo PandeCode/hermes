@@ -4,6 +4,12 @@
 
 (global Tabline {})
 
+(macro shl [g s]
+  `(.. "%#" ,g "#" (tostring ,s) "%*"))
+
+(macro shlp [g s]
+  `(.. "%#" ,g "# " (tostring ,s) "%*"))
+
 (fn merge-icon-hl [src dst]
   (let [fg (. (vim.api.nvim_get_hl 0 {:name src :link false}) :fg)
         bg (. (vim.api.nvim_get_hl 0 {:name dst :link false}) :bg)
@@ -30,8 +36,8 @@
                                       {:severity vim.diagnostic.severity.ERROR}))
         w (length (vim.diagnostic.get buf
                                       {:severity vim.diagnostic.severity.WARN}))]
-    (.. (if (> e 0) (.. "%#DiagnosticSignError# " e "%*") "")
-        (if (> w 0) (.. "%#DiagnosticSignWarn# " w "%*") ""))))
+    (.. (if (> e 0) (shlp :DiagnosticSignError e) "")
+        (if (> w 0) (shlp :DiagnosticSignWarn w) ""))))
 
 (fn workspace-diag []
   (let [e (length (vim.diagnostic.get nil
@@ -42,17 +48,14 @@
                                       {:severity vim.diagnostic.severity.HINT}))
         i (length (vim.diagnostic.get nil
                                       {:severity vim.diagnostic.severity.INFO}))]
-    (.. (if (> e 0) (.. "%#DiagnosticSignError# " e "%*") "")
-        (if (> w 0) (.. "%#DiagnosticSignWarn# " w "%*") "")
-        (if (> h 0) (.. "%#DiagnosticSignHint# " h "%*") "")
-        (if (> i 0) (.. "%#DiagnosticSignInfo# " i "%*") ""))))
+    (.. (if (> e 0) (shlp :DiagnosticSignError e) "")
+        (if (> w 0) (shlp :DiagnosticSignWarn w) "")
+        (if (> h 0) (shlp :DiagnosticSignHint h) "")
+        (if (> i 0) (shlp :DiagnosticSignInfo i) ""))))
 
 (fn Tabline.goto [n]
   (let [buf (. (listed-bufs) n)]
     (when buf (vim.api.nvim_set_current_buf buf))))
-
-(macro shl [g s]
-  `(.. "%#" ,g "#" (tostring ,s) "%*"))
 
 (fn Tabline.render []
   (let [current (vim.api.nvim_get_current_buf)
