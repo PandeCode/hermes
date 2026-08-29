@@ -113,3 +113,28 @@ When (= ?start ?end), returns an empty iterator
                       " && exit 0 || tmux last-pane & tmux copy-mode & cat'; tmux last-pane")))
 
 (Utils.bind_term :<leader>to "tmux kill-pane -a")
+
+(fn table_keys [tbl]
+  (local keys [])
+  (var n 0)
+  (each [key _ (pairs tbl)]
+    (set n (+ n 1))
+    (set (. keys n) key))
+  keys)
+
+(fn def_ui [tbl opts?]
+  (vim.ui.select (table_keys tbl) (or opts? {}) (fn [choice] ((. tbl choice)))))
+
+(local bind_exe "Utils.bind_term(\"<leader>mr\", \"./%\")")
+(local bind_run "Utils.bind_term(\"<leader>mr\", \"make run\")")
+(local bind_zig
+       "Utils.bind_term(\"<leader>mr\", \"zig build run -freference-trace=10 -j$(nproc)\")")
+
+(local bind_nix
+       "Utils.bind_term(\"<leader>mr\", \"nix-instantiate --show-trace --eval ./%\")")
+
+(vim.keymap.set :n :<leader>bb
+                #(def_ui {:bind_nix #(loadstring bind_nix)
+                          :bind_zig #(loadstring bind_zig)
+                          :bind_run #(loadstring bind_run)
+                          :bind_exe #(loadstring bind_nix)}))
