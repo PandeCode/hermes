@@ -239,6 +239,7 @@ int main() {
 		[[#show heading: set align(center)
 // #include "@preview/physica:0.8.0"
 // #import "@preview/fletcher:0.5.8" as fletcher: diagram, edge, node, shapes
+// #import "@preview/diagraph:0.3.7": raw-render
 #set enum(numbering: a => [*#a |*])
 #let cros = math.times
 #let vec = math.arrow
