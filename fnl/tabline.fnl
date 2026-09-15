@@ -66,11 +66,11 @@
             (icon icon-hl) (MiniIcons.get :file name)
             modified (= 1 (vim.fn.getbufvar buf :&modified))
             readonly (= 1 (vim.fn.getbufvar buf :&readonly))
-            nowrite (not (= 1 (vim.fn.getbufvar buf :modifiable)))
+            nowrite (not (= 1 (vim.fn.getbufvar buf :&modifiable)))
             locked (or readonly nowrite)
             active (= buf current)
-            hl (if active :TabActive
-                   locked :TabLocked
+            hl (if locked :TabLocked
+                   active :TabActive
                    modified :TabModified
                    :TabInactive)
             icon-group (merge-icon-hl icon-hl hl)

@@ -218,7 +218,6 @@ package.preload["fnl.keymaps"] = package.preload["fnl.keymaps"] or function(...)
       end
     end
     x("A", _25_, {expr = true})
-    n("Q", "")
     n("<Home>", "(col('.') == matchend(getline('.'), '^\\s*')+1 ? '0' : '^')", noremap_expr)
     n("<End>", "(col('.') == match(getline('.'), '\\s*$') ? '$' : 'g_')", noremap_expr)
     v("<End>", "(col('.') == match(getline('.'), '\\s*$') ? '$h' : 'g_')", noremap_expr)
@@ -903,14 +902,14 @@ package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
       local icon, icon_hl = MiniIcons.get("file", name)
       local modified = (1 == vim.fn.getbufvar(buf, "&modified"))
       local readonly = (1 == vim.fn.getbufvar(buf, "&readonly"))
-      local nowrite = not (1 == vim.fn.getbufvar(buf, "modifiable"))
+      local nowrite = not (1 == vim.fn.getbufvar(buf, "&modifiable"))
       local locked = (readonly or nowrite)
       local active = (buf == current)
       local hl
-      if active then
-        hl = "TabActive"
-      elseif locked then
+      if locked then
         hl = "TabLocked"
+      elseif active then
+        hl = "TabActive"
       elseif modified then
         hl = "TabModified"
       else

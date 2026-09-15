@@ -22,7 +22,9 @@
 
 (do
   (n :<esc> (cmd :nohlsearch))
-  (n (leader :fe) (fn [] (vim.cmd.edit "%") (vim.treesitter.start)))
+  (n (leader :fe) #(do
+                     (vim.cmd.edit "%")
+                     (vim.treesitter.start)))
   (n (leader :fs) (cmd :w))
   (n :g. "`.")
   (n (leader :co) (cmd :copen))
@@ -44,12 +46,8 @@
   (n (leader "`") (cmd "e#") noremap_silent)
   (n (leader :gf) (cmd "e <cfile>"))
   (n (leader :<F2>) ":%s/\\<<C-r><C-w>\\>/<C-r><C-w>/g<Left><Left>")
-  (x :I (fn []
-          (if (= (vim.fn.mode) :V) :^<C-v>I :I)) {:expr true})
-  (x :A (fn []
-          (if (= (vim.fn.mode) :V) :$<C-v>A :A)) {:expr true})
-  (n :Q "")
-  ;; Disable visual mode
+  (x :I #(if (= (vim.fn.mode) :V) :^<C-v>I :I) {:expr true})
+  (x :A #(if (= (vim.fn.mode) :V) :$<C-v>A :A) {:expr true})
   (n :<Home> "(col('.') == matchend(getline('.'), '^\\s*')+1 ? '0' : '^')"
      noremap_expr)
   (n :<End> "(col('.') == match(getline('.'), '\\s*$') ? '$' : 'g_')"
