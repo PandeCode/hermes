@@ -193,14 +193,11 @@ in
         ++ sysTools;
 
       web = with pkgs; [
-        bun
         vscode-langservers-extracted
         typescript-language-server
         eslint
         tailwindcss-language-server
         emmet-ls
-        mermaid-cli
-        wasm-language-tools
       ];
 
       fun = with pkgs;
