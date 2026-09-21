@@ -826,8 +826,8 @@ package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
   end
   do
     local p = MiniBase16.config.palette
-    vim.api.nvim_set_hl(0, "TabActive", {fg = p.base00, bg = p.base02, bold = true})
-    vim.api.nvim_set_hl(0, "TabInactive", {fg = p.base05, bg = p.base02})
+    vim.api.nvim_set_hl(0, "TabActive", {fg = p.base05, bg = p.base02, bold = true})
+    vim.api.nvim_set_hl(0, "TabInactive", {fg = p.base00, bg = p.base02})
     vim.api.nvim_set_hl(0, "TabModified", {fg = p.base08, bg = p.base02})
     vim.api.nvim_set_hl(0, "TabLocked", {fg = p.base09, bg = p.base02})
   end

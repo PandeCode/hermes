@@ -103,15 +103,15 @@ local function def_ui(tbl, opts_3f)
   end
   return vim.ui.select(table_keys(tbl), (opts_3f or {}), _10_)
 end
-local function zig_ui()
-  local function _11_()
-    vim.g.zig_fix_all = not vim.g.zig_fix_all
-    return vim.print("Zig FixAll is now: ", vim.g.zig_fix_all)
-  end
-  return def_ui({Errors = zig_gen_errs, Toggle_FixAll = _11_, Add_Io = zig_add_io, Add_Allocator = zig_add_alloc})
+local function zig_toggle_fixall()
+  vim.g.zig_fix_all = not vim.g.zig_fix_all
+  return vim.print("Zig FixAll is now: ", vim.g.zig_fix_all)
 end
-vim.api.nvim_create_user_command("HermesZig", zig_ui, {})
-vim.keymap.set("n", "<leader>zu", zig_ui, {desc = "My zig options"})
+local null_ls = require("null-ls")
+local function _11_()
+  return {{title = "Errors", action = zig_gen_errs}, {title = "Toggle_FixAll", action = zig_toggle_fixall}, {title = "Add_Io", action = zig_add_io}, {title = "Add_Allocator", action = zig_add_alloc}}
+end
+null_ls.register({name = "zig-actions", method = {null_ls.methods.CODE_ACTION}, filetypes = {"zig"}, generator = {fn = _11_}})
 local function _12_(_)
   if vim.g.zig_organise_imports then
     return vim.lsp.buf.code_action({context = {only = {"source.organizeImports"}}, apply = true})

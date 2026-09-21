@@ -105,17 +105,31 @@
 (fn def_ui [tbl opts?]
   (vim.ui.select (table_keys tbl) (or opts? {}) (fn [choice] ((. tbl choice)))))
 
-(fn zig_ui []
-  (def_ui {:Errors zig_gen_errs
-           :Toggle_FixAll #(do
-                             (set vim.g.zig_fix_all (not vim.g.zig_fix_all))
-                             (vim.print "Zig FixAll is now: " vim.g.zig_fix_all))
-           :Add_Io zig_add_io
-           :Add_Allocator zig_add_alloc}))
+(fn zig_toggle_fixall []
+  (set vim.g.zig_fix_all (not vim.g.zig_fix_all))
+  (vim.print "Zig FixAll is now: " vim.g.zig_fix_all))
 
-(vim.api.nvim_create_user_command :HermesZig zig_ui {})
-; TOOD vim.ui.select
-(vim.keymap.set :n :<leader>zu zig_ui {:desc "My zig options"})
+; (fn zig_ui []
+;   (def_ui {:Errors zig_gen_errs
+;            :Toggle_FixAll zig_toggle_fixall
+;            :Add_Io zig_add_io
+;            :Add_Allocator zig_add_alloc}))
+;
+; (vim.api.nvim_create_user_command :HermesZig zig_ui {})
+; ; TOOD vim.ui.select
+; (vim.keymap.set :n :<leader>zu zig_ui {:desc "My zig options"})
+
+(local null_ls (require :null-ls))
+
+(null_ls.register {:name :zig-actions
+                   :method [null_ls.methods.CODE_ACTION]
+                   :filetypes [:zig]
+                   :generator {:fn #[{:title :Errors :action zig_gen_errs}
+                                     {:title :Toggle_FixAll
+                                      :action zig_toggle_fixall}
+                                     {:title :Add_Io :action zig_add_io}
+                                     {:title :Add_Allocator
+                                      :action zig_add_alloc}]}})
 
 (vim.api.nvim_create_autocmd :BufWritePre
                              {:pattern [:*.zig :*.zon]

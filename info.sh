@@ -1,4 +1,4 @@
-nix path-info -rS  github:pandecode/hermes  | sort -k2 -n | awk '{
+nix path-info -rS github:pandecode/hermes | sort -k2 -n | awk '{
   s=$2
   split($1, a, "-")
   name = substr($1, length(a[1]) + 2)
