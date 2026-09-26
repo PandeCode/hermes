@@ -69,12 +69,6 @@
             text (if (= 2 (params:child_count)) param (.. param ", "))] ; idk y 2 maybe the parens
         (insert_at row (+ 1 col) text)))))
 
-; NOTE dont think i need to prevent multiple params
-(local zig_add_io #(zig_add_param "io: std.Io"))
-(local zig_add_alloc #(zig_add_param "gpa: std.mem.Allocator"))
-
-(vim.keymap.set :n :<leader>zz zig_add_io {:desc "My zig options"})
-
 ; zig error set generation
 ; fn f() !void {
 ;     // when i am within the tscontext of is function
@@ -102,22 +96,9 @@
         fn_body (get_from start_row start_col end_row end_col)]
     (vim.notify (vim.inspect fn_body))))
 
-(fn def_ui [tbl opts?]
-  (vim.ui.select (table_keys tbl) (or opts? {}) (fn [choice] ((. tbl choice)))))
-
 (fn zig_toggle_fixall []
   (set vim.g.zig_fix_all (not vim.g.zig_fix_all))
   (vim.print "Zig FixAll is now: " vim.g.zig_fix_all))
-
-; (fn zig_ui []
-;   (def_ui {:Errors zig_gen_errs
-;            :Toggle_FixAll zig_toggle_fixall
-;            :Add_Io zig_add_io
-;            :Add_Allocator zig_add_alloc}))
-;
-; (vim.api.nvim_create_user_command :HermesZig zig_ui {})
-; ; TOOD vim.ui.select
-; (vim.keymap.set :n :<leader>zu zig_ui {:desc "My zig options"})
 
 (local null_ls (require :null-ls))
 
@@ -125,11 +106,15 @@
                    :method [null_ls.methods.CODE_ACTION]
                    :filetypes [:zig]
                    :generator {:fn #[{:title :Errors :action zig_gen_errs}
-                                     {:title :Toggle_FixAll
+                                     {:title (. :Toggle_FixAll
+                                                (if (vim.g.zig_fix_all)
+                                                    ": On"
+                                                    ": Off"))
                                       :action zig_toggle_fixall}
-                                     {:title :Add_Io :action zig_add_io}
+                                     {:title :Add_Io
+                                      :action #(zig_add_param "io: std.Io")}
                                      {:title :Add_Allocator
-                                      :action zig_add_alloc}]}})
+                                      :action #(zig_add_param "gpa: std.mem.Allocator")}]}})
 
 (vim.api.nvim_create_autocmd :BufWritePre
                              {:pattern [:*.zig :*.zon]

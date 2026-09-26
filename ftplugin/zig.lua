@@ -78,17 +78,6 @@ local function zig_add_param(param)
     return nil
   end
 end
-local zig_add_io
-local function _8_()
-  return zig_add_param("io: std.Io")
-end
-zig_add_io = _8_
-local zig_add_alloc
-local function _9_()
-  return zig_add_param("gpa: std.mem.Allocator")
-end
-zig_add_alloc = _9_
-vim.keymap.set("n", "<leader>zz", zig_add_io, {desc = "My zig options"})
 local function zig_gen_errs()
   local cur_node = vim.treesitter.get_node()
   local parent_fn = find_ancestor_by_type(cur_node, "function_declaration")
@@ -97,36 +86,42 @@ local function zig_gen_errs()
   local fn_body = get_from(start_row, start_col, end_row, end_col)
   return vim.notify(vim.inspect(fn_body))
 end
-local function def_ui(tbl, opts_3f)
-  local function _10_(choice)
-    return tbl[choice]()
-  end
-  return vim.ui.select(table_keys(tbl), (opts_3f or {}), _10_)
-end
 local function zig_toggle_fixall()
   vim.g.zig_fix_all = not vim.g.zig_fix_all
   return vim.print("Zig FixAll is now: ", vim.g.zig_fix_all)
 end
 local null_ls = require("null-ls")
-local function _11_()
-  return {{title = "Errors", action = zig_gen_errs}, {title = "Toggle_FixAll", action = zig_toggle_fixall}, {title = "Add_Io", action = zig_add_io}, {title = "Add_Allocator", action = zig_add_alloc}}
+local function _8_()
+  local _9_
+  if vim.g.zig_fix_all() then
+    _9_ = ": On"
+  else
+    _9_ = ": Off"
+  end
+  local function _11_()
+    return zig_add_param("io: std.Io")
+  end
+  local function _12_()
+    return zig_add_param("gpa: std.mem.Allocator")
+  end
+  return {{title = "Errors", action = zig_gen_errs}, {title = ("Toggle_FixAll")[_9_], action = zig_toggle_fixall}, {title = "Add_Io", action = _11_}, {title = "Add_Allocator", action = _12_}}
 end
-null_ls.register({name = "zig-actions", method = {null_ls.methods.CODE_ACTION}, filetypes = {"zig"}, generator = {fn = _11_}})
-local function _12_(_)
+null_ls.register({name = "zig-actions", method = {null_ls.methods.CODE_ACTION}, filetypes = {"zig"}, generator = {fn = _8_}})
+local function _13_(_)
   if vim.g.zig_organise_imports then
     return vim.lsp.buf.code_action({context = {only = {"source.organizeImports"}}, apply = true})
   else
     return nil
   end
 end
-vim.api.nvim_create_autocmd("BufWritePre", {pattern = {"*.zig", "*.zon"}, callback = _12_})
-local function _14_(_)
+vim.api.nvim_create_autocmd("BufWritePre", {pattern = {"*.zig", "*.zon"}, callback = _13_})
+local function _15_(_)
   if vim.g.zig_fix_all then
     return vim.lsp.buf.code_action({context = {only = {"source.fixAll"}}, apply = true})
   else
     return nil
   end
 end
-vim.api.nvim_create_autocmd("BufWritePre", {pattern = {"*.zig", "*.zon"}, callback = _14_})
+vim.api.nvim_create_autocmd("BufWritePre", {pattern = {"*.zig", "*.zon"}, callback = _15_})
 vim.lsp.config.zls = {settings = {zls = {enable_build_on_save = true, inlay_hints_hide_redundant_param_names = true, inlay_hints_hide_redundant_param_names_last_token = true, warn_style = true, highlight_global_var_declarations = true, build_on_save_args = {"-fincremental", "-j4"}}}}
 return nil

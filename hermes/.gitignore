@@ -1,0 +1,5 @@
+.direnv
+
+.clangd
+.ccls-cache
+result
