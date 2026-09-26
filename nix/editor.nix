@@ -1,357 +1,181 @@
-self: let
-  inherit (self) inputs;
-  inherit (inputs) nixpkgs;
-in
-  system: let
-    pkgs = import nixpkgs {
-      inherit system;
-      config.allowUnfree = true;
-    };
-    nvim = inputs.neovim-nightly-overlay.packages.${pkgs.system}.default;
+# builds hermes: neovim wrapped with my plugins, this config and the tools of
+# one profile from nixbuilds' toolsets
+{
+  pkgs,
+  neovim,
+  vlime-src,
+  src,
+}:
 
-    vlime = pkgs.vimUtils.buildVimPlugin {
-      name = "vlime";
-      src = inputs.vlime;
-    };
+let
+  inherit (pkgs) lib;
 
-    eagerPlugins = with pkgs.vimPlugins; [
-      lz-n
-      mini-nvim
-      snacks-nvim
+  vlime = pkgs.vimUtils.buildVimPlugin {
+    name = "vlime";
+    src = vlime-src;
+  };
 
-      neogen
+  eagerPlugins = with pkgs.vimPlugins; [
+    lz-n
+    mini-nvim
+    snacks-nvim
 
-      lz-n
-      nvim-lspconfig
-      none-ls-nvim
-      plenary-nvim
+    neogen
 
-      nvim-treesitter.withAllGrammars
-      nvim-treesitter-context
-      nvim-treesitter-textobjects
+    nvim-lspconfig
+    none-ls-nvim
+    plenary-nvim
 
-      rainbow-delimiters-nvim
+    nvim-treesitter.withAllGrammars
+    nvim-treesitter-context
+    nvim-treesitter-textobjects
 
-      nvim-notify
-      nui-nvim
-      noice-nvim
+    rainbow-delimiters-nvim
 
-      trouble-nvim
+    nvim-notify
+    nui-nvim
+    noice-nvim
 
-      blink-cmp
-      # glsl_analyzer breaks, wait till next blink release
-      # (blink-cmp.overrideAttrs (_old: {
-      #   src = pkgs.fetchFromGitHub {
-      #     owner = "Saghen";
-      #     repo = "blink.cmp";
-      #     rev = "6731979aa370be0e5c7cc73258ce945730a515c9";
-      #     # rev = "main";
-      #     hash = "sha256-zADARdkrmh0bqsbvt9d+eJYpoI5y45FDa3OHQAuu4EU=";
-      #   };
-      # }))
+    trouble-nvim
 
-      blink-pairs
-      blink-indent
+    blink-cmp
+    blink-pairs
+    blink-indent
 
-      friendly-snippets
-      gitsigns-nvim
-      parinfer-rust
+    friendly-snippets
+    gitsigns-nvim
+    parinfer-rust
 
-      oil-nvim
+    oil-nvim
 
-      cord-nvim
+    cord-nvim
 
-      vim-abolish # tpope is the og goat
-      vim-eunuch
-      snacks-nvim # thank you folke
-      mini-nvim # than you echasnovski
-    ];
+    vim-abolish # tpope is the og goat
+    vim-eunuch
+  ];
 
-    lazyPlugins = with pkgs.vimPlugins; [
-      zig-vim
+  lazyPlugins = with pkgs.vimPlugins; [
+    zig-vim
 
-      nvim-dap
-      nvim-dap-python
+    nvim-dap
+    nvim-dap-python
 
-      # nvim-dap-ui
-      nvim-dap-view
+    nvim-dap-view
 
-      nvim-dap-virtual-text
-      nvim-nio
+    nvim-dap-virtual-text
+    nvim-nio
 
-      vim-wakatime
-      vim-visual-multi
-      vim-wordmotion
-      vim-sleuth
+    vim-wakatime
+    vim-visual-multi
+    vim-wordmotion
+    vim-sleuth
 
-      # haskell-tools-nvim
-      rustaceanvim
+    rustaceanvim
 
-      firenvim
+    firenvim
 
-      vlime
-      refactoring-nvim
-    ];
+    vlime
+    refactoring-nvim
+  ];
 
-    plugins = eagerPlugins ++ lazyPlugins;
+  toPluginEntry = lazy: p: ''
+    ["${p.pname or p.name}"] = {
+      path = [[${p}]],
+      url = [[${p.meta.homepage or ""}]],
+      lazy = ${lib.trivial.boolToString lazy}
+    },
+  '';
 
-    toPluginEntry = lazy: p: ''
-      ["${p.pname or p.name}"] = {
-        path = [[${p}]],
-        url = [[${p.meta.homepage or ""}]],
-        lazy = ${
-        if lazy
-        then "true"
-        else "false"
-      }
-      },
-    '';
+  lldb = pkgs.vscode-extensions.vadimcn.vscode-lldb;
 
-    # toolsets
+  lldbEnv = [
+    "--set"
+    "CODELLDB_PATH"
+    "${lldb}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb"
+    "--set"
+    "LIBLLDB_PATH"
+    "${lldb}/share/vscode/extensions/vadimcn.vscode-lldb/lldb/lib/liblldb.so"
+  ];
 
-    tools = let
-      sysTools = with pkgs; [
-        vscode-extensions.vadimcn.vscode-lldb
-        lldb
-        gdb
-      ];
-    in {
-      base = with pkgs; [
-        universal-ctags
-        ripgrep
-        fd
-        proselint
-        ast-grep
-        harper
-      ];
+  rustEnv = [
+    "--set"
+    "RUST_SRC_PATH"
+    "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}"
+  ];
 
-      lua = with pkgs; [
-        emmylua-ls
-        emmylua-check
-        emmylua-doc-cli
-        stylua
-      ];
+  luaEnv = [
+    "--prefix"
+    "LUA_PATH"
+    ";"
+    "${pkgs.luajitPackages.fennel}/share/lua/5.1/?.lua;${pkgs.luajitPackages.fennel}/share/lua/5.1/?/init.lua"
+  ];
 
-      fennel = with pkgs; [
-        luaPackages.fennel
-        fennel-ls
-        fnlfmt
-      ];
+  webEnv = [
+    "--set"
+    "VSCODE_FIREFOX_DEBUG"
+    "${pkgs.vscode-extensions.firefox-devtools.vscode-firefox-debug}/share/vscode/extensions/firefox-devtools.vscode-firefox-debug"
+  ];
 
-      nix = with pkgs; [
-        nixd
-        statix
-        deadnix
-        alejandra
-      ];
+  # extra environment per profile, on top of the profile's tools
+  profileEnv = {
+    # keep-sorted start
+    cxx = lldbEnv;
+    full = lldbEnv ++ rustEnv ++ luaEnv ++ webEnv;
+    fun = lldbEnv;
+    go = lldbEnv;
+    rust = lldbEnv ++ rustEnv;
+    web = webEnv;
+    zig = lldbEnv;
+    # keep-sorted end
+  };
 
-      shell = with pkgs; [
-        bash-language-server
-        shfmt
-      ];
+  mkEditor =
+    {
+      # one of the profiles in nixbuilds' toolsets
+      profile ? "full",
+      # nix expressions nixd evaluates for option completion
+      nixd ? { },
+    }:
+    pkgs.wrapNeovimUnstable neovim {
+      plugins = eagerPlugins ++ lazyPlugins;
+      viAlias = true;
+      vimAlias = true;
 
-      python = with pkgs; [
-        pyrefly
-        ruff
-        basedpyright
-        black
-      ];
-
-      cxx = with pkgs;
-        [
-          asm-lsp
-          ccls
-          clang-tools
-          neocmakelsp
-          cmake-format
-          cmake-lint
-        ]
-        ++ sysTools;
-
-      rust = with pkgs;
-        [
-          cargo
-          rust-analyzer
-          rustc
-        ]
-        ++ sysTools;
-
-      zig = with pkgs;
-        [
-          zig # idk pin, 17 is a good months away
-          zls
-        ]
-        ++ sysTools;
-
-      go = with pkgs;
-        [
-          go
-          gopls
-          gotools
-          go-tools
-        ]
-        ++ sysTools;
-
-      web = with pkgs; [
-        vscode-langservers-extracted
-        typescript-language-server
-        eslint
-        tailwindcss-language-server
-        emmet-ls
-      ];
-
-      fun = with pkgs;
-        [
-          sbcl
-
-          matlab-language-server
-
-          # haskell-language-server
-          cabal-install
-          stack
-          ghc
-
-          ocaml
-          ocamlPackages.ocaml-lsp
-          # dune_3
-        ]
-        ++ sysTools;
-    };
-
-    # profile definitions
-
-    inherit (pkgs.lib) flatten;
-
-    profiles = let
-      minimal = flatten [tools.base tools.lua tools.fennel tools.nix tools.shell];
-    in {
-      inherit minimal;
-      python = flatten [minimal tools.python];
-      cxx = flatten [minimal tools.cxx];
-      rust = flatten [minimal tools.rust];
-      go = flatten [minimal tools.go];
-      web = flatten [minimal tools.web];
-      fun = flatten [minimal tools.fun];
-      full = flatten [minimal tools.python tools.cxx tools.rust tools.go tools.web tools.fun tools.zig];
-    };
-
-    # editor builder
-
-    mkEditor = profile: packages: profileEnv:
-      pkgs.wrapNeovimUnstable nvim {
-        inherit plugins;
-        viAlias = true;
-        vimAlias = true;
-        wrapperArgs =
-          [
-            "--set"
-            "NVIM_APPNAME"
-            "hermes"
-            "--prefix"
-            "LUA_PATH"
-            ":"
-            "${pkgs.luajitPackages.fennel}/share/lua/5.1"
-            "--prefix"
-            "PATH"
-            ":"
-            "${pkgs.lib.makeBinPath packages}"
-          ]
-          ++ profileEnv;
-
-        luaRcContent =
-          (
-            if builtins.hasAttr "self" inputs
-            then ''
-              vim.g.nix_nixd_nixos_options = "(builtins.getFlake "path:${toString inputs.self.outPath}").nixosConfigurations.configname.options"
-              vim.g.nix_nixd_home_manager_options = "(builtins.getFlake "path:${toString inputs.self.outPath}").homeConfigurations.configname.options"
-            ''
-            else ""
-          )
-          + ''
-            vim.opt.runtimepath:prepend([[${self}]])
-
-            vim.g.nix_profile = "${profile}"
-
-            vim.g.nix_nixd_nixpkgs = "import ${pkgs.path} {}"
-
-
-            vim.g.nix_plugins = {
-              ${builtins.concatStringsSep "\n          " (
-              (map (toPluginEntry false) eagerPlugins)
-              ++ (map (toPluginEntry true) lazyPlugins)
-            )}
-            }
-
-            dofile([[${self}/init.lua]])
-          '';
-      };
-
-    # editor variants
-
-    editors = let
-      luaEnv = [
+      wrapperArgs = [
+        "--set"
+        "NVIM_APPNAME"
+        "hermes"
         "--prefix"
         "LUA_PATH"
-        ";"
-        (
-          pkgs.lib.concatMapStringsSep ";" (
-            p: "${p}/share/lua/5.1/?.lua;${p}/share/lua/5.1/?/init.lua"
-          )
-          (
-            with pkgs.luajitPackages; [
-              fennel
-            ]
-          )
-        )
-      ];
-      lldbEnv = [
-        "--set"
-        "CODELLDB_PATH"
-        "${pkgs.vscode-extensions.vadimcn.vscode-lldb}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb"
-        "--set"
-        "LIBLLDB_PATH"
-        "${pkgs.vscode-extensions.vadimcn.vscode-lldb}/share/vscode/extensions/vadimcn.vscode-lldb/lldb/lib/liblldb.so"
-      ];
-      rustEnv = [
-        "--set"
-        "RUST_SRC_PATH"
-        "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}"
-      ];
-      webEnv = [
-        "--set"
-        "VSCODE_FIREFOX_DEBUG"
-        "${pkgs.vscode-extensions.firefox-devtools.vscode-firefox-debug}/share/vscode/extensions/firefox-devtools.vscode-firefox-debug"
-      ];
-    in {
-      full = mkEditor "full" profiles.full (lldbEnv ++ rustEnv ++ luaEnv ++ webEnv);
-      minimal = mkEditor "minimal" profiles.minimal [];
+        ":"
+        "${pkgs.luajitPackages.fennel}/share/lua/5.1"
+        "--prefix"
+        "PATH"
+        ":"
+        (lib.strings.makeBinPath pkgs.toolsets.profiles.${profile})
+      ]
+      ++ profileEnv.${profile} or [ ];
 
-      python = mkEditor "python" profiles.python [];
+      luaRcContent = ''
+        vim.opt.runtimepath:prepend([[${src}]])
 
-      rust = mkEditor "rust" profiles.rust (lldbEnv ++ rustEnv);
-      cxx = mkEditor "cxx" profiles.cxx lldbEnv;
-      zig = mkEditor "zig" profiles.zig lldbEnv;
-      go = mkEditor "go" profiles.go lldbEnv;
-      web = mkEditor "web" profiles.web webEnv;
-      fun = mkEditor "fun" profiles.fun lldbEnv;
+        vim.g.nix_profile = "${profile}"
+
+        vim.g.nix_nixd_nixpkgs = "import ${pkgs.path} {}"
+        ${lib.strings.optionalString (nixd ? nixos) "vim.g.nix_nixd_nixos_options = [[${nixd.nixos}]]"}
+        ${lib.strings.optionalString (
+          nixd ? home-manager
+        ) "vim.g.nix_nixd_home_manager_options = [[${nixd.home-manager}]]"}
+
+        vim.g.nix_plugins = {
+          ${lib.strings.concatStrings (
+            map (toPluginEntry false) eagerPlugins ++ map (toPluginEntry true) lazyPlugins
+          )}
+        }
+
+        dofile([[${src}/init.lua]])
+      '';
     };
-  in {
-    default = editors.full;
+in
 
-    inherit
-      (editors)
-      minimal
-      python
-      cxx
-      rust
-      zig
-      go
-      web
-      fun
-      ;
-
-    cachix = pkgs.buildEnv {
-      name = "cachix";
-      paths = [editors.full];
-    };
-  }
+lib.customisation.makeOverridable mkEditor { }

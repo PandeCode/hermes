@@ -1,15 +1,8 @@
 {
   description = "Hopefully my last iteration on my editor";
 
+  # lets people who use hermes download it instead of building it
   nixConfig = {
-    trusted-users = ["root" "shawn"];
-    experimental-features = ["nix-command" "flakes" "pipe-operators"];
-    accept-flake-config = true;
-    show-trace = true;
-    auto-optimise-store = true;
-
-    # substituters = ["https://aseipp-nix-cache.freetls.fastly.net"];
-
     extra-substituters = [
       "https://charon.cachix.org"
       "https://nix-community.cachix.org"
@@ -20,45 +13,41 @@
     ];
   };
 
-  inputs = {
-    nixpkgs.url = "https://channels.nixos.org/nixos-unstable/nixexprs.tar.zst";
+  outputs = inputs: import ./flake inputs;
 
-    neovim-nightly-overlay = {
-      url = "github:nix-community/neovim-nightly-overlay";
+  inputs = {
+    # the shared nixpkgs pin
+    nixpkgs.follows = "nixbuilds/nixpkgs";
+
+    # my packages and the language toolsets
+    nixbuilds = {
+      type = "github";
+      owner = "PandeCode";
+      repo = "nixbuilds";
+    };
+
+    # my lib and the shared formatter config
+    nixutils = {
+      type = "github";
+      owner = "PandeCode";
+      repo = "nixutils";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # neovim built from master
+    neovim-nightly-overlay = {
+      type = "github";
+      owner = "nix-community";
+      repo = "neovim-nightly-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # common lisp plugin, not in nixpkgs
     vlime = {
-      url = "github:vlime/vlime";
+      type = "github";
+      owner = "vlime";
+      repo = "vlime";
       flake = false;
     };
-
-    nixutils = {
-      url = "github:PandeCode/nixutils";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-  };
-
-  outputs = {self, ...} @ inputs: let
-    inherit (inputs.nixutils.lib) forAllSystems;
-
-    extras =
-      self
-      // {
-        overlays = (import ./nix/overlays.nix) inputs;
-      };
-  in {
-    nix.nixPath = ["nixpkgs=${inputs.nixpkgs}"];
-
-    nixosModules.default = {pkgs, ...}: {
-      environment = {
-        systemPackages = [
-          inputs.self.packages.${pkgs.system}.default
-        ];
-        sessionVariables.EDITOR = pkgs.lib.mkDefault "nvim";
-      };
-    };
-    devShells = forAllSystems ((import ./nix/devShells.nix) extras);
-    packages = forAllSystems ((import ./nix/packages.nix) extras);
   };
 }

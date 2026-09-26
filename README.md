@@ -28,6 +28,24 @@ With flakes enabled and Override nixpkgs:
 --accept-flake-config --extra-experimental-features flakes --extra-experimental-features nix-command --override-input nixpkgs nixpkgs
 ```
 
+## Module
+
+NixOS (`nixosModules.default`) or home-manager (`homeModules.default`):
+
+```nix
+{
+  imports = [ inputs.hermes.nixosModules.default ];
+
+  programs.hermes = {
+    enable = true;
+    profile = "rust"; # minimal python cxx rust zig go web fun full
+    defaultEditor = true;
+    # optional, for nixd option completion
+    nixd.nixos = ''(builtins.getFlake "/home/me/dotnix").nixosConfigurations.laptop.options'';
+  };
+}
+```
+
 ## Binary Cache
 
 Add to your `flake.nix`:
@@ -45,7 +63,6 @@ Add to your `flake.nix`:
 
 ## TODO
 
-- Home manager modules
 - Fennel docsets setup declarative:
   ```bash
   mkdir -p $HOME/.local/share/fennel-ls/docsets/
