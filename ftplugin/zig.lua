@@ -106,7 +106,7 @@ local function _8_()
   end
   return {{title = "Errors", action = zig_gen_errs}, {title = ("Toggle_FixAll")[_9_], action = zig_toggle_fixall}, {title = "Add_Io", action = _11_}, {title = "Add_Allocator", action = _12_}}
 end
-null_ls.register({name = "zig-actions", method = {null_ls.methods.CODE_ACTION}, filetypes = {"zig"}, generator = {fn = _8_}})
+null_ls.register({name = "zig-actions_no_show", method = {null_ls.methods.CODE_ACTION}, filetypes = {"zig"}, generator = {fn = _8_}})
 local function _13_(_)
   if vim.g.zig_organise_imports then
     return vim.lsp.buf.code_action({context = {only = {"source.organizeImports"}}, apply = true})

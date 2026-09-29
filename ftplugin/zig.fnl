@@ -102,7 +102,7 @@
 
 (local null_ls (require :null-ls))
 
-(null_ls.register {:name :zig-actions
+(null_ls.register {:name :zig-actions_no_show
                    :method [null_ls.methods.CODE_ACTION]
                    :filetypes [:zig]
                    :generator {:fn #[{:title :Errors :action zig_gen_errs}

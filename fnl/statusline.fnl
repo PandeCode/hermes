@@ -34,6 +34,9 @@
 (hl! :ParinferOn {:fg (pal :base0B) :bold true})
 (hl! :ParinferOff {:fg (pal :base03)})
 
+(fn endswith [haystack needle]
+  (= (string.sub (- haystack (string.len needle))) needle))
+
 (fn get-attached-clients []
   (local buf_clients (vim.lsp.get_clients {:bufnr 0}))
   (if (= (length buf_clients) 0)
@@ -42,7 +45,8 @@
         (local buf_ft vim.bo.filetype)
         (local buf_client_names [])
         (each [_ client (pairs buf_clients)]
-          (table.insert buf_client_names client.name))
+          (when (not (endswith client.name :_no_show))
+            (table.insert buf_client_names client.name)))
         (let [(ok? null_ls) (pcall require :null-ls)]
           (when ok?
             (each [_ source (ipairs (null_ls.get_sources))]

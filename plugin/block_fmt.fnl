@@ -1,3 +1,6 @@
+; TODO make a textobject actions
+;  fo<textobject>
+;  foip format off ip
 (macro autocmd-ft [filetypes callback]
   `(vim.api.nvim_create_autocmd :Filetype
                                 {:pattern ,filetypes :callback ,callback}))
@@ -32,6 +35,8 @@
 (wrap-format-stop [:cpp :c] "// clang-format off" "// clang-format on")
 
 (wrap-format-stop :zig "// zig fmt: off" "// zig fmt: on")
+
+(wrap-format-stop :nix "# keep-sorted start" "# keep-sorted end")
 
 ; // @typstyle off or /* @typstyle off */
 (top-format-stop :typst "/* @typstyle off */")
