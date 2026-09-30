@@ -35,7 +35,7 @@
 (hl! :ParinferOff {:fg (pal :base03)})
 
 (fn endswith [haystack needle]
-  (= (string.sub (- haystack (string.len needle))) needle))
+  (= (string.sub (- (string.len haystack) (string.len needle))) needle))
 
 (fn get-attached-clients []
   (local buf_clients (vim.lsp.get_clients {:bufnr 0}))

@@ -177,7 +177,10 @@ in {
 	},
 	{
 		"shell.nix",
-		[[{pkgs ? import <nixpkgs> {}}:
+		[[{
+			pkgs ? import <nixpkgs> {}
+			# pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-26.05.tar.gz") { },
+		}:
 pkgs.mkShell {
   packages = with pkgs; [
 

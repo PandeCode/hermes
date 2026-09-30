@@ -577,7 +577,7 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
   vim.api.nvim_set_hl(0, "ParinferOn", {fg = MiniBase16.config.palette.base0B, bold = true})
   vim.api.nvim_set_hl(0, "ParinferOff", {fg = MiniBase16.config.palette.base03})
   local function endswith(haystack, needle)
-    return (string.sub((haystack - string.len(needle))) == needle)
+    return (string.sub((string.len(haystack) - string.len(needle))) == needle)
   end
   local function get_attached_clients()
     local buf_clients = vim.lsp.get_clients({bufnr = 0})
