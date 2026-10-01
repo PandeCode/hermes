@@ -576,9 +576,6 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
   end
   vim.api.nvim_set_hl(0, "ParinferOn", {fg = MiniBase16.config.palette.base0B, bold = true})
   vim.api.nvim_set_hl(0, "ParinferOff", {fg = MiniBase16.config.palette.base03})
-  local function endswith(haystack, needle)
-    return (string.sub((string.len(haystack) - string.len(needle))) == needle)
-  end
   local function get_attached_clients()
     local buf_clients = vim.lsp.get_clients({bufnr = 0})
     if (#buf_clients == 0) then
@@ -587,7 +584,7 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
       local buf_ft = vim.bo.filetype
       local buf_client_names = {}
       for _, client in pairs(buf_clients) do
-        if not endswith(client.name, "_no_show") then
+        if not vim.endswith(client.name, "_no_show") then
           table.insert(buf_client_names, client.name)
         else
         end
