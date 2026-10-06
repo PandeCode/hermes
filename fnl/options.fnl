@@ -67,7 +67,6 @@
                    :writebackup false
                    :swapfile false
                    :undofile true
-                   :undodir (vim.fs.normalize "~/.cache/nvim/undodir")
                    :hidden true
                    :confirm true
                    :autoread true

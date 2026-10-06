@@ -258,13 +258,18 @@
                                           (MiniTrailspace.trim)
                                           (MiniTrailspace.trim_last_lines))})
 
+;; the directory init.lua was loaded from: the nix store copy, or a checkout
+(local hermes-dir
+       (vim.fs.dirname (: (. (debug.getinfo 1 :S) :source) :sub 2)))
+
 ; (rsetup :blink.pairs)
 (rsetup :blink.indent)
 (rsetup :blink.cmp
         {:fuzzy {:implementation :prefer_rust}
          :keymap {:<C-k> {}}
          :signature {:enabled true :window {:show_documentation true}}
-         :sources {:providers {:snippets {:opts {:search_paths [(vim.fn.expand "~/hermes/snippets")]}}}}
+         :sources {:providers {:snippets {:opts {:search_paths [(.. hermes-dir
+                                                                       :/snippets)]}}}}
          :completion {:menu {:draw {:treesitter [:lsp]
                                     :columns [[:kind_icon]
                                               {1 :label
