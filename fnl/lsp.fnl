@@ -18,14 +18,16 @@
                  ;; ‏ (U+200F)
                  ])
 
+;; an empty filetypes list is what none-ls reads as every filetype
 (local no_problems {:method null_ls.methods.DIAGNOSTICS
-                    :filetypes ["*"]
+                    :filetypes {}
                     :generator {:fn (fn [params]
                                       (local diagnostics {})
                                       (each [i line (ipairs params.content)]
                                         (each [_ problem (ipairs problems)]
-                                          (local [col end_col]
-                                                 (line:find problem.pattern))
+                                          (local (col end_col)
+                                                 (line:find problem.pattern 1
+                                                            true))
                                           (when (and col end_col)
                                             (table.insert diagnostics
                                                           {:row i

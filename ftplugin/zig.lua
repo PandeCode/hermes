@@ -61,8 +61,12 @@ local function find_child_by_type(parent, child)
   end
   return find_child_by(parent, child, _5_)
 end
+local function current_node()
+  vim.treesitter.get_parser():parse()
+  return vim.treesitter.get_node()
+end
 local function zig_add_param(param)
-  local cur_node = vim.treesitter.get_node()
+  local cur_node = current_node()
   local parent_fn = find_ancestor_by_type(cur_node, "function_declaration")
   local params = find_child_by_type(parent_fn, "parameters")
   if params then
@@ -79,49 +83,54 @@ local function zig_add_param(param)
   end
 end
 local function zig_gen_errs()
-  local cur_node = vim.treesitter.get_node()
+  local cur_node = current_node()
   local parent_fn = find_ancestor_by_type(cur_node, "function_declaration")
-  local _, body = parent_fn:field("body")[0]
-  local start_row, start_col, _0, end_row, end_col, _1 = body:range()
-  local fn_body = get_from(start_row, start_col, end_row, end_col)
-  return vim.notify(vim.inspect(fn_body))
+  if parent_fn then
+    local body = parent_fn:field("body")[1]
+    local start_row, start_col, end_row, end_col = body:range()
+    local fn_body = get_from(start_row, start_col, (end_row + 1), end_col)
+    return vim.notify(vim.inspect(fn_body))
+  else
+    return nil
+  end
 end
 local function zig_toggle_fixall()
   vim.g.zig_fix_all = not vim.g.zig_fix_all
   return vim.print("Zig FixAll is now: ", vim.g.zig_fix_all)
 end
 local null_ls = require("null-ls")
-local function _8_()
-  local _9_
-  if vim.g.zig_fix_all() then
-    _9_ = ": On"
-  else
-    _9_ = ": Off"
+if not null_ls.is_registered("zig-actions_no_show") then
+  local function _9_()
+    local _10_
+    if vim.g.zig_fix_all then
+      _10_ = ": On"
+    else
+      _10_ = ": Off"
+    end
+    local function _12_()
+      return zig_add_param("io: std.Io")
+    end
+    local function _13_()
+      return zig_add_param("gpa: std.mem.Allocator")
+    end
+    return {{title = "Errors", action = zig_gen_errs}, {title = ("Toggle_FixAll" .. _10_), action = zig_toggle_fixall}, {title = "Add_Io", action = _12_}, {title = "Add_Allocator", action = _13_}}
   end
-  local function _11_()
-    return zig_add_param("io: std.Io")
-  end
-  local function _12_()
-    return zig_add_param("gpa: std.mem.Allocator")
-  end
-  return {{title = "Errors", action = zig_gen_errs}, {title = ("Toggle_FixAll")[_9_], action = zig_toggle_fixall}, {title = "Add_Io", action = _11_}, {title = "Add_Allocator", action = _12_}}
+  null_ls.register({name = "zig-actions_no_show", method = {null_ls.methods.CODE_ACTION}, filetypes = {"zig"}, generator = {fn = _9_}})
+else
 end
-null_ls.register({name = "zig-actions_no_show", method = {null_ls.methods.CODE_ACTION}, filetypes = {"zig"}, generator = {fn = _8_}})
-local function _13_(_)
-  if vim.g.zig_organise_imports then
-    return vim.lsp.buf.code_action({context = {only = {"source.organizeImports"}}, apply = true})
-  else
-    return nil
-  end
-end
-vim.api.nvim_create_autocmd("BufWritePre", {pattern = {"*.zig", "*.zon"}, callback = _13_})
+local group = vim.api.nvim_create_augroup("zig_on_save", {clear = false})
+vim.api.nvim_clear_autocmds({group = group, buffer = 0})
 local function _15_(_)
+  if vim.g.zig_organise_imports then
+    vim.lsp.buf.code_action({context = {only = {"source.organizeImports"}}, apply = true})
+  else
+  end
   if vim.g.zig_fix_all then
     return vim.lsp.buf.code_action({context = {only = {"source.fixAll"}}, apply = true})
   else
     return nil
   end
 end
-vim.api.nvim_create_autocmd("BufWritePre", {pattern = {"*.zig", "*.zon"}, callback = _15_})
+vim.api.nvim_create_autocmd("BufWritePre", {group = group, buffer = 0, callback = _15_})
 vim.lsp.config.zls = {settings = {zls = {enable_build_on_save = true, inlay_hints_hide_redundant_param_names = true, inlay_hints_hide_redundant_param_names_last_token = true, warn_style = true, highlight_global_var_declarations = true, build_on_save_args = {"-fincremental", "-j4"}}}}
 return nil

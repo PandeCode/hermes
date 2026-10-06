@@ -60,8 +60,13 @@
 ;
 ; for gpa, io, ctx (Context, i usually have a struct context {io: Io, gpa: Allocator})
 
+(fn current_node []
+  ;; reparse first, the tree is stale right after an edit
+  (: (vim.treesitter.get_parser) :parse)
+  (vim.treesitter.get_node))
+
 (fn zig_add_param [param]
-  (let [cur_node (vim.treesitter.get_node)
+  (let [cur_node (current_node)
         parent_fn (find_ancestor_by_type cur_node :function_declaration)
         params (find_child_by_type parent_fn :parameters)]
     (when params
@@ -89,12 +94,13 @@
 ; }
 ; updates error set
 (fn zig_gen_errs []
-  (let [cur_node (vim.treesitter.get_node)
-        parent_fn (find_ancestor_by_type cur_node :function_declaration)
-        (_ body) (. (parent_fn:field :body) 0)
-        (start_row start_col _ end_row end_col _) (body:range)
-        fn_body (get_from start_row start_col end_row end_col)]
-    (vim.notify (vim.inspect fn_body))))
+  (let [cur_node (current_node)
+        parent_fn (find_ancestor_by_type cur_node :function_declaration)]
+    (when parent_fn
+      (let [body (. (parent_fn:field :body) 1)
+            (start_row start_col end_row end_col) (body:range)
+            fn_body (get_from start_row start_col (+ end_row 1) end_col)]
+        (vim.notify (vim.inspect fn_body))))))
 
 (fn zig_toggle_fixall []
   (set vim.g.zig_fix_all (not vim.g.zig_fix_all))
@@ -102,30 +108,32 @@
 
 (local null_ls (require :null-ls))
 
-(null_ls.register {:name :zig-actions_no_show
-                   :method [null_ls.methods.CODE_ACTION]
-                   :filetypes [:zig]
-                   :generator {:fn #[{:title :Errors :action zig_gen_errs}
-                                     {:title (. :Toggle_FixAll
-                                                (if (vim.g.zig_fix_all)
-                                                    ": On"
-                                                    ": Off"))
-                                      :action zig_toggle_fixall}
-                                     {:title :Add_Io
-                                      :action #(zig_add_param "io: std.Io")}
-                                     {:title :Add_Allocator
-                                      :action #(zig_add_param "gpa: std.mem.Allocator")}]}})
+;; this file runs for every zig buffer, the source is global
+(when (not (null_ls.is_registered :zig-actions_no_show))
+  (null_ls.register {:name :zig-actions_no_show
+                     :method [null_ls.methods.CODE_ACTION]
+                     :filetypes [:zig]
+                     :generator {:fn #[{:title :Errors :action zig_gen_errs}
+                                       {:title (.. :Toggle_FixAll
+                                                   (if vim.g.zig_fix_all
+                                                       ": On"
+                                                       ": Off"))
+                                        :action zig_toggle_fixall}
+                                       {:title :Add_Io
+                                        :action #(zig_add_param "io: std.Io")}
+                                       {:title :Add_Allocator
+                                        :action #(zig_add_param "gpa: std.mem.Allocator")}]}}))
+
+(local group (vim.api.nvim_create_augroup :zig_on_save {:clear false}))
+(vim.api.nvim_clear_autocmds {: group :buffer 0})
 
 (vim.api.nvim_create_autocmd :BufWritePre
-                             {:pattern [:*.zig :*.zon]
+                             {: group
+                              :buffer 0
                               :callback (fn [_]
                                           (when vim.g.zig_organise_imports
                                             (vim.lsp.buf.code_action {:context {:only [:source.organizeImports]}
-                                                                      :apply true})))})
-
-(vim.api.nvim_create_autocmd :BufWritePre
-                             {:pattern [:*.zig :*.zon]
-                              :callback (fn [_]
+                                                                      :apply true}))
                                           (when vim.g.zig_fix_all
                                             (vim.lsp.buf.code_action {:context {:only [:source.fixAll]}
                                                                       :apply true})))})
