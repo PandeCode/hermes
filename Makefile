@@ -13,6 +13,9 @@ all: $(LUA)
 	@$(FENNEL) --compile $< > $@
 	@echo "pass: $<"
 
+# init.fnl includes every fnl/*.fnl
+init.lua: $(wildcard fnl/*.fnl)
+
 clean:
 	rm -f $(LUA)
 

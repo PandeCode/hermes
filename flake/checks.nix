@@ -56,10 +56,43 @@ let
     }).config;
 
   editorIn = packages: lib.lists.any (p: p.name == nixos.programs.hermes.package.name) packages;
+
+  # starts the editor on an empty home, opens a file of each filetype and
+  # fails on any error message
+  startup =
+    profile:
+    pkgs.runCommandLocal "hermes-startup-${profile}"
+      { nativeBuildInputs = [ self.packages.${system}.${profile} ]; }
+      ''
+        export HOME=$TMPDIR
+        cd $TMPDIR
+        nvim --headless -c "luafile ${./startup.lua}" </dev/null
+        touch $out
+      '';
 in
 
 {
   formatting = self.formatter.${system}.check self;
+
+  # the committed lua is what make builds from the fennel
+  fennel-sync =
+    pkgs.runCommandLocal "hermes-fennel-sync"
+      {
+        nativeBuildInputs = [
+          pkgs.gnumake
+          pkgs.luajitPackages.fennel
+        ];
+      }
+      ''
+        cp -r --no-preserve=mode ${self} src
+        cd src
+        make -B -s
+        diff -r ${self} .
+        touch $out
+      '';
+
+  startup-minimal = startup "minimal";
+  startup-full = startup "full";
 
   modules =
     assert lib.asserts.assertMsg (editorIn nixos.environment.systemPackages)

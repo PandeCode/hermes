@@ -36,5 +36,8 @@ jobs:
       - name: Build flake output
         run: nix build --accept-flake-config --keep-going
 
+      - name: Run checks
+        run: nix flake check --accept-flake-config --keep-going
+
       - name: Check devShell
         run: nix develop --accept-flake-config --keep-going  --command echo OK
