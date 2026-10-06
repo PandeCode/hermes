@@ -1,23 +1,6 @@
 (vim.cmd "packadd nvim.undotree")
 (vim.cmd "packadd nvim.difftool")
 
-(when (= vim.g.nix_plugins nil)
-  nil)
-
-; generate from nix
-; (require :nix_plugins)
-; (vim.pack.add)
-
-;; You can inject lz.n.PluginSpec fields (without the name) via the
-;; `data` field.
-
-;; @type lz.n.pack.Spec[]
-(local plugins [])
-
-;; Add the plugins, replacing the built-in `load` function
-;; with lz.n's implementation.
-(vim.pack.add plugins {:load (. (require :lz.n) :load)})
-
 (macro rsetup [p t]
   `((. (require ,p) :setup) (or ,t {})))
 
@@ -324,6 +307,21 @@
 
 (vim.api.nvim_create_autocmd :BufEnter {:callback parinfer-apply})
 
-(rsetup :neogen)
-(vim.keymap.set :n :<Leader>nf ":lua require('neogen').generate()<CR>"
-                {:noremap true :silent true})
+(local lz (require :lz.n))
+
+;; the opt plugins from nix/editor.nix. DeferredUIEnter is right after the
+;; first screen is drawn, ft loads replay the FileType event for the buffer
+;; fnlfmt: skip
+(lz.load [{1 :zig.vim :ft :zig}
+          {1 :vlime :ft :lisp}
+          ;; its debuggables need nvim-dap on the runtimepath
+          {1 :rustaceanvim :ft :rust :before #(lz.trigger_load :nvim-dap)}
+          {1 :vim-sleuth :event [:BufReadPost :BufNewFile]}
+          {1 :vim-wakatime :event :DeferredUIEnter}
+          {1 :vim-visual-multi :event :DeferredUIEnter}
+          {1 :vim-wordmotion :event :DeferredUIEnter}
+          {1 :refactoring.nvim :cmd :Refactor}
+          {1 :neogen
+           :cmd :Neogen
+           :keys [{1 :<leader>nf 2 #((. (require :neogen) :generate))}]
+           :after #(rsetup :neogen)}])

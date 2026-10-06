@@ -10,8 +10,10 @@
 let
   inherit (pkgs) lib;
 
+  # pname is the opt directory name that lz.n packadds
   vlime = pkgs.vimUtils.buildVimPlugin {
-    name = "vlime";
+    pname = "vlime";
+    version = vlime-src.shortRev;
     src = vlime-src;
   };
 
@@ -19,8 +21,6 @@ let
     lz-n
     mini-nvim
     snacks-nvim
-
-    neogen
 
     nvim-lspconfig
     none-ls-nvim
@@ -51,6 +51,8 @@ let
     vim-eunuch
   ];
 
+  # installed under opt, fnl/plugins.fnl and fnl/dap.fnl tell lz.n when to
+  # packadd each one
   lazyPlugins = with pkgs.vimPlugins; [
     zig-vim
 
@@ -60,7 +62,8 @@ let
     nvim-dap-view
 
     nvim-dap-virtual-text
-    nvim-nio
+
+    neogen
 
     vim-wakatime
     vim-visual-multi
@@ -74,14 +77,6 @@ let
     vlime
     refactoring-nvim
   ];
-
-  toPluginEntry = lazy: p: ''
-    ["${p.pname or p.name}"] = {
-      path = [[${p}]],
-      url = [[${p.meta.homepage or ""}]],
-      lazy = ${lib.trivial.boolToString lazy}
-    },
-  '';
 
   lldb = pkgs.vscode-extensions.vadimcn.vscode-lldb;
 
@@ -134,7 +129,12 @@ let
       nixd ? { },
     }:
     pkgs.wrapNeovimUnstable neovim {
-      plugins = eagerPlugins ++ lazyPlugins;
+      plugins =
+        eagerPlugins
+        ++ map (plugin: {
+          inherit plugin;
+          optional = true;
+        }) lazyPlugins;
       viAlias = true;
       vimAlias = true;
 
@@ -161,12 +161,6 @@ let
         ${lib.strings.optionalString (
           nixd ? home-manager
         ) "vim.g.nix_nixd_home_manager_options = [[${nixd.home-manager}]]"}
-
-        vim.g.nix_plugins = {
-          ${lib.strings.concatStrings (
-            map (toPluginEntry false) eagerPlugins ++ map (toPluginEntry true) lazyPlugins
-          )}
-        }
 
         dofile([[${src}/init.lua]])
       '';
