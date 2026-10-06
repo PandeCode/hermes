@@ -277,60 +277,64 @@ package.preload["fnl.autocmds"] = package.preload["fnl.autocmds"] or function(..
   local function _26_()
     local line = vim.fn.line
     if ((line("'\"") > 0) and (line("'\"") <= line("$"))) then
-      return vim.fn.execute("normal! g`\"")
+      vim.fn.execute("normal! g`\"")
     else
-      return nil
     end
+    return nil
   end
   vim.api.nvim_create_autocmd("BufReadPost", {callback = _26_})
   vim.api.nvim_create_autocmd("TextYankPost", {callback = vim.hl.on_yank})
-  local function _28_()
-    return vim.fn.mkdir(vim.fn.expand("<afile>:p:h"), "p")
+  local function _28_(args)
+    if ((vim.bo[args.buf].buftype == "") and not args.match:find("://", 1, true)) then
+      vim.fn.mkdir(vim.fn.fnamemodify(args.match, ":p:h"), "p")
+    else
+    end
+    return nil
   end
   vim.api.nvim_create_autocmd("BufWritePre", {pattern = "*", callback = _28_})
   vim.opt.number = true
   vim.opt.relativenumber = true
-  local function _29_()
+  local function _30_()
     vim.opt.relativenumber = false
     return nil
   end
-  vim.api.nvim_create_autocmd("InsertEnter", {pattern = "*", callback = _29_})
-  local function _30_()
+  vim.api.nvim_create_autocmd("InsertEnter", {pattern = "*", callback = _30_})
+  local function _31_()
     vim.opt.relativenumber = true
     return nil
   end
-  vim.api.nvim_create_autocmd("InsertLeave", {pattern = "*", callback = _30_})
+  vim.api.nvim_create_autocmd("InsertLeave", {pattern = "*", callback = _31_})
   vim.cmd("\n\n\nif argc() > 1\n\tsilent blast \" load last buffer\n\tsilent bfirst \" switch back to the first\nendif\n\nif exists('+termguicolors')\n\tlet &t_8f=\"\\<Esc>[38;2;%lu;%lu;%lum\"\n\tlet &t_8b=\"\\<Esc>[48;2;%lu;%lu;%lum\"\n\tset termguicolors\nendif\n\nsyntax sync minlines=256\n\n\" Allow saving of files as sudo when I forgot to start vim using sudo.\ncnoremap w!! execute 'write !sudo tee % >/dev/null' <bar> edit!\n")
-  local function _31_()
+  local function _32_()
     local filename = vim.fn.expand("%")
     vim.cmd("!git add %")
     return vim.notify(("Git added '" .. filename .. "'"))
   end
-  vim.api.nvim_create_user_command("Gitadd", _31_, {})
-  local function _32_()
+  vim.api.nvim_create_user_command("Gitadd", _32_, {})
+  local function _33_()
     local filename = vim.fn.expand("%")
     vim.cmd("!chmod +x %")
     return vim.notify(("Given execution rights to '" .. filename .. "'"))
   end
-  vim.api.nvim_create_user_command("Chmodx", _32_, {})
-  local function _33_()
+  vim.api.nvim_create_user_command("Chmodx", _33_, {})
+  local function _34_()
     return vim.cmd("!rm -f %")
   end
-  vim.api.nvim_create_user_command("Rmf", _33_, {})
+  vim.api.nvim_create_user_command("Rmf", _34_, {})
   for from, to in pairs({W = "w", Q = "q", WQ = "wq", Wq = "wq", WQA = "wqa", Wqa = "wqa", QA = "qa", Qa = "qa", E = "e", gitadd = "Gitadd", chmodx = "Chmodx", rmf = "Rmf", fnl = "Fnl"}) do
-    local function _34_()
+    local function _35_()
       if ((vim.fn.getcmdtype() == ":") and (vim.fn.getcmdline() == from)) then
         return to
       else
         return from
       end
     end
-    vim.keymap.set("ca", from, _34_, {expr = true})
+    vim.keymap.set("ca", from, _35_, {expr = true})
   end
   vim.diagnostic.config({virtual_text = true, virtual_lines = {current_line = true}, underline = true, update_in_insert = false})
   local og_virt_text = nil
   local og_virt_line = nil
-  local function _36_()
+  local function _37_()
     if (og_virt_line == nil) then
       og_virt_line = vim.diagnostic.config().virtual_lines
     else
@@ -355,19 +359,17 @@ package.preload["fnl.autocmds"] = package.preload["fnl.autocmds"] or function(..
       return vim.diagnostic.config({virtual_text = false})
     end
   end
-  vim.api.nvim_create_autocmd({"CursorMoved", "DiagnosticChanged"}, {group = vim.api.nvim_create_augroup("diagnostic_only_virtlines", {}), callback = _36_})
-  local function _42_()
-    return pcall(vim.diagnostic.show)
-  end
-  vim.api.nvim_create_autocmd("ModeChanged", {group = vim.api.nvim_create_augroup("diagnostic_redraw", {}), callback = _42_})
+  vim.api.nvim_create_autocmd({"CursorMoved", "DiagnosticChanged"}, {group = vim.api.nvim_create_augroup("diagnostic_only_virtlines", {}), callback = _37_})
   local function _43_()
-    return vim.system({"rm", "fe"})
+    pcall(vim.diagnostic.show)
+    return nil
   end
-  vim.api.nvim_create_autocmd("BufWritePost", {pattern = "fe", callback = _43_})
-  local function _44_()
-    return vim.system({"rm", "f"})
+  vim.api.nvim_create_autocmd("ModeChanged", {group = vim.api.nvim_create_augroup("diagnostic_redraw", {}), callback = _43_})
+  local function _44_(args)
+    vim.fn.delete(args.match)
+    return nil
   end
-  return vim.api.nvim_create_autocmd("BufWritePost", {pattern = "f", callback = _44_})
+  return vim.api.nvim_create_autocmd("BufWritePost", {pattern = {"f", "fe"}, callback = _44_})
 end
 require("fnl.autocmds")
 package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
@@ -877,7 +879,8 @@ end
 require("fnl.statusline")
 package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
   local function _124_()
-    return vim.cmd.redrawtabline()
+    vim.cmd.redrawtabline()
+    return nil
   end
   vim.api.nvim_create_autocmd({"TermRequest", "ModeChanged"}, {desc = "Refresh tabline", callback = _124_})
   Tabline = {}

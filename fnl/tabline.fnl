@@ -1,6 +1,8 @@
 (vim.api.nvim_create_autocmd [:TermRequest :ModeChanged]
                              {:desc "Refresh tabline"
-                              :callback #(vim.cmd.redrawtabline)})
+                              :callback #(do
+                                           (vim.cmd.redrawtabline)
+                                           nil)})
 
 (global Tabline {})
 

@@ -1,6 +1,7 @@
 (vim.api.nvim_create_autocmd :BufWritePost
                              {:pattern :*.fnl
-                              :callback #(vim.fn.jobstart [:make]
+                              :callback #(do
+                                           (vim.fn.jobstart [:make]
                                                           {:stdout_buffered true
                                                            :stderr_buffered true
                                                            :on_stderr (fn [_
@@ -16,4 +17,5 @@
                                                                          code]
                                                                       (if (= code
                                                                              0)
-                                                                          (vim.notify "Fennel Compiled")))})})
+                                                                          (vim.notify "Fennel Compiled")))})
+                                           nil)})

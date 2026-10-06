@@ -17,20 +17,33 @@
 ;      \   exe "normal! g`\"" |
 ;      \ endif
 
+;; autocmd callbacks below end in nil: returning a truthy value (vim.cmd and
+;; vim.fn.execute return "", mkdir returns 1) deletes the autocmd after one run
 (vim.api.nvim_create_autocmd :BufReadPost
                              {:callback #(let [line vim.fn.line]
                                            (when (and (> (line "'\"") 0)
                                                       (<= (line "'\"")
                                                           (line "$")))
-                                             (vim.fn.execute "normal! g`\"")))})
+                                             (vim.fn.execute "normal! g`\""))
+                                           nil)})
 
 (vim.api.nvim_create_autocmd :TextYankPost {:callback vim.hl.on_yank})
 
-;; Make parent folders if they don't exist
+;; Make parent folders if they don't exist, only for real files (not oil:// and
+;; other buffers that write through a plugin)
 (vim.api.nvim_create_autocmd :BufWritePre
                              {:pattern "*"
-                              :callback #(vim.fn.mkdir (vim.fn.expand "<afile>:p:h")
-                                                       :p)})
+                              :callback (fn [args]
+                                          (when (and (= (. vim.bo args.buf
+                                                           :buftype)
+                                                        "")
+                                                     (not (args.match:find "://"
+                                                                           1
+                                                                           true)))
+                                            (vim.fn.mkdir (vim.fn.fnamemodify args.match
+                                                                              ":p:h")
+                                                          :p))
+                                          nil)})
 
 (set vim.opt.number true)
 (set vim.opt.relativenumber true)
@@ -144,10 +157,13 @@ cnoremap w!! execute 'write !sudo tee % >/dev/null' <bar> edit!
 (vim.api.nvim_create_autocmd :ModeChanged
                              {:group (vim.api.nvim_create_augroup :diagnostic_redraw
                                                                   {})
-                              :callback #(pcall vim.diagnostic.show)})
+                              :callback #(do
+                                           (pcall vim.diagnostic.show)
+                                           nil)})
 
+;; a file called f or fe is a typo for a <leader>f map, delete it after the write
 (vim.api.nvim_create_autocmd :BufWritePost
-                             {:pattern :fe :callback #(vim.system [:rm :fe])})
-
-(vim.api.nvim_create_autocmd :BufWritePost
-                             {:pattern :f :callback #(vim.system [:rm :f])})
+                             {:pattern [:f :fe]
+                              :callback (fn [args]
+                                          (vim.fn.delete args.match)
+                                          nil)})
