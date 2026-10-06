@@ -1,4 +1,9 @@
 (vim.loader.enable)
+
+;; before any include, keymaps take the leader at the time they are set
+(set vim.g.mapleader " ")
+(set vim.g.maplocalleader "\\")
+
 (global Fennel nil)
 
 (let [(ok? _fennel) (pcall (. (require :fennel) :install))]
@@ -24,5 +29,5 @@
 
 (vim.api.nvim_create_user_command :Fnl
                                   (fn [opts]
-                                    (Fennel.eval (table.concat opts.fargs)
-                                                 {:nargs 1})))
+                                    (vim.print (Fennel.eval opts.args)))
+                                  {:nargs "+"})

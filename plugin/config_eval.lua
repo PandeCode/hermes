@@ -1,9 +1,11 @@
 local function eval(c)
   local case_1_ = vim.bo.ft
   if (case_1_ == "lua") then
-    return loadstring(c)
+    local expr = loadstring(("return " .. c))
+    local chunk, err = loadstring(c)
+    return assert((expr or chunk), err)()
   elseif (case_1_ == "vim") then
-    return vim.cmd(c)
+    return vim.api.nvim_exec2(c, {output = true}).output
   elseif (case_1_ == "fennel") then
     if Fennel then
       return Fennel.eval(c)
@@ -30,19 +32,17 @@ local function eval_line()
   return eval(vim.api.nvim_get_current_line())
 end
 local function eval_blk()
-  local start = vim.api.nvim_buf_get_mark(0, "<")
-  local _end = vim.api.nvim_buf_get_mark(0, ">")
-  local lines = vim.api.nvim_buf_get_lines(0, (start[1] - 1), _end[1], false)
+  local lines = vim.fn.getregion(vim.fn.getpos("v"), vim.fn.getpos("."), {type = vim.fn.mode()})
   return eval(table.concat(lines, "\n"))
 end
 local function _6_()
   vim.keymap.set("n", "<leader>sf", eval_file, {buffer = true})
   local function _7_()
-    return vim.notify(eval_line())
+    return vim.notify(vim.inspect(eval_line()))
   end
   vim.keymap.set("n", "<leader>ee", _7_, {buffer = true})
   local function _8_()
-    return vim.notify(eval_blk())
+    return vim.notify(vim.inspect(eval_blk()))
   end
   return vim.keymap.set("v", "<leader>ee", _8_, {buffer = true})
 end

@@ -123,18 +123,16 @@ When (= ?start ?end), returns an empty iterator
   keys)
 
 (fn def_ui [tbl opts?]
-  (vim.ui.select (table_keys tbl) (or opts? {}) (fn [choice] ((. tbl choice)))))
+  (vim.ui.select (table_keys tbl) (or opts? {})
+                 (fn [choice]
+                   (when choice
+                     ((. tbl choice))))))
 
-(local bind_exe "Utils.bind_term(\"<leader>mr\", \"./%\")")
-(local bind_run "Utils.bind_term(\"<leader>mr\", \"make run\")")
-(local bind_zig
-       "Utils.bind_term(\"<leader>mr\", \"zig build run -freference-trace=10 -j$(nproc)\")")
-
-(local bind_nix
-       "Utils.bind_term(\"<leader>mr\", \"nix-instantiate --show-trace --eval ./%\")")
+(fn runner [cmd]
+  #(Utils.bind_term :<leader>mr cmd))
 
 (vim.keymap.set :n :<leader>bb
-                #(def_ui {:bind_nix #(loadstring bind_nix)
-                          :bind_zig #(loadstring bind_zig)
-                          :bind_run #(loadstring bind_run)
-                          :bind_exe #(loadstring bind_nix)}))
+                #(def_ui {:bind_nix (runner "nix-instantiate --show-trace --eval ./%")
+                          :bind_zig (runner "zig build run -freference-trace=10 -j$(nproc)")
+                          :bind_run (runner "make run")
+                          :bind_exe (runner "./%")}))

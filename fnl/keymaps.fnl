@@ -1,6 +1,3 @@
-(set vim.g.mapleader " ")
-(set vim.g.maplocalleader "\\")
-
 (macro defset [m ms]
   `(fn ,m
      [a# b# c#]
