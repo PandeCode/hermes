@@ -36,10 +36,7 @@ let
     nui-nvim
     noice-nvim
 
-    trouble-nvim
-
     blink-cmp
-    blink-pairs
     blink-indent
 
     friendly-snippets

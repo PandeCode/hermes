@@ -71,7 +71,6 @@
                    :confirm true
                    :autoread true
                    :fileencoding :utf-8
-                   :encoding :UTF-8
                    ;; interface
                    :mouse :a
                    :updatetime 100
@@ -92,7 +91,6 @@
                    ;
                    ;; performance
                    :synmaxcol 240
-                   :ttyfast true
                    :redrawtime 1000
                    ;; misc
                    :wildignore (table.concat [:*.pyc

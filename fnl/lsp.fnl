@@ -115,7 +115,7 @@
 (n :gd vim.lsp.buf.definition "[G]oto [D]efinition")
 (n :gD vim.lsp.buf.declaration "[G]oto [D]eclaration")
 
-;; lsps that i dont want to turn on automatically
+;; each starts when a buffer of its filetype opens
 (each [_ k (ipairs [;:emmylua_ls
                     :asm_lsp
                     :ast_grep
@@ -123,7 +123,6 @@
                     :cir_lsp_server
                     :clojure_lsp
                     ; :cmake ; in python vs rust
-                    :neocmakelsp
                     :fennel_ls
                     :glsl_analyzer
                     :neocmake

@@ -263,7 +263,6 @@
 (local hermes-dir
        (vim.fs.dirname (: (. (debug.getinfo 1 :S) :source) :sub 2)))
 
-; (rsetup :blink.pairs)
 (rsetup :blink.indent)
 (rsetup :blink.cmp
         {:fuzzy {:implementation :prefer_rust}

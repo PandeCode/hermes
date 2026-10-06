@@ -140,7 +140,7 @@ package.preload["fnl.options"] = package.preload["fnl.options"] or function(...)
   for _, plugin in ipairs({"netrwPlugin", "netrw", "gzip", "zip", "zipPlugin", "tar", "tarPlugin", "getscript", "getscriptPlugin", "vimball", "vimballPlugin", "2html_plugin", "logipat", "rrhelper", "spellfile_plugin", "matchit"}) do
     vim.g[("loaded_" .. plugin)] = 1
   end
-  for k, v in pairs({inccommand = "split", breakindent = true, number = true, relativenumber = true, termguicolors = true, cursorline = true, signcolumn = "yes", colorcolumn = "80", list = true, listchars = "tab:\226\134\146 ,lead:\194\183,trail:\194\183,nbsp:\226\144\163", pumblend = 20, winblend = 20, showmatch = true, scrolloff = 8, sidescrolloff = 8, laststatus = 3, expandtab = true, shiftwidth = 4, tabstop = 4, softtabstop = 4, smartindent = true, autoindent = true, smarttab = true, wrap = true, linebreak = true, formatoptions = "jcroqlnt", conceallevel = 1, virtualedit = "block", completeopt = "menu,menuone,noselect", hlsearch = true, incsearch = true, ignorecase = true, smartcase = true, gdefault = true, undofile = true, hidden = true, confirm = true, autoread = true, fileencoding = "utf-8", encoding = "UTF-8", mouse = "a", updatetime = 100, timeoutlen = 500, ttimeoutlen = 10, history = 1000, cmdheight = 1, splitbelow = true, splitright = true, guifont = "FantasqueSansM Nerd Font:h14", guicursor = "n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor,sm:block-blinkwait175-blinkoff150-blinkon175", visualbell = true, title = true, shortmess = "filnxtToOFIc", spell = true, spelllang = "en_us", synmaxcol = 240, ttyfast = true, redrawtime = 1000, wildignore = table.concat({"*.pyc", "*_build/*", "**/coverage/*", "**/Debug/*", "**/build/*", "**/node_modules/*", "**/android/*", "**/ios/*", "**/.git/*", "*.lock", "*.aux", "*.bbl", "*.bcf", "*.blg", "*.fdb_latexmk", "*.fls", "*.log", "*.pdf", "*.run.xml", "*.synctex.gz", "*.tex", "*.toc", "*.DS_Store", "*.class", "*.out"}, ","), wildmode = "longest:full,full", wildmenu = true, backspace = "indent,eol,start", showcmd = true, ruler = true, backup = false, showmode = false, swapfile = false, writebackup = false}) do
+  for k, v in pairs({inccommand = "split", breakindent = true, number = true, relativenumber = true, termguicolors = true, cursorline = true, signcolumn = "yes", colorcolumn = "80", list = true, listchars = "tab:\226\134\146 ,lead:\194\183,trail:\194\183,nbsp:\226\144\163", pumblend = 20, winblend = 20, showmatch = true, scrolloff = 8, sidescrolloff = 8, laststatus = 3, expandtab = true, shiftwidth = 4, tabstop = 4, softtabstop = 4, smartindent = true, autoindent = true, smarttab = true, wrap = true, linebreak = true, formatoptions = "jcroqlnt", conceallevel = 1, virtualedit = "block", completeopt = "menu,menuone,noselect", hlsearch = true, incsearch = true, ignorecase = true, smartcase = true, gdefault = true, undofile = true, hidden = true, confirm = true, autoread = true, fileencoding = "utf-8", mouse = "a", updatetime = 100, timeoutlen = 500, ttimeoutlen = 10, history = 1000, cmdheight = 1, splitbelow = true, splitright = true, guifont = "FantasqueSansM Nerd Font:h14", guicursor = "n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor,sm:block-blinkwait175-blinkoff150-blinkon175", visualbell = true, title = true, shortmess = "filnxtToOFIc", spell = true, spelllang = "en_us", synmaxcol = 240, redrawtime = 1000, wildignore = table.concat({"*.pyc", "*_build/*", "**/coverage/*", "**/Debug/*", "**/build/*", "**/node_modules/*", "**/android/*", "**/ios/*", "**/.git/*", "*.lock", "*.aux", "*.bbl", "*.bcf", "*.blg", "*.fdb_latexmk", "*.fls", "*.log", "*.pdf", "*.run.xml", "*.synctex.gz", "*.tex", "*.toc", "*.DS_Store", "*.class", "*.out"}, ","), wildmode = "longest:full,full", wildmenu = true, backspace = "indent,eol,start", showcmd = true, ruler = true, backup = false, showmode = false, swapfile = false, writebackup = false}) do
     vim.o[k] = v
   end
   return nil
@@ -292,8 +292,6 @@ package.preload["fnl.autocmds"] = package.preload["fnl.autocmds"] or function(..
     return nil
   end
   vim.api.nvim_create_autocmd("BufWritePre", {pattern = "*", callback = _28_})
-  vim.opt.number = true
-  vim.opt.relativenumber = true
   local function _30_()
     vim.opt.relativenumber = false
     return nil
@@ -304,7 +302,7 @@ package.preload["fnl.autocmds"] = package.preload["fnl.autocmds"] or function(..
     return nil
   end
   vim.api.nvim_create_autocmd("InsertLeave", {pattern = "*", callback = _31_})
-  vim.cmd("\n\n\nif argc() > 1\n\tsilent blast \" load last buffer\n\tsilent bfirst \" switch back to the first\nendif\n\nif exists('+termguicolors')\n\tlet &t_8f=\"\\<Esc>[38;2;%lu;%lu;%lum\"\n\tlet &t_8b=\"\\<Esc>[48;2;%lu;%lu;%lum\"\n\tset termguicolors\nendif\n\nsyntax sync minlines=256\n\n\" Allow saving of files as sudo when I forgot to start vim using sudo.\ncnoremap w!! execute 'write !sudo tee % >/dev/null' <bar> edit!\n")
+  vim.cmd("\n\n\nif argc() > 1\n\tsilent blast \" load last buffer\n\tsilent bfirst \" switch back to the first\nendif\n\n")
   local function _32_()
     local filename = vim.fn.expand("%")
     vim.cmd("!git add %")
@@ -1116,7 +1114,7 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
   n("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")
   n("gd", vim.lsp.buf.definition, "[G]oto [D]efinition")
   n("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
-  for _, k in ipairs({"asm_lsp", "ast_grep", "bashls", "cir_lsp_server", "clojure_lsp", "neocmakelsp", "fennel_ls", "glsl_analyzer", "neocmake", "nixd", "html", "cssls", "fish_lsp", "omnisharp", "tinymist", "ocamllsp", "nushell", "denols", "jsonls", "pyrefly", "racket_langserver", "wasm_language_tools", "wgsl_analyzer", "zls", "matlab_ls", "gopls"}) do
+  for _, k in ipairs({"asm_lsp", "ast_grep", "bashls", "cir_lsp_server", "clojure_lsp", "fennel_ls", "glsl_analyzer", "neocmake", "nixd", "html", "cssls", "fish_lsp", "omnisharp", "tinymist", "ocamllsp", "nushell", "denols", "jsonls", "pyrefly", "racket_langserver", "wasm_language_tools", "wgsl_analyzer", "zls", "matlab_ls", "gopls"}) do
     vim.lsp.enable(k)
   end
   vim.lsp.config("matlab_ls", {settings = {MATLAB = {indexWorkspace = true, installPath = vim.fn.expand("~/apps/matlab/installation/"), matlabConnectionTiming = "onStart", telemetry = true}}})
