@@ -72,11 +72,20 @@
 
 (null_ls.register no_problems)
 
+;; null-ls when it has a formatter for the filetype, the language server
+;; otherwise, so a buffer is never formatted twice (nixd and nixfmt both did)
 (fn lsp_format_with_fallback [_opts]
   (local opts (or _opts {}))
-  (vim.lsp.buf.format {:bufnr (or opts.bufnr 0)
+  (local bufnr (or opts.bufnr 0))
+  (local get_available (. (require :null-ls.sources) :get_available))
+  (local formatters (get_available (. vim.bo bufnr :filetype)
+                                   null_ls.methods.FORMATTING))
+  (local null_ls_formats? (not= nil (. formatters 1)))
+  (vim.lsp.buf.format {: bufnr
                        :async (or opts.async false)
-                       :timeout_ms (or opts.timeout_ms 1000)}))
+                       :timeout_ms (or opts.timeout_ms 1000)
+                       :filter #(or (not null_ls_formats?)
+                                    (= $.name :null-ls))}))
 
 (vim.api.nvim_create_autocmd :BufWritePre
                              {:pattern "*"

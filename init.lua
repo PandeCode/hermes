@@ -1067,16 +1067,23 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
   null_ls.register(no_problems)
   local function lsp_format_with_fallback(_opts)
     local opts = (_opts or {})
-    return vim.lsp.buf.format({bufnr = (opts.bufnr or 0), async = (opts.async or false), timeout_ms = (opts.timeout_ms or 1000)})
+    local bufnr = (opts.bufnr or 0)
+    local get_available = require("null-ls.sources").get_available
+    local formatters = get_available(vim.bo[bufnr].filetype, null_ls.methods.FORMATTING)
+    local null_ls_formats_3f = (nil ~= formatters[1])
+    local function _154_(_241)
+      return (not null_ls_formats_3f or (_241.name == "null-ls"))
+    end
+    return vim.lsp.buf.format({bufnr = bufnr, async = (opts.async or false), timeout_ms = (opts.timeout_ms or 1000), filter = _154_})
   end
-  local function _154_()
+  local function _155_()
     return lsp_format_with_fallback({timeout_ms = 500})
   end
-  vim.api.nvim_create_autocmd("BufWritePre", {pattern = "*", callback = _154_})
-  local function _155_()
+  vim.api.nvim_create_autocmd("BufWritePre", {pattern = "*", callback = _155_})
+  local function _156_()
     return lsp_format_with_fallback()
   end
-  vim.keymap.set({"n", "v"}, "<leader>cf", _155_)
+  vim.keymap.set({"n", "v"}, "<leader>cf", _156_)
   vim.lsp.inlay_hint.enable()
   local noice = require("noice.lsp")
   local snacks = require("snacks")
@@ -1087,26 +1094,26 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
       return vim.keymap.set("n", k, f)
     end
   end
-  local function _157_()
+  local function _158_()
     return snacks.picker.lsp_references()
   end
-  n("gr", _157_, "[G]oto [R]eferences")
-  local function _158_()
+  n("gr", _158_, "[G]oto [R]eferences")
+  local function _159_()
     return snacks.picker.lsp_implementations()
   end
-  n("gI", _158_, "[G]oto [I]mplementation")
-  local function _159_()
+  n("gI", _159_, "[G]oto [I]mplementation")
+  local function _160_()
     return snacks.picker.lsp_symbols()
   end
-  n("<leader>lds", _159_, "[D]ocument [S]ymbols")
-  local function _160_()
+  n("<leader>lds", _160_, "[D]ocument [S]ymbols")
+  local function _161_()
     return snacks.picker.lsp_workspace_symbols()
   end
-  n("<leader>ws", _160_, "[W]orkspace [S]ymbols")
-  local function _161_()
+  n("<leader>ws", _161_, "[W]orkspace [S]ymbols")
+  local function _162_()
     return vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
   end
-  n("<leader>ei", _161_, "Toggle Inlay")
+  n("<leader>ei", _162_, "Toggle Inlay")
   n("K", noice.hover, "Hover Documentation")
   n("<leader>ltd", vim.lsp.buf.type_definition, "Type [D]efinition")
   n("<space>cl", vim.lsp.codelens.run, "[C]ode [L]ens")
@@ -1156,29 +1163,29 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   dap.adapters["rust-gdb"] = {type = "executable", command = "rust-gdb", args = {"--interpreter=dap", "--eval-command", "set print pretty on"}}
   do
     local pick_2_auto
-    local function _163_()
+    local function _164_()
       return vim.fn.input("Path to executable: ", (vim.fn.getcwd() .. "/"), "file")
     end
-    pick_2_auto = _163_
-    local function _164_()
+    pick_2_auto = _164_
+    local function _165_()
       local name_3_auto = vim.fn.input("Executable name (filter): ")
       return require("dap.utils").pick_process({filter = name_3_auto})
     end
-    dap.configurations.c = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _164_, program = pick_2_auto, request = "attach", type = "gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "gdb"}}
+    dap.configurations.c = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _165_, program = pick_2_auto, request = "attach", type = "gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "gdb"}}
   end
   dap.configurations.cpp = dap.configurations.c
   dap.configurations.zig = dap.configurations.c
   do
     local pick_2_auto
-    local function _165_()
+    local function _166_()
       return vim.fn.input("Path to executable: ", (vim.fn.getcwd() .. "/"), "file")
     end
-    pick_2_auto = _165_
-    local function _166_()
+    pick_2_auto = _166_
+    local function _167_()
       local name_3_auto = vim.fn.input("Executable name (filter): ")
       return require("dap.utils").pick_process({filter = name_3_auto})
     end
-    dap.configurations.rust = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _166_, program = pick_2_auto, request = "attach", type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "rust-gdb"}}
+    dap.configurations.rust = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _167_, program = pick_2_auto, request = "attach", type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "rust-gdb"}}
   end
   local keymap_restore = {}
   dap.listeners.after.event_initialized.me = function()
@@ -1198,10 +1205,10 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
         end
       end
     end
-    local function _169_()
+    local function _170_()
       return frontend.hover()
     end
-    return vim.keymap.set("n", "K", _169_, {silent = true})
+    return vim.keymap.set("n", "K", _170_, {silent = true})
   end
   dap.listeners.after.event_terminated.me = function()
     vim.keymap.del("n", "K")
@@ -1210,10 +1217,10 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
         vim.fn.mapset(keymap)
       else
         if vim.api.nvim_buf_is_valid(keymap.buffer) then
-          local function _170_()
+          local function _171_()
             return vim.fn.mapset(keymap)
           end
-          vim.api.nvim_buf_call(keymap.buffer, _170_)
+          vim.api.nvim_buf_call(keymap.buffer, _171_)
         else
         end
       end
@@ -1241,7 +1248,7 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   return nil
 end
 require("fnl.dap")
-local function _173_(opts)
+local function _174_(opts)
   return vim.print(Fennel.eval(opts.args))
 end
-return vim.api.nvim_create_user_command("Fnl", _173_, {nargs = "+"})
+return vim.api.nvim_create_user_command("Fnl", _174_, {nargs = "+"})
