@@ -2,7 +2,7 @@
 
 -- Template function to insert text into new files
 ---@param pattern string Pattern to match filenames
----@param text string Template text to insert
+---@param text string|fun(): string Template text to insert
 ---@param pos table {row, col} Cursor position after inserting text
 local function createTemplate(pattern, text, pos, ignored)
 	-- Create an autocommand to handle the event
@@ -21,8 +21,14 @@ local function createTemplate(pattern, text, pos, ignored)
 				end
 			end
 
+			-- templates that depend on the project are functions, run when the file is made
+			local body = text
+			if type(body) == "function" then
+				body = body()
+			end
+
 			-- Check if the buffer is empty before inserting text
-			if vim.fn.line("$") == 1 and vim.fn.getline(1) == "" then
+			if body ~= "" and vim.fn.line("$") == 1 and vim.fn.getline(1) == "" then
 				-- Insert the template text
 				vim.api.nvim_buf_set_lines(
 					0,
@@ -30,7 +36,7 @@ local function createTemplate(pattern, text, pos, ignored)
 					-1,
 					false,
 					vim.split(
-						text
+						body
 							:gsub("{{cwd}}", cwd) --
 							:gsub("{{basefilename}}", basefilename)
 							:gsub("{{filename}}", filename),
@@ -48,14 +54,14 @@ local function createTemplate(pattern, text, pos, ignored)
 end
 
 local function cwd_has_switch(sets)
-	for _, set in pairs(sets) do
-		local file = set[1]
-		local cont = set[2]
-		if vim.fn.filereadable("") == 1 then
-			return cont
+	return function()
+		for _, set in ipairs(sets) do
+			if vim.fn.filereadable(set[1]) == 1 then
+				return set[2]
+			end
 		end
+		return ""
 	end
-	return ""
 end
 
 local templates = {

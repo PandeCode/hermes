@@ -8,8 +8,12 @@ local tbl = {
 
 local function run_command_on_text(cmd, mode)
 	local selected_text = ""
+	local first, last, vmode
 	if mode == "v" then
-		selected_text = GetVisualSelection()
+		-- leave visual mode so '< and '> hold this selection
+		vim.cmd("normal! \27")
+		first, last, vmode = vim.fn.getpos("'<"), vim.fn.getpos("'>"), vim.fn.visualmode()
+		selected_text = table.concat(vim.fn.getregion(first, last, { type = vmode }), "\n")
 	else
 		selected_text = vim.api.nvim_get_current_line()
 	end
@@ -24,8 +28,16 @@ local function run_command_on_text(cmd, mode)
 	local output_str = table.concat(output, "\n")
 
 	if mode == "v" then
-		vim.cmd('silent normal! gv"_d')
-		vim.api.nvim_put({ selected_text, output_str }, "c", false, true)
+		-- the selection is replaced by itself and the output on the next line
+		local lines = vim.split(selected_text .. "\n" .. output_str, "\n")
+		if vmode == "V" then
+			vim.api.nvim_buf_set_lines(0, first[2] - 1, last[2], false, lines)
+		else
+			local last_line = vim.fn.getline(last[2])
+			local end_col = math.min(last[3], #last_line)
+			end_col = end_col + vim.str_utf_end(last_line, end_col)
+			vim.api.nvim_buf_set_text(0, first[2] - 1, first[3] - 1, last[2] - 1, end_col, lines)
+		end
 	else
 		vim.api.nvim_set_current_line(selected_text .. " = " .. output_str)
 	end

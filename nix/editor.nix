@@ -155,6 +155,7 @@ let
 
       luaRcContent = ''
         vim.opt.runtimepath:prepend([[${src}]])
+        vim.opt.runtimepath:append([[${src}/after]])
 
         vim.g.nix_profile = "${profile}"
 

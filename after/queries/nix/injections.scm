@@ -1,21 +1,7 @@
 ;; extends
-;; https://github.com/calops/hmts.nvim/
-
-; home.file.*.text
-(binding
-  attrpath: (_) @_path (#hmts-path? @_path "home" "file" ".*" "text")
-  expression: (_ (string_fragment) @injection.content)
-  (#hmts-inject! @_path)
-  (#set! injection.combined)
-)
-
-; xdg.configFile.*.text
-(binding
-  attrpath: (_) @_path (#hmts-path? @_path "xdg" "configFile" ".*" "text")
-  expression: (_ (string_fragment) @injection.content)
-  (#hmts-inject! @_path)
-  (#set! injection.combined)
-)
+;; the home-manager path injections from https://github.com/calops/hmts.nvim/
+;; need its hmts-path? predicate, which fails on nvim 0.11+ (captures are node
+;; lists now); these two need nothing extra
 
 ; Strings with shebang expressions:
 ;   ''
@@ -40,85 +26,5 @@
   .
   (_ (string_fragment) @injection.content)
   (#gsub! @injection.language "[/*#%s]" "")
-  (#set! injection.combined)
-)
-
-; Fish
-(binding
-  attrpath: (_) @_path (#hmts-path? @_path "programs" "fish" "((interactive|login)S|s)hellInit$")
-  expression: (_ (string_fragment) @injection.content)
-  (#set! injection.language "fish")
-  (#set! injection.combined)
-)
-
-(binding
-  attrpath: (_) @_path (#hmts-path? @_path "programs" "fish" "(shellAliases|shellAbbrs|functions)" ".*" "body")
-  expression: (_ (string_fragment) @injection.content)
-  (#set! injection.language "fish")
-  (#set! injection.combined)
-)
-
-(binding
-  attrpath: (_) @_path (#hmts-path? @_path "programs" "fish" "(shellAliases|shellAbbrs|functions)" ".*")
-  expression: (_ (string_fragment) @injection.content)
-  (#set! injection.language "fish")
-  (#set! injection.combined)
-)
-
-; Bash
-(binding
-  attrpath: (_) @_path (#hmts-path? @_path "programs" "bash" "(init|logout|profile|bashrc)Extra$")
-  expression: (_ (string_fragment) @injection.content)
-  (#set! injection.language "bash")
-  (#set! injection.combined)
-)
-
-; Zsh
-(binding
-  attrpath: (_) @_path
-  (#hmts-path? @_path "programs" "zsh" "(completionInit|envExtra|initContent|loginExtra|logoutExtra|profileExtra)$")
-  expression: (_ (string_fragment) @injection.content)
-  (#set! injection.language "bash")
-  (#set! injection.combined)
-)
-
-; oh-my-zsh
-(binding
-  attrpath: (_) @_path
-  (#hmts-path? @_path "programs" "zsh" "oh-my-zsh" "extraConfig$")
-  expression: (_ (string_fragment) @injection.content)
-  (#set! injection.language "bash")
-  (#set! injection.combined)
-)
-
-; Firefox
-(binding
-  attrpath: (_) @_path (#hmts-path? @_path "programs" "firefox" "profiles" ".*" "userChrome")
-  expression: (_ (string_fragment) @injection.content)
-  (#set! injection.language "css")
-  (#set! injection.combined)
-)
-
-; Polkit
-(binding
-  attrpath: (_) @_path (#hmts-path? @_path "security" "polkit" "extraConfig")
-  expression: (_ (string_fragment) @injection.content)
-  (#set! injection.language "javascript")
-  (#set! injection.combined)
-)
-
-; Wezterm
-(binding
-  attrpath: (_) @_path (#hmts-path? @_path "programs" "wezterm" "extraConfig")
-  expression: (_ (string_fragment) @injection.content)
-  (#set! injection.language "lua")
-  (#set! injection.combined)
-)
-
-; Waybar
-(binding
-  attrpath: (_) @_path (#hmts-path? @_path "programs" "waybar" "style")
-  expression: (_ (string_fragment) @injection.content)
-  (#set! injection.language "css")
   (#set! injection.combined)
 )
