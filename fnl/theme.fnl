@@ -1,5 +1,7 @@
+(local stylix-dir (vim.fs.normalize "~/.config/stylix"))
+
 (fn get_base16 []
-  (let [(ok? val) (pcall dofile (vim.fs.normalize "~/.config/stylix/style.lua"))]
+  (let [(ok? val) (pcall dofile (.. stylix-dir :/style.lua))]
     (if ok?
         val
         {:base00 "#1a1b26"
@@ -19,26 +21,6 @@
          :base0E "#bb9af7"
          :base0F "#f7768e"})))
 
-(local base16 (get_base16))
-
-(when vim.env.THEME_WATCH
-  (local fse (vim.uv.new_fs_event))
-  (local path (vim.fs.normalize "~/.config/stylix/nvim.lua"))
-  (vim.uv.fs_event_start fse path {:recursive true}
-                         (fn []
-                           (local base16 (get_base16))
-                           ((. (require :mini.base16) :setup) {:use_cterm true
-                                                               :palette base16})
-                           (vim.notify "Switched Themes" vim.log.levels.INFO)))
-  (vim.notify "Now watching ~/.config/stylix/style.lua for external changes"
-              vim.log.levels.INFO))
-
-((. (require :mini.base16) :setup) {:use_cterm true :palette base16})
-
-;; fnlfmt: skip
-(vim.cmd (.. "hi LineNr guifg=" base16.base0E "\n"
-             "hi LspInlayHint guifg=" base16.base04 "\n"))
-
 (fn is_dark [_hex]
   (local hex (_hex:gsub "#" ""))
   (local r (tonumber (hex:sub 1 2) 16))
@@ -47,12 +29,39 @@
   (local brightness (+ (* 0.2126 r) (* 0.7152 g) (* 0.0722 b)))
   (< brightness 128))
 
-(each [group color (pairs base16)]
-  (let [fg_color (if (is_dark color) "#ffffff" "#000000")]
-    (vim.cmd (string.format "highlight GP_%s guifg=%s guibg=%s gui=NONE" group
-                            fg_color color))))
+(var IsTransparent false)
 
-(var IsTransparent true)
+;; statusline and tabline set their own groups on ColorScheme
+(fn apply_theme [base16]
+  ((. (require :mini.base16) :setup) {:use_cterm true :palette base16})
+  (set IsTransparent false)
+  ;; fnlfmt: skip
+  (vim.cmd (.. "hi LineNr guifg=" base16.base0E "\n"
+               "hi LspInlayHint guifg=" base16.base04 "\n"))
+  (each [group color (pairs base16)]
+    (let [fg_color (if (is_dark color) "#ffffff" "#000000")]
+      (vim.cmd (string.format "highlight GP_%s guifg=%s guibg=%s gui=NONE"
+                              group fg_color color))))
+  (vim.api.nvim_exec_autocmds :ColorScheme {}))
+
+(apply_theme (get_base16))
+
+;; home-manager swaps the style.lua symlink on every switch, which ends a
+;; watch on the file itself, so watch the directory
+(when vim.env.THEME_WATCH
+  (local fse (vim.uv.new_fs_event))
+  (vim.uv.fs_event_start fse stylix-dir {}
+                         (vim.schedule_wrap (fn [err filename]
+                                              (when (and (not err)
+                                                         (= filename
+                                                            :style.lua))
+                                                (apply_theme (get_base16))
+                                                (vim.notify "Switched Themes"
+                                                            vim.log.levels.INFO)))))
+  (vim.notify (.. "Now watching " stylix-dir
+                  "/style.lua for external changes")
+              vim.log.levels.INFO))
+
 
 (fn set_hl [gp opt] (vim.api.nvim_set_hl 0 gp opt))
 

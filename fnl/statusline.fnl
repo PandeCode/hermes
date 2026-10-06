@@ -37,8 +37,12 @@
   `(let [[icon# hl#] [(pick-values 2 (MiniIcons.get ,t ,n))]]
      (sshl hl# icon#)))
 
-(hl! :ParinferOn {:fg (pal :base0B) :bold true})
-(hl! :ParinferOff {:fg (pal :base03)})
+(fn set-highlights []
+  (hl! :ParinferOn {:fg (pal :base0B) :bold true})
+  (hl! :ParinferOff {:fg (pal :base03)}))
+
+(set-highlights)
+(vim.api.nvim_create_autocmd :ColorScheme {:callback set-highlights})
 
 (fn get-attached-clients []
   (local buf_clients (vim.lsp.get_clients {:bufnr 0}))
