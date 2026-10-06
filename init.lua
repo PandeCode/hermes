@@ -1076,7 +1076,13 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   dap.listeners.before.event_terminated["my-plugin"] = function(session, body)
     return vim.notify(("Session terminated" .. vim.inspect(session) .. vim.inspect(body)))
   end
-  dap.adapters.firefox = {type = "executable", command = "node", args = {(os.getenv("VSCODE_FIREFOX_DEBUG") .. "/dist/adapter.bundle.js")}}
+  do
+    local firefox_debug = os.getenv("VSCODE_FIREFOX_DEBUG")
+    if firefox_debug then
+      dap.adapters.firefox = {type = "executable", command = "node", args = {(firefox_debug .. "/dist/adapter.bundle.js")}}
+    else
+    end
+  end
   dap.configurations.typescript = {{name = "Debug Firefox", type = "firefox", request = "launch", reAttach = true, url = "http://localhost:8080", webRoot = "${workspaceFolder}", firefoxExecutable = (os.getenv("BROWSER") or "firefox")}, {name = "Attach Firefox", type = "firefox", request = "attach", reAttach = true, url = "http://localhost:8080", webRoot = "${workspaceFolder}", firefoxExecutable = (os.getenv("BROWSER") or "firefox")}}
   dap.configurations.javascript = dap.configurations.typescript
   dap.configurations.javascriptreact = dap.configurations.typescript
@@ -1085,29 +1091,29 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   dap.adapters["rust-gdb"] = {type = "executable", command = "rust-gdb", args = {"--interpreter=dap", "--eval-command", "set print pretty on"}}
   do
     local pick_2_auto
-    local function _157_()
+    local function _158_()
       return vim.fn.input("Path to executable: ", (vim.fn.getcwd() .. "/"), "file")
     end
-    pick_2_auto = _157_
-    local function _158_()
+    pick_2_auto = _158_
+    local function _159_()
       local name_3_auto = vim.fn.input("Executable name (filter): ")
       return require("dap.utils").pick_process({filter = name_3_auto})
     end
-    dap.configurations.c = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _158_, program = pick_2_auto, request = "attach", type = "gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "gdb"}}
+    dap.configurations.c = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _159_, program = pick_2_auto, request = "attach", type = "gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "gdb"}}
   end
   dap.configurations.cpp = dap.configurations.c
   dap.configurations.zig = dap.configurations.c
   do
     local pick_2_auto
-    local function _159_()
+    local function _160_()
       return vim.fn.input("Path to executable: ", (vim.fn.getcwd() .. "/"), "file")
     end
-    pick_2_auto = _159_
-    local function _160_()
+    pick_2_auto = _160_
+    local function _161_()
       local name_3_auto = vim.fn.input("Executable name (filter): ")
       return require("dap.utils").pick_process({filter = name_3_auto})
     end
-    dap.configurations.rust = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _160_, program = pick_2_auto, request = "attach", type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "rust-gdb"}}
+    dap.configurations.rust = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _161_, program = pick_2_auto, request = "attach", type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "rust-gdb"}}
   end
   local keymap_restore = {}
   
@@ -1167,8 +1173,8 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   return nil
 end
 require("fnl.dap")
-local function _161_(opts)
+local function _162_(opts)
   return Fennel.eval(table.concat(opts.fargs), {nargs = 1})
 end
-vim.api.nvim_create_user_command("Fnl", _161_)
+vim.api.nvim_create_user_command("Fnl", _162_)
 return vim.cmd("cnoreabbrev fnl Fnl")

@@ -14,10 +14,13 @@
 (fn dap.listeners.before.event_terminated.my-plugin [session body]
   (vim.notify (.. "Session terminated" (vim.inspect session) (vim.inspect body))))
 
-(set dap.adapters.firefox
-     {:type :executable
-      :command :node
-      :args [(.. (os.getenv :VSCODE_FIREFOX_DEBUG) :/dist/adapter.bundle.js)]})
+;; only the web and full profiles ship the firefox adapter
+(let [firefox-debug (os.getenv :VSCODE_FIREFOX_DEBUG)]
+  (when firefox-debug
+    (set dap.adapters.firefox
+         {:type :executable
+          :command :node
+          :args [(.. firefox-debug :/dist/adapter.bundle.js)]})))
 
 (set dap.configurations.typescript
      [{:name "Debug Firefox"

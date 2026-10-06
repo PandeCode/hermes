@@ -120,7 +120,7 @@ let
   profileEnv = {
     # keep-sorted start
     cxx = lldbEnv;
-    full = lldbEnv ++ rustEnv ++ luaEnv ++ webEnv;
+    full = lldbEnv ++ rustEnv ++ webEnv;
     fun = lldbEnv;
     go = lldbEnv;
     rust = lldbEnv ++ rustEnv;
@@ -146,14 +146,11 @@ let
         "NVIM_APPNAME"
         "hermes"
         "--prefix"
-        "LUA_PATH"
-        ":"
-        "${pkgs.luajitPackages.fennel}/share/lua/5.1"
-        "--prefix"
         "PATH"
         ":"
         (lib.strings.makeBinPath pkgs.toolsets.profiles.${profile})
       ]
+      ++ luaEnv
       ++ profileEnv.${profile} or [ ];
 
       luaRcContent = ''
