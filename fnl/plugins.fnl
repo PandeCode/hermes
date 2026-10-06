@@ -297,34 +297,33 @@
                                                                      hl)}}}}
                       :documentation {:auto_show true}}})
 
-(fn parinfer-on []
-  (pcall vim.cmd :ParinferOn)
-  (vim.cmd.redrawstatus))
+;; parinfer-rust only has a global switch, so each buffer keeps its own
+;; b:parinfer_on and BufEnter applies it. the callbacks return nil: an
+;; autocmd callback that returns a truthy value deletes the autocmd
+(local parinfer-filetypes [:racket :lisp :wat :wasm :fennel])
 
-(fn parinfer-off []
-  (pcall vim.cmd :ParinferOff)
-  (vim.cmd.redrawstatus))
+(fn parinfer-apply []
+  (pcall vim.cmd (if vim.b.parinfer_on :ParinferOn :ParinferOff))
+  (vim.cmd.redrawstatus)
+  nil)
 
-(fn parinfer-toggle []
-  (if (= vim.g.parinfer_enabled 1)
-      (parinfer-off)
-      (parinfer-on)))
+(fn parinfer-set [on]
+  (set vim.b.parinfer_on on)
+  (parinfer-apply))
+
+(fn parinfer-on [] (parinfer-set true))
+(fn parinfer-off [] (parinfer-set false))
+(fn parinfer-toggle [] (parinfer-set (not vim.b.parinfer_on)))
 
 (vim.keymap.set :n :<leader>po parinfer-on {:desc :parinfer-on})
 (vim.keymap.set :n :<leader>pf parinfer-off {:desc :parinfer-off})
 (vim.keymap.set :n :<leader>pt parinfer-toggle {:desc :parinfer-toggle})
 
 (vim.api.nvim_create_autocmd :FileType
-                             {:pattern ["*"]
-                              :callback (fn []
-                                          (if (vim.tbl_contains [:racket
-                                                                 :lisp
-                                                                 :wat
-                                                                 :wasm
-                                                                 :fennel]
-                                                                vim.bo.filetype)
-                                              (parinfer-on)
-                                              (parinfer-off)))})
+                             {:callback #(parinfer-set (vim.tbl_contains parinfer-filetypes
+                                                                         vim.bo.filetype))})
+
+(vim.api.nvim_create_autocmd :BufEnter {:callback parinfer-apply})
 
 (rsetup :neogen)
 (vim.keymap.set :n :<Leader>nf ":lua require('neogen').generate()<CR>"
