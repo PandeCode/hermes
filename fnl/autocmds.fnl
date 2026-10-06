@@ -24,9 +24,6 @@
                                                           (line "$")))
                                              (vim.fn.execute "normal! g`\"")))})
 
-(vim.api.nvim_create_autocmd [:BufEnter :BufWrite :BufWritePost :BufRead]
-                             {:callback #(pcall vim.treesitter.start)})
-
 (vim.api.nvim_create_autocmd :TextYankPost {:callback vim.hl.on_yank})
 
 ;; Make parent folders if they don't exist

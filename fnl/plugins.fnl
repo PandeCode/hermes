@@ -29,14 +29,18 @@
 (vim.keymap.set :n :<leader>- "<cmd>Oil .<CR>"
                 {:noremap true :desc "Open nvim root directory"})
 
-(vim.api.nvim_create_autocmd [:BufEnter :BufWrite :BufWritePost]
-                             {:callback #(pcall vim.treesitter.start)})
+(vim.api.nvim_create_autocmd :FileType
+                             {:group (vim.api.nvim_create_augroup :treesitter_start
+                                                                  {})
+                              :callback (fn [args]
+                                          (when (pcall vim.treesitter.start
+                                                       args.buf)
+                                            (set (. vim.bo args.buf :indentexpr)
+                                                 "v:lua.require'nvim-treesitter'.indentexpr()")))})
 
 ; ((. vim.wo 0 0 :foldexpr) "v:lua.vim.treesitter.foldexpr()")
 ; ((. vim.wo 0 0 :foldmethod) :expr)
 ; ((. vim.wo 0 0 :foldmethod) :manual)
-
-(set vim.bo.indentexpr "v:lua.require('nvim-treesitter').indentexpr()")
 
 (local ts-ctx (require :treesitter-context))
 
@@ -48,40 +52,37 @@
                 {:silent true})
 
 (local ts-obj (require :nvim-treesitter-textobjects))
-(ts-obj.setup {:move {:set_jumps true}})
+(ts-obj.setup {:select {:lookahead true} :move {:set_jumps true}})
 
-(rsetup :nvim-treesitter.config
-        {:highlight {:enable true}
-         :indent {:enable true}
-         :incremental_selection {:enable true
-                                 :keymaps {:init_selection :<c-space>
-                                           :node_incremental :<c-space>
-                                           :scope_incremental :<c-s>
-                                           :node_decremental :<M-space>}}
-         :textobjects {:select {:enable true
-                                :lookahead true
-                                ;; Automatically jump forward to textobj similar to targets.vim
-                                :keymaps {;; You can use the capture groups defined in textobjects.scm
-                                          :aa "@parameter.outer"
-                                          :ia "@parameter.inner"
-                                          :af "@function.outer"
-                                          :if "@function.inner"
-                                          :ac "@class.outer"
-                                          :ic "@class.inner"}}
-                       :move {:enable true
-                              :set_jumps true
-                              ;; whether to set jumps in the jumplist
-                              :goto_next_start {"]m" "@function.outer"
-                                                "]]" "@class.outer"}
-                              :goto_next_end {"]M" "@function.outer"
-                                              "][" "@class.outer"}
-                              :goto_previous_start {"[m" "@function.outer"
-                                                    "[[" "@class.outer"}
-                              :goto_previous_end {"[M" "@function.outer"
-                                                  "[]" "@class.outer"}}
-                       :swap {:enable true
-                              :swap_next {:<leader>a "@parameter.inner"}
-                              :swap_previous {:<leader>A "@parameter.inner"}}}})
+(local ts-select (require :nvim-treesitter-textobjects.select))
+(local ts-move (require :nvim-treesitter-textobjects.move))
+(local ts-swap (require :nvim-treesitter-textobjects.swap))
+
+(each [key capture (pairs {:aa "@parameter.outer"
+                           :ia "@parameter.inner"
+                           :af "@function.outer"
+                           :if "@function.inner"
+                           :ac "@class.outer"
+                           :ic "@class.inner"})]
+  (vim.keymap.set [:x :o] key #(ts-select.select_textobject capture :textobjects)))
+
+(each [key [move capture] (pairs {"]m" [:goto_next_start "@function.outer"]
+                                  "]]" [:goto_next_start "@class.outer"]
+                                  "]M" [:goto_next_end "@function.outer"]
+                                  "][" [:goto_next_end "@class.outer"]
+                                  "[m" [:goto_previous_start "@function.outer"]
+                                  "[[" [:goto_previous_start "@class.outer"]
+                                  "[M" [:goto_previous_end "@function.outer"]
+                                  "[]" [:goto_previous_end "@class.outer"]})]
+  (vim.keymap.set [:n :x :o] key #((. ts-move move) capture :textobjects)))
+
+(vim.keymap.set :n :<leader>a #(ts-swap.swap_next "@parameter.inner"))
+(vim.keymap.set :n :<leader>A #(ts-swap.swap_previous "@parameter.inner"))
+
+;; an and in are the built-in node selection in visual mode
+(vim.keymap.set :n :<c-space> :van {:remap true})
+(vim.keymap.set :x :<c-space> :an {:remap true})
+(vim.keymap.set :x :<M-space> :in {:remap true})
 
 ;; fnlfmt: skip
 ((. (require :snacks) :setup) {:bigfile {:enabled true}
