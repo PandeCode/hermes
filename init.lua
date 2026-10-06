@@ -1159,43 +1159,46 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
     dap.configurations.rust = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _166_, program = pick_2_auto, request = "attach", type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "rust-gdb"}}
   end
   local keymap_restore = {}
-  
-  dap.listeners.after['event_initialized']['me'] = function()
-    for _, buf in pairs(vim.api.nvim_list_bufs()) do
-      local keymaps = vim.api.nvim_buf_get_keymap(buf, 'n')
-      for _, keymap in pairs(keymaps) do
-        if keymap.lhs == 'K' then
+  dap.listeners.after.event_initialized.me = function()
+    keymap_restore = {}
+    for _, keymap in ipairs(vim.api.nvim_get_keymap("n")) do
+      if (keymap.lhs == "K") then
+        table.insert(keymap_restore, keymap)
+      else
+      end
+    end
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      for _0, keymap in ipairs(vim.api.nvim_buf_get_keymap(buf, "n")) do
+        if (keymap.lhs == "K") then
           table.insert(keymap_restore, keymap)
-          vim.api.nvim_buf_del_keymap(buf, 'n', 'K')
+          vim.api.nvim_buf_del_keymap(buf, "n", "K")
+        else
         end
       end
     end
-    vim.api.nvim_set_keymap(
-                        'n', 'K', '<Cmd>lua require("dap-view").hover()', { silent = true})
+    local function _169_()
+      return frontend.hover()
+    end
+    return vim.keymap.set("n", "K", _169_, {silent = true})
   end
-  
-  dap.listeners.after['event_terminated']['me'] = function()
-    for _, keymap in pairs(keymap_restore) do
-      if keymap.rhs then
-        vim.api.nvim_buf_set_keymap(
-                                keymap.buffer,
-                                keymap.mode,
-                                keymap.lhs,
-                                keymap.rhs,
-                                { silent = keymap.silent == 1})
-  
-      elseif keymap.callback then
-        vim.keymap.set(
-                       keymap.mode,
-                       keymap.lhs,
-                       keymap.callback,
-                       { buffer = keymap.buffer, silent = keymap.silent == 1})
-  
+  dap.listeners.after.event_terminated.me = function()
+    vim.keymap.del("n", "K")
+    for _, keymap in ipairs(keymap_restore) do
+      if (keymap.buffer == 0) then
+        vim.fn.mapset(keymap)
+      else
+        if vim.api.nvim_buf_is_valid(keymap.buffer) then
+          local function _170_()
+            return vim.fn.mapset(keymap)
+          end
+          vim.api.nvim_buf_call(keymap.buffer, _170_)
+        else
+        end
       end
     end
     keymap_restore = {}
+    return nil
   end
-  
   vim.keymap.set("n", "<leader>db", dap.toggle_breakpoint, {desc = "Dap toggle_breakpoint"})
   vim.keymap.set("n", "<leader>dc", dap.continue, {desc = "Dap continue"})
   vim.keymap.set("n", "<leader>do", dap.step_over, {desc = "Dap step_over"})
@@ -1216,7 +1219,7 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   return nil
 end
 require("fnl.dap")
-local function _167_(opts)
+local function _173_(opts)
   return vim.print(Fennel.eval(opts.args))
 end
-return vim.api.nvim_create_user_command("Fnl", _167_, {nargs = "+"})
+return vim.api.nvim_create_user_command("Fnl", _173_, {nargs = "+"})

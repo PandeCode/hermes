@@ -84,45 +84,31 @@
 
 (set dap.configurations.rust (mk :rust-gdb))
 
-(local keymap_restore {})
+;; K is dap-view hover while a session runs; every K it replaced, global
+;; and buffer-local, comes back with mapset when the session ends
+(var keymap_restore [])
 
-(lua "
-dap.listeners.after['event_initialized']['me'] = function()
-  for _, buf in pairs(vim.api.nvim_list_bufs()) do
-    local keymaps = vim.api.nvim_buf_get_keymap(buf, 'n')
-    for _, keymap in pairs(keymaps) do
-      if keymap.lhs == 'K' then
-        table.insert(keymap_restore, keymap)
-        vim.api.nvim_buf_del_keymap(buf, 'n', 'K')
-      end
-    end
-  end
-  vim.api.nvim_set_keymap(
-                      'n', 'K', '<Cmd>lua require(\"dap-view\").hover()', { silent = true})
-end
+(fn dap.listeners.after.event_initialized.me []
+  (set keymap_restore [])
+  (each [_ keymap (ipairs (vim.api.nvim_get_keymap :n))]
+    (when (= keymap.lhs :K)
+      (table.insert keymap_restore keymap)))
+  (each [_ buf (ipairs (vim.api.nvim_list_bufs))]
+    (each [_ keymap (ipairs (vim.api.nvim_buf_get_keymap buf :n))]
+      (when (= keymap.lhs :K)
+        (table.insert keymap_restore keymap)
+        (vim.api.nvim_buf_del_keymap buf :n :K))))
+  (vim.keymap.set :n :K #(frontend.hover) {:silent true}))
 
-dap.listeners.after['event_terminated']['me'] = function()
-  for _, keymap in pairs(keymap_restore) do
-    if keymap.rhs then
-      vim.api.nvim_buf_set_keymap(
-                              keymap.buffer,
-                              keymap.mode,
-                              keymap.lhs,
-                              keymap.rhs,
-                              { silent = keymap.silent == 1})
-
-    elseif keymap.callback then
-      vim.keymap.set(
-                     keymap.mode,
-                     keymap.lhs,
-                     keymap.callback,
-                     { buffer = keymap.buffer, silent = keymap.silent == 1})
-
-    end
-  end
-  keymap_restore = {}
-end
-")
+(fn dap.listeners.after.event_terminated.me []
+  (vim.keymap.del :n :K)
+  (each [_ keymap (ipairs keymap_restore)]
+    (if (= keymap.buffer 0)
+        (vim.fn.mapset keymap)
+        ;; mapset puts buffer maps on the current buffer
+        (when (vim.api.nvim_buf_is_valid keymap.buffer)
+          (vim.api.nvim_buf_call keymap.buffer #(vim.fn.mapset keymap)))))
+  (set keymap_restore []))
 
 (vim.keymap.set :n :<leader>db dap.toggle_breakpoint
                 {:desc "Dap toggle_breakpoint"})
