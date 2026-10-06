@@ -84,21 +84,27 @@ cnoremap w!! execute 'write !sudo tee % >/dev/null' <bar> edit!
 
 (vim.api.nvim_create_user_command :Rmf #(vim.cmd "!rm -f %") {})
 
-;; fnlfmt: skip
-(vim.cmd "
-cnoreabbrev W w
-cnoreabbrev Q q
-cnoreabbrev WQ wq
-cnoreabbrev Wq wq
-cnoreabbrev WQA wqa
-cnoreabbrev Wqa wqa
-cnoreabbrev QA qa
-cnoreabbrev Qa qa
-cnoreabbrev E e
-cnoreabbrev gitadd Gitadd
-cnoreabbrev chmodx Chmodx
-cnoreabbrev rmf Rmf
-")
+;; only expand when the abbreviation is the whole : command, so a W or E in
+;; a search or a :s pattern stays as typed
+(each [from to (pairs {:W :w
+                       :Q :q
+                       :WQ :wq
+                       :Wq :wq
+                       :WQA :wqa
+                       :Wqa :wqa
+                       :QA :qa
+                       :Qa :qa
+                       :E :e
+                       :gitadd :Gitadd
+                       :chmodx :Chmodx
+                       :rmf :Rmf
+                       :fnl :Fnl})]
+  (vim.keymap.set :ca from
+                  #(if (and (= (vim.fn.getcmdtype) ":")
+                            (= (vim.fn.getcmdline) from))
+                       to
+                       from)
+                  {:expr true}))
 
 ;; https://www.reddit.com/r/neovim/comments/1jpbc7s/disable_virtual_text_if_there_is_diagnostic_in/
 

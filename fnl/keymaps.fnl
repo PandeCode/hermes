@@ -45,7 +45,8 @@
   (v (leader :c<leader>) :gc noremap_silent)
   (n (leader "`") (cmd "e#") noremap_silent)
   (n (leader :gf) (cmd "e <cfile>"))
-  (n (leader :<F2>) ":%s/\\<<C-r><C-w>\\>/<C-r><C-w>/g<Left><Left>")
+;; no /g flag: gdefault is on, and /g would turn it back off
+  (n (leader :<F2>) ":%s/\\<<C-r><C-w>\\>/<C-r><C-w>/<Left>")
   (x :I #(if (= (vim.fn.mode) :V) :^<C-v>I :I) {:expr true})
   (x :A #(if (= (vim.fn.mode) :V) :$<C-v>A :A) {:expr true})
   (n :<Home> "(col('.') == matchend(getline('.'), '^\\s*')+1 ? '0' : '^')"
@@ -55,7 +56,7 @@
   (v :<End> "(col('.') == match(getline('.'), '\\s*$') ? '$h' : 'g_')"
      noremap_expr)
   (i :<Home> :<C-o><Home>)
-  (i "<End> " :<C-o><End>)
+  (i :<End> :<C-o><End>)
   (n :gg :gg0 noremap)
   (a :G :G<End> noremap)
   (a :Y :y$ noremap)
@@ -65,14 +66,13 @@
   (n (leader :j) ":<c-u>put!=repeat([''],v:count)<bar>']+1<cr>" noremap_silent)
   (n (leader :k) ":<c-u>put =repeat([''],v:count)<bar>'[-1<cr>" noremap_silent)
   ;; system clipboard
-  (n :<c-c> "\"+y\"" noremap)
-  (v :<c-c> "\"+y\"" noremap)
-  (n :<c-v> "\"+p\"" noremap)
+  (n :<c-c> "\"+y" noremap)
+  (v :<c-c> "\"+y" noremap)
+  (n :<c-v> "\"+p" noremap)
   (i :<c-v> :<c-r>+ noremap)
   (c :<c-v> :<c-r>+ noremap)
-  (n :<c-x> :<c-c>d)
-  (i :<c-x> :<c-c>d)
-  (c :<c-x> :<c-c>d)
+  (n :<c-x> "\"+dd" noremap)
+  (v :<c-x> "\"+d" noremap)
   (n :n :nzzzv noremap)
   (n :N :Nzzzv noremap)
   (n :J "mzJ`z" noremap)

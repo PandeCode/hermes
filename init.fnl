@@ -26,5 +26,3 @@
                                   (fn [opts]
                                     (Fennel.eval (table.concat opts.fargs)
                                                  {:nargs 1})))
-
-(vim.cmd "cnoreabbrev fnl Fnl")

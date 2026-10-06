@@ -116,7 +116,7 @@
                     [:<leader>flr (sk :lsp_references) :lsp_references]
                     [:<leader>fls (sk :lsp_symbols) :lsp_symbols]
                     [:<leader>nh Snacks.notifier.hide "Notifier Hide"]
-                    [:<leader>nh Snacks.notifier.show_history "Notifier Show"]])]
+                    [:<leader>ns Snacks.notifier.show_history "Notifier Show"]])]
   (vim.keymap.set :n (. v 1) (. v 2) {:desc (. v 3)}))
 
 (rsetup :noice {:lsp {; override markdown rendering so that **cmp** and other plugins use **Treesitter**
@@ -221,7 +221,7 @@
                :search_method :cover_or_next
                :custom_surroundings {:f {:input (ts_input {:outer "@call.outer"
                                                            :inner "@call.inner"})}
-                                     :b {:input (ts_input {:outer "@block.out"
+                                     :b {:input (ts_input {:outer "@block.outer"
                                                            :inner "@block.inner"})}
                                      ;; Make `)` insert parts with spaces. `input` pattern stays the same.
                                      ")" {:output {:left "( " :right " )"}}
