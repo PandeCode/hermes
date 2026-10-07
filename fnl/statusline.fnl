@@ -21,6 +21,10 @@
                              {:callback #(when (= vim.bo.filetype :lisp)
                                            (set sbcl-running? (sbcl-pid)))})
 
+; file, branch and client names are text, a % in them would be statusline code
+(fn esc [s]
+  (pick-values 1 (s:gsub "%%" "%%%%")))
+
 (macro shl [g s]
   `(.. "%#" ,g "#" (tostring ,s) "%*"))
 
@@ -66,7 +70,7 @@
                     (add-name source.name)))))))
         (when (and (= :lisp buf_ft) sbcl-running?)
           (table.insert buf_client_names :sbcl))
-        (.. "[" (table.concat buf_client_names ", ") "]"))))
+        (.. "[" (esc (table.concat buf_client_names ", ")) "]"))))
 
 ;; fnlfmt: skip
 (fn lsp []
@@ -85,7 +89,7 @@
 (fn git []
   (let [d vim.b.gitsigns_status_dict]
     (if d
-        (.. (shl :GitSignsAdd (.. "  "  d.head )) " "
+        (.. (shl :GitSignsAdd (.. "  "  (esc d.head))) " "
             (if (and d.added   (> d.added 0))   (shl :GitSignsAdd    (.. "+ " d.added   " ")) "")
             (if (and d.changed (> d.changed 0)) (shl :GitSignsChange (.. "~ " d.changed " ")) "")
             (if (and d.removed (> d.removed 0)) (shl :GitSignsDelete (.. "- " d.removed " ")) ""))
@@ -146,8 +150,8 @@
         name (vim.fn.fnamemodify buf ":t")
         dir (vim.fn.fnamemodify rel ":h")
         (icon hl) (MiniIcons.get :file name)]
-    (.. "%#Comment#" (if (= dir ".") "" (.. dir "/")) "%*"
-        (sshl hl (.. icon " " name)) " "
+    (.. "%#Comment#" (if (= dir ".") "" (.. (esc dir) "/")) "%*"
+        (sshl hl (.. icon " " (esc name))) " "
         (if vim.bo.modified (shl :WarningMsg "●") "")
         (if vim.bo.readonly (shl :DiagnosticError "🔒")                                     ""))))
 

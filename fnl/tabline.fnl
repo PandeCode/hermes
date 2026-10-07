@@ -82,7 +82,8 @@
             icon-group (merge-icon-hl icon-hl hl)
             status (.. (if locked " 󰌾" "") (if modified " ●" ""))]
         (set result (.. result "%#" hl "# " (if (<= i 9) (.. i ":") "") " "
-                        "%#" icon-group "#" icon "%*%#" hl "# " name status " "
+                        "%#" icon-group "#" icon "%*%#" hl "# "
+                        (pick-values 1 (name:gsub "%%" "%%%%")) status " "
                         (buf-diag buf) " %*"))))
     (.. result "%=%#TabLineFill# " (workspace-diag) " ")))
 

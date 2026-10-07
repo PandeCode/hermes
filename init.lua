@@ -633,6 +633,9 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
     end
   end
   vim.api.nvim_create_autocmd({"BufEnter", "FocusGained", "CursorHold"}, {callback = _74_})
+  local function esc(s)
+    return (s:gsub("%%", "%%%%"))
+  end
   local function set_highlights()
     vim.api.nvim_set_hl(0, "ParinferOn", {fg = MiniBase16.config.palette.base0B, bold = true})
     return vim.api.nvim_set_hl(0, "ParinferOff", {fg = MiniBase16.config.palette.base03})
@@ -677,7 +680,7 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
         table.insert(buf_client_names, "sbcl")
       else
       end
-      return ("[" .. table.concat(buf_client_names, ", ") .. "]")
+      return ("[" .. esc(table.concat(buf_client_names, ", ")) .. "]")
     end
   end
   local function lsp()
@@ -733,7 +736,7 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
       else
         _94_ = ""
       end
-      return (("%#" .. "GitSignsAdd" .. "#" .. tostring((" \238\156\165 " .. d.head)) .. "%*") .. " " .. _90_ .. _92_ .. _94_)
+      return (("%#" .. "GitSignsAdd" .. "#" .. tostring((" \238\156\165 " .. esc(d.head))) .. "%*") .. " " .. _90_ .. _92_ .. _94_)
     else
       return ""
     end
@@ -822,7 +825,7 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
     if (dir == ".") then
       _110_ = ""
     else
-      _110_ = (dir .. "/")
+      _110_ = (esc(dir) .. "/")
     end
     local _112_
     if hl then
@@ -842,7 +845,7 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
     else
       _116_ = ""
     end
-    return ("%#Comment#" .. _110_ .. "%*" .. (_112_ .. ((icon .. " " .. name) or "") .. "%*") .. " " .. _114_ .. _116_)
+    return ("%#Comment#" .. _110_ .. "%*" .. (_112_ .. ((icon .. " " .. esc(name)) or "") .. "%*") .. " " .. _114_ .. _116_)
   end
   Statusline.active = function()
     local _118_
@@ -1010,7 +1013,7 @@ package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
       else
         _147_ = ""
       end
-      result = (result .. "%#" .. hl .. "# " .. _147_ .. " " .. "%#" .. icon_group .. "#" .. icon .. "%*%#" .. hl .. "# " .. name .. status .. " " .. buf_diag(buf) .. " %*")
+      result = (result .. "%#" .. hl .. "# " .. _147_ .. " " .. "%#" .. icon_group .. "#" .. icon .. "%*%#" .. hl .. "# " .. (name:gsub("%%", "%%%%")) .. status .. " " .. buf_diag(buf) .. " %*")
     end
     return (result .. "%=%#TabLineFill# " .. workspace_diag() .. " ")
   end
