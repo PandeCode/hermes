@@ -11,8 +11,9 @@ function _G.duplicate_and_comment_lines()
     -- Store cursor position because it might move when commenting out the lines.
     local cursor = vim.api.nvim_win_get_cursor(0)
 
-    -- Comment out the selection using the builtin gc operator.
-    vim.cmd.normal({ 'gcc', range = { start_line, end_line } })
+    -- Comment out the selection using the builtin gc operator, once over the
+    -- whole block so lines that are already comments don't get uncommented.
+    vim.cmd.normal(('%dGgc%dG'):format(start_line, end_line))
 
     -- Append a duplicate of the selected lines to the end of selection.
     vim.api.nvim_buf_set_lines(0, end_line, end_line, false, lines)

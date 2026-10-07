@@ -39,7 +39,7 @@
   (n (leader :bo) (cmd "%bd|e#") noremap_silent)
   (n :<A-d> vim.cmd.bd noremap_silent)
   (n (leader :c<leader>) (cmd "normal gcc") noremap_silent)
-  (v (leader :c<leader>) :gc noremap_silent)
+  (x (leader :c<leader>) :gc {:remap true :silent true})
   (n (leader "`") (cmd "e#") noremap_silent)
   (n (leader :gf) (cmd "e <cfile>"))
 ;; no /g flag: gdefault is on, and /g would turn it back off
