@@ -29,9 +29,12 @@
 
 ((. ts-ctx :setup) {:enable true :multiwindow true})
 
+;; in a diff [c keeps its builtin job, the previous change
 (vim.keymap.set :n "[c"
                 (fn []
-                  ((. ts-ctx :go_to_context) vim.v.count1))
+                  (if vim.wo.diff
+                      (vim.cmd (.. "normal! " vim.v.count1 "[c"))
+                      ((. ts-ctx :go_to_context) vim.v.count1)))
                 {:silent true})
 
 (local ts-obj (require :nvim-treesitter-textobjects))
