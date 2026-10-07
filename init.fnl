@@ -6,8 +6,11 @@
 
 (global Fennel nil)
 
-(let [(ok? _fennel) (pcall (. (require :fennel) :install))]
-  (when ok? (global Fennel _fennel)))
+;; fennel is on LUA_PATH only under the nix wrapper
+(let [(ok? fennel) (pcall require :fennel)]
+  (when ok?
+    (fennel.install)
+    (global Fennel fennel)))
 
 (include :fnl.utils)
 

@@ -5,9 +5,11 @@
                           (local data (vim.fn.stdpath :data))
                           (var cwd (vim.fn.getcwd))
                           (set cwd (or (vim.fs.root cwd :.git) cwd))
-                          (local cwd_b64 (vim.base64.encode cwd))
+                          ;; a hash, base64 of a deep path is longer than a
+                          ;; file name may be
                           (local file
-                                 (vim.fs.joinpath data :project_shada cwd_b64))
+                                 (vim.fs.joinpath data :project_shada
+                                                  (vim.fn.sha256 cwd)))
                           (vim.fn.mkdir (vim.fs.dirname file) :p)
                           file)))
 
@@ -27,7 +29,7 @@
                                              (vim.fn.execute "normal! g`\""))
                                            nil)})
 
-(vim.api.nvim_create_autocmd :TextYankPost {:callback vim.hl.on_yank})
+(vim.api.nvim_create_autocmd :TextYankPost {:callback #(vim.hl.hl_op)})
 
 ;; Make parent folders if they don't exist, only for real files (not oil:// and
 ;; other buffers that write through a plugin)
@@ -53,16 +55,13 @@
                              {:pattern "*"
                               :callback #(set vim.opt.relativenumber true)})
 
-;; fnlfmt: skip
-(vim.cmd "
-
-
-if argc() > 1
-	silent blast \" load last buffer
-	silent bfirst \" switch back to the first
-endif
-
-")
+;; with several files, load the last one and come back to the first. on
+;; VimEnter, since filetype detection is still off while init runs
+(vim.api.nvim_create_autocmd :VimEnter
+                             {:nested true
+                              :callback #(when (> (vim.fn.argc) 1)
+                                           (vim.cmd "silent blast | silent bfirst")
+                                           nil)})
 
 (vim.api.nvim_create_user_command :Gitadd
                                   (fn []
