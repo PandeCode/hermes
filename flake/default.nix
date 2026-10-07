@@ -44,6 +44,7 @@ in
         inherit pkgs;
         neovim = inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default;
         vlime-src = inputs.vlime;
+        nixpkgs-src = nixpkgs.outPath;
         src = self;
       };
     in

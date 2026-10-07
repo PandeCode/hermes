@@ -6,7 +6,7 @@
 
 (global Fennel nil)
 
-;; fennel is on LUA_PATH only under the nix wrapper
+;; fennel is on package.path only under the nix wrapper
 (let [(ok? fennel) (pcall require :fennel)]
   (when ok?
     (fennel.install)

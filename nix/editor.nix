@@ -4,6 +4,8 @@
   pkgs,
   neovim,
   vlime-src,
+  # nixpkgs' source as a string, interpolating pkgs.path would copy it again
+  nixpkgs-src,
   src,
 }:
 
@@ -82,13 +84,6 @@ let
     "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}"
   ];
 
-  luaEnv = [
-    "--prefix"
-    "LUA_PATH"
-    ";"
-    "${pkgs.luajitPackages.fennel}/share/lua/5.1/?.lua;${pkgs.luajitPackages.fennel}/share/lua/5.1/?/init.lua"
-  ];
-
   webEnv = [
     "--set"
     "VSCODE_FIREFOX_DEBUG"
@@ -118,6 +113,8 @@ let
           inherit plugin;
           optional = true;
         }) lazyPlugins;
+      # put on package.path by the rc, so LUA_PATH stays untouched
+      extraLuaPackages = p: [ p.fennel ];
       viAlias = true;
       vimAlias = true;
 
@@ -130,14 +127,16 @@ let
         ":"
         (lib.strings.makeBinPath pkgs.toolsets.profiles.${profile})
       ]
-      ++ luaEnv
       ++ profileEnv.${profile} or [ ];
 
+      # VIMINIT is only read at startup, and a :terminal child would inherit it
       luaRcContent = ''
+        vim.env.VIMINIT = nil
+
         vim.opt.runtimepath:prepend([[${src}]])
         vim.opt.runtimepath:append([[${src}/after]])
 
-        vim.g.nix_nixd_nixpkgs = "import ${pkgs.path} {}"
+        vim.g.nix_nixd_nixpkgs = "import ${nixpkgs-src} {}"
         ${lib.strings.optionalString (nixd ? nixos) "vim.g.nix_nixd_nixos_options = [[${nixd.nixos}]]"}
         ${lib.strings.optionalString (
           nixd ? home-manager

@@ -3,7 +3,7 @@
 ## Run
 
 ```bash
-nix run github:pandecode/hermes#fun --accept-flake-config --extra-experimental-features flakes --extra-experimental-features nix-command --override-input nixpkgs nixpkgs
+nix run github:pandecode/hermes#fun --accept-flake-config --extra-experimental-features flakes --extra-experimental-features nix-command
 ```
 
 
@@ -19,13 +19,10 @@ nix run github:pandecode/hermes#fun
 nix run github:pandecode/hermes#full
 ```
 
-With flakes enabled and Override nixpkgs:
+Without flakes enabled:
 
 ```bash
---accept-flake-config
 --accept-flake-config --extra-experimental-features flakes --extra-experimental-features nix-command
---accept-flake-config --override-input nixpkgs nixpkgs
---accept-flake-config --extra-experimental-features flakes --extra-experimental-features nix-command --override-input nixpkgs nixpkgs
 ```
 
 ## Module
