@@ -91,8 +91,8 @@ local function gen_enum_funcs(enum_name, bufnr)
 	vim.notify("Added enum functions to '" .. enum_name .. "'", vim.log.levels.INFO)
 end
 
-vim.api.nvim_create_autocmd("BufEnter", {
-	pattern = { "*.cpp", "*.c" },
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = { "cpp", "c" },
 	group = vim.api.nvim_create_augroup("gen_enum", { clear = true }),
 	callback = function(tbl)
 		vim.api.nvim_buf_create_user_command(tbl.buf, "GenEnum", function()

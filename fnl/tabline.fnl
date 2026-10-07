@@ -94,15 +94,18 @@
   (vim.keymap.set :n (.. :<leader> i) #(Tabline.goto i)
                   {:desc (.. "Go to buffer " i)}))
 
+;; set by <leader>tt, so buffer changes don't bring the tabline back
+(var hidden false)
+
 (fn tabline-update []
   (let [bufs (listed-bufs)]
-    (set vim.o.showtabline (if (> (length bufs) 1) 2 0))))
+    (set vim.o.showtabline (if (and (not hidden) (> (length bufs) 1)) 2 0))))
 
 (vim.api.nvim_create_autocmd [:BufAdd :BufDelete :BufEnter]
                              {:callback #(tabline-update)})
 
-(set Tabline.toggle #(if (= vim.o.showtabline 2)
-                         (set vim.o.showtabline 0)
-                         (tabline-update)))
+(set Tabline.toggle #(do
+                       (set hidden (not hidden))
+                       (tabline-update)))
 
 (vim.keymap.set :n :<leader>tt Tabline.toggle {:desc "Toggle tabline"})

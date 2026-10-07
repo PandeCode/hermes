@@ -7,7 +7,10 @@ local function replace_buffer_with_command(cmd, ft)
 	vim.bo.modifiable = true
 	vim.bo.filetype = ft
 
-	local full_cmd = cmd:gsub("%%", vim.fn.shellescape(file))
+	-- a function, so a % in the path is not read as a capture reference
+	local full_cmd = cmd:gsub("%%", function()
+		return vim.fn.shellescape(file)
+	end)
 	local output = vim.fn.systemlist(full_cmd)
 
 	vim.api.nvim_buf_set_lines(0, 0, -1, false, output)

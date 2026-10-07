@@ -70,13 +70,13 @@
     (if IsTransparent
         (do
           (set_hl :Normal {:fg palette.base05 :bg palette.base00})
-          (set_hl :LineNr {:fg palette.base03 :bg palette.base00})
+          (set_hl :LineNr {:fg palette.base0E :bg palette.base00})
           (set_hl :SignColumn {:fg palette.base03 :bg palette.base00})
           (set_hl :NonText {:fg palette.base02 :bg palette.base00})
           (set IsTransparent false))
         (do
           (set_hl :Normal {:bg :NONE})
-          (set_hl :LineNr {:fg palette.base03 :bg :NONE})
+          (set_hl :LineNr {:fg palette.base0E :bg :NONE})
           (set_hl :SignColumn {:fg palette.base03 :bg :NONE})
           (set_hl :NonText {:fg palette.base02 :bg :NONE})
           (set IsTransparent true)))))

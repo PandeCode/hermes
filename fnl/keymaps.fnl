@@ -20,7 +20,7 @@
   (n :<esc> (cmd :nohlsearch))
   (n (leader :fe) #(do
                      (vim.cmd.edit "%")
-                     (vim.treesitter.start)))
+                     (pcall vim.treesitter.start)))
   (n (leader :fs) (cmd :w))
   (n :g. "`.")
   (n (leader :co) (cmd :copen))
@@ -41,7 +41,7 @@
   (x (leader :c<leader>) :gc {:remap true :silent true})
   (n (leader "`") (cmd "e#") noremap_silent)
   (n (leader :gf) (cmd "e <cfile>"))
-;; no /g flag: gdefault is on, and /g would turn it back off
+  ;; no /g flag: gdefault is on, and /g would turn it back off
   (n (leader :<F2>) ":%s/\\<<C-r><C-w>\\>/<C-r><C-w>/<Left>")
   (x :I #(if (= (vim.fn.mode) :V) :^<C-v>I :I) {:expr true})
   (x :A #(if (= (vim.fn.mode) :V) :$<C-v>A :A) {:expr true})
