@@ -1,7 +1,3 @@
-(local capabilities
-       ((. (require :blink.cmp) :get_lsp_capabilities) {:textDocument {:foldingRange {:dynamicRegistration false
-                                                                                      :lineFoldingOnly true}}}))
-
 (local null_ls (require :null-ls))
 
 (local problems [{:pattern "​" :name "ZERO WIDTH SPACE" :replacement ""}

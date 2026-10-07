@@ -8,15 +8,6 @@ if (vim.g.zig_fix_all == nil) then
   vim.g.zig_fix_all = false
 else
 end
-local function table_keys(tbl)
-  local keys = {}
-  local n = 0
-  for key, _ in pairs(tbl) do
-    n = (n + 1)
-    keys[n] = key
-  end
-  return keys
-end
 local function get_from(sr, sc, er, ec)
   return vim.api.nvim_buf_get_lines(0, sr, er, false)
 end

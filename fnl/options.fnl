@@ -1,4 +1,3 @@
-(vim.filetype.add {:extension {:fnl :fennel}})
 (vim.api.nvim_create_autocmd :Filetype
                              {:pattern [:wgsl :glsl]
                               :callback #(set vim.bo.commentstring "// %s")})
@@ -8,17 +7,9 @@
 (each [_ plugin (ipairs [:netrwPlugin
                          :netrw
                          :gzip
-                         :zip
-                         :zipPlugin
+                         :nvim_zip_plugin
                          :tar
                          :tarPlugin
-                         :getscript
-                         :getscriptPlugin
-                         :vimball
-                         :vimballPlugin
-                         :2html_plugin
-                         :logipat
-                         :rrhelper
                          :spellfile_plugin
                          :matchit])]
   (set (. vim.g (.. :loaded_ plugin)) 1))

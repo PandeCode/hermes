@@ -89,7 +89,6 @@
 
 (set vim.o.tabline "%!v:lua.Tabline.render()")
 (set vim.o.showtabline 2)
-(set _G.Tabline Tabline)
 
 (for [i 1 9]
   (vim.keymap.set :n (.. :<leader> i) #(Tabline.goto i)

@@ -108,7 +108,9 @@
 
 (rsetup :noice {:lsp {; override markdown rendering so that **cmp** and other plugins use **Treesitter**
                       :override {:vim.lsp.util.convert_input_to_markdown_lines true
-                                 :vim.lsp.util.stylize_markdown true}}
+                                 :vim.lsp.util.stylize_markdown true}
+                      ;; blink.cmp shows signature help
+                      :signature {:enabled false}}
                 :presets {:bottom_search false
                           ;; use a classic bottom cmdline for search
                           :command_palette true
@@ -137,9 +139,7 @@
                                {:mode [:n :x] :keys "'"}
                                {:mode [:n :x] :keys "`"}
                                {:mode [:n :x] :keys "\""}]
-                    :clues [(miniclue.gen_clues.square_brackets)
-                            (miniclue.gen_clues.builtin_completion)
-                            (miniclue.gen_clues.marks)
+                    :clues [(miniclue.gen_clues.marks)
                             (miniclue.gen_clues.registers)
                             (miniclue.gen_clues.windows)
                             (miniclue.gen_clues.z)
@@ -249,7 +249,6 @@
 (local hermes-dir
        (vim.fs.dirname (: (. (debug.getinfo 1 :S) :source) :sub 2)))
 
-(rsetup :blink.indent)
 (rsetup :blink.cmp
         {:fuzzy {:implementation :prefer_rust}
          :keymap {:<C-k> {}}

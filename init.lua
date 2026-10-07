@@ -131,14 +131,13 @@ package.preload["fnl.utils"] = package.preload["fnl.utils"] or function(...)
 end
 require("fnl.utils")
 package.preload["fnl.options"] = package.preload["fnl.options"] or function(...)
-  vim.filetype.add({extension = {fnl = "fennel"}})
   local function _19_()
     vim.bo.commentstring = "// %s"
     return nil
   end
   vim.api.nvim_create_autocmd("Filetype", {pattern = {"wgsl", "glsl"}, callback = _19_})
   vim.g.no_plugin_maps = true
-  for _, plugin in ipairs({"netrwPlugin", "netrw", "gzip", "zip", "zipPlugin", "tar", "tarPlugin", "getscript", "getscriptPlugin", "vimball", "vimballPlugin", "2html_plugin", "logipat", "rrhelper", "spellfile_plugin", "matchit"}) do
+  for _, plugin in ipairs({"netrwPlugin", "netrw", "gzip", "nvim_zip_plugin", "tar", "tarPlugin", "spellfile_plugin", "matchit"}) do
     vim.g[("loaded_" .. plugin)] = 1
   end
   for k, v in pairs({inccommand = "split", breakindent = true, number = true, relativenumber = true, termguicolors = true, cursorline = true, signcolumn = "yes", colorcolumn = "80", list = true, listchars = "tab:\226\134\146 ,lead:\194\183,trail:\194\183,nbsp:\226\144\163", pumblend = 20, winblend = 20, showmatch = true, scrolloff = 8, sidescrolloff = 8, laststatus = 3, expandtab = true, shiftwidth = 4, tabstop = 4, softtabstop = 4, smartindent = true, autoindent = true, smarttab = true, wrap = true, linebreak = true, formatoptions = "jcroqlnt", conceallevel = 1, virtualedit = "block", completeopt = "menu,menuone,noselect", hlsearch = true, incsearch = true, ignorecase = true, smartcase = true, gdefault = true, undofile = true, hidden = true, confirm = true, autoread = true, fileencoding = "utf-8", mouse = "a", updatetime = 100, timeoutlen = 500, ttimeoutlen = 10, history = 1000, cmdheight = 1, splitbelow = true, splitright = true, guifont = "FantasqueSansM Nerd Font:h14", guicursor = "n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor,sm:block-blinkwait175-blinkoff150-blinkon175", visualbell = true, title = true, shortmess = "filnxtToOFIc", spell = true, spelllang = "en_us", synmaxcol = 240, redrawtime = 1000, wildignore = table.concat({"*.pyc", "*_build/*", "**/coverage/*", "**/Debug/*", "**/build/*", "**/node_modules/*", "**/.git/*", "*.aux", "*.bbl", "*.bcf", "*.blg", "*.fdb_latexmk", "*.fls", "*.run.xml", "*.synctex.gz", "*.toc", "*.DS_Store", "*.class", "*.out"}, ","), wildmode = "longest:full,full", wildmenu = true, backspace = "indent,eol,start", showcmd = true, ruler = true, backup = false, showmode = false, swapfile = false, writebackup = false}) do
@@ -213,8 +212,6 @@ package.preload["fnl.keymaps"] = package.preload["fnl.keymaps"] or function(...)
     n("<Home>", "(col('.') == matchend(getline('.'), '^\\s*')+1 ? '0' : '^')", noremap_expr)
     n("<End>", "(col('.') == match(getline('.'), '\\s*$') ? '$' : 'g_')", noremap_expr)
     x("<End>", "(col('.') == match(getline('.'), '\\s*$') ? '$h' : 'g_')", noremap_expr)
-    i("<Home>", "<C-o><Home>")
-    i("<End>", "<C-o><End>")
     n("gg", "gg0", noremap)
     a("G", "G<End>", noremap)
     n("<leader>w", "<c-w>", noremap)
@@ -236,13 +233,6 @@ package.preload["fnl.keymaps"] = package.preload["fnl.keymaps"] or function(...)
     i(".", ".<c-g>u", noremap)
     i("!", "!<c-g>u", noremap)
     i("?", "?<c-g>u", noremap)
-    i("[", "[<c-g>u", noremap)
-    i("]", "]<c-g>u", noremap)
-    i("(", "(<c-g>u", noremap)
-    i(")", ")<c-g>u", noremap)
-    i("{", "{<c-g>u", noremap)
-    i("}", "}<c-g>u", noremap)
-    i("\"", "\"<c-g>u", noremap)
     n("<", "v<gv<ESC>", noremap)
     n(">", "v>gv<ESC>", noremap)
     x("<", "<gv", noremap)
@@ -445,7 +435,7 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
   for _, v in ipairs({{"<leader>ff", sk("files"), "Find Files"}, {"<leader>fr", sk("grep"), "Grep"}, {"<leader>fm", sk("marks"), "Marks"}, {"<leader>fn", sk("man"), "Man"}, {"<leader><space>", sk("smart"), "Smart Find Files"}, {"<leader>fb", sk("buffers"), "Buffers"}, {"<leader>ch", sk("cliphist"), "cliphist"}, {"<leader>fll", sk("loclist"), "loclist"}, {"<leader>fq", sk("qflist"), "qflist"}, {"<leader>fld", sk("lsp_declarations"), "lsp_declarations"}, {"<leader>fle", sk("lsp_definitions"), "lsp_definitions"}, {"<leader>fli", sk("lsp_implementations"), "lsp_implementations"}, {"<leader>flr", sk("lsp_references"), "lsp_references"}, {"<leader>fls", sk("lsp_symbols"), "lsp_symbols"}, {"<leader>nh", Snacks.notifier.hide, "Notifier Hide"}, {"<leader>ns", Snacks.notifier.show_history, "Notifier Show"}}) do
     vim.keymap.set("n", v[1], v[2], {desc = v[3]})
   end
-  require("noice").setup(({lsp = {override = {["vim.lsp.util.convert_input_to_markdown_lines"] = true, ["vim.lsp.util.stylize_markdown"] = true}}, presets = {command_palette = true, long_message_to_split = true, lsp_doc_border = true, bottom_search = false, inc_rename = false}} or {}))
+  require("noice").setup(({lsp = {override = {["vim.lsp.util.convert_input_to_markdown_lines"] = true, ["vim.lsp.util.stylize_markdown"] = true}, signature = {enabled = false}}, presets = {command_palette = true, long_message_to_split = true, lsp_doc_border = true, bottom_search = false, inc_rename = false}} or {}))
   require("mini.icons").setup((nil or {}))
   require("mini.cursorword").setup((nil or {}))
   require("mini.pairs").setup((nil or {}))
@@ -454,7 +444,7 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
   require("mini.splitjoin").setup((nil or {}))
   require("mini.trailspace").setup((nil or {}))
   local miniclue = require("mini.clue")
-  require("mini.clue").setup(({triggers = {{mode = {"n", "x"}, keys = "<leader>"}, {mode = {"n", "x"}, keys = "g"}, {mode = {"n", "x"}, keys = "z"}, {mode = {"n", "x"}, keys = "<c-w>"}, {mode = {"n", "x"}, keys = "'"}, {mode = {"n", "x"}, keys = "`"}, {mode = {"n", "x"}, keys = "\""}}, clues = {miniclue.gen_clues.square_brackets(), miniclue.gen_clues.builtin_completion(), miniclue.gen_clues.marks(), miniclue.gen_clues.registers(), miniclue.gen_clues.windows(), miniclue.gen_clues.z(), miniclue.gen_clues.g()}} or {}))
+  require("mini.clue").setup(({triggers = {{mode = {"n", "x"}, keys = "<leader>"}, {mode = {"n", "x"}, keys = "g"}, {mode = {"n", "x"}, keys = "z"}, {mode = {"n", "x"}, keys = "<c-w>"}, {mode = {"n", "x"}, keys = "'"}, {mode = {"n", "x"}, keys = "`"}, {mode = {"n", "x"}, keys = "\""}}, clues = {miniclue.gen_clues.marks(), miniclue.gen_clues.registers(), miniclue.gen_clues.windows(), miniclue.gen_clues.z(), miniclue.gen_clues.g()}} or {}))
   local hipatterns = require("mini.hipatterns")
   local function _57_(_, _0, data)
     return MiniHipatterns.compute_hex_color_group(data.full_match:gsub("0x", "#"), "bg")
@@ -482,7 +472,6 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
   end
   vim.api.nvim_create_autocmd({"BufWritePre"}, {pattern = "*", callback = _60_})
   local hermes_dir = vim.fs.dirname(debug.getinfo(1, "S").source:sub(2))
-  require("blink.indent").setup((nil or {}))
   local function _61_(ctx)
     local kind_icon, _, _0 = MiniIcons.get("lsp", ctx.kind)
     return kind_icon
@@ -881,7 +870,7 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
   Statusline.active = function()
     local _128_
     do
-      local pv_129_, pv_130_ = MiniIcons.get("file", (vim.fn.expand("%") or "default"))
+      local pv_129_, pv_130_ = MiniIcons.get("file", vim.fn.expand("%"))
       local icon_2_auto,hl_3_auto = pv_129_, pv_130_
       local _131_
       if hl_3_auto then
@@ -1050,7 +1039,6 @@ package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
   end
   vim.o.tabline = "%!v:lua.Tabline.render()"
   vim.o.showtabline = 2
-  _G.Tabline = Tabline
   for i = 1, 9 do
     local function _159_()
       return Tabline["goto"](i)
@@ -1083,7 +1071,6 @@ package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
 end
 require("fnl.tabline")
 package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
-  local capabilities = require("blink.cmp").get_lsp_capabilities({textDocument = {foldingRange = {lineFoldingOnly = true, dynamicRegistration = false}}})
   local null_ls = require("null-ls")
   local problems = {{pattern = "\226\128\139", name = "ZERO WIDTH SPACE", replacement = ""}, {pattern = "\194\160", name = "NON-BREAKING SPACE", replacement = " "}, {pattern = "\239\187\191", name = "BYTE ORDER MARK", replacement = ""}, {pattern = "\226\128\141", name = "ZERO WIDTH JOINER", replacement = ""}, {pattern = "\226\128\142", name = "RIGHT-TO-LEFT MARK", replacement = ""}, {pattern = "\226\128\143", name = "LEFT-TO-RIGHT MARK", replacement = ""}}
   local no_problems
@@ -1299,7 +1286,7 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
     return nil
   end
   local function _189_()
-    for _, p in ipairs({"nvim-dap-view", "nvim-dap-virtual-text", "nvim-dap-python"}) do
+    for _, p in ipairs({"nvim-dap-view", "nvim-dap-virtual-text"}) do
       vim.cmd.packadd(p)
     end
     return nil

@@ -179,7 +179,7 @@
       " "
       (nix-shell)
       " "
-      (get-icon :file (or (vim.fn.expand "%") :default))
+      (get-icon :file (vim.fn.expand "%"))
       " "
       "%{&filetype != '' ? &filetype : 'text'} "
       " "

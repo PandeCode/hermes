@@ -9,14 +9,6 @@
 (when (= vim.g.zig_fix_all nil)
   (set vim.g.zig_fix_all false))
 
-(fn table_keys [tbl]
-  (local keys [])
-  (var n 0)
-  (each [key _ (pairs tbl)]
-    (set n (+ n 1))
-    (set (. keys n) key))
-  keys)
-
 (fn get_from [sr sc er ec] (vim.api.nvim_buf_get_lines 0 sr er false))
 
 (fn insert_at [row col text]

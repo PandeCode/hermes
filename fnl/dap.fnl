@@ -169,8 +169,6 @@
          :<M-c> :<M-o> :<M-i> :<M-t> :<M-r>
          :<leader>dui :<leader>dux :<leader>det]
   :cmd [:DapContinue :DapNew :DapToggleBreakpoint]
-  :before #(each [_ p (ipairs [:nvim-dap-view
-                                :nvim-dap-virtual-text
-                                :nvim-dap-python])]
+  :before #(each [_ p (ipairs [:nvim-dap-view :nvim-dap-virtual-text])]
              (vim.cmd.packadd p))
   :after setup})

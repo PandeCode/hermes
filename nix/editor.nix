@@ -37,7 +37,6 @@ let
     noice-nvim
 
     blink-cmp
-    blink-indent
 
     friendly-snippets
     gitsigns-nvim
@@ -57,7 +56,6 @@ let
     zig-vim
 
     nvim-dap
-    nvim-dap-python
 
     nvim-dap-view
 
@@ -76,17 +74,6 @@ let
 
     vlime
     refactoring-nvim
-  ];
-
-  lldb = pkgs.vscode-extensions.vadimcn.vscode-lldb;
-
-  lldbEnv = [
-    "--set"
-    "CODELLDB_PATH"
-    "${lldb}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb"
-    "--set"
-    "LIBLLDB_PATH"
-    "${lldb}/share/vscode/extensions/vadimcn.vscode-lldb/lldb/lib/liblldb.so"
   ];
 
   rustEnv = [
@@ -111,13 +98,9 @@ let
   # extra environment per profile, on top of the profile's tools
   profileEnv = {
     # keep-sorted start
-    cxx = lldbEnv;
-    full = lldbEnv ++ rustEnv ++ webEnv;
-    fun = lldbEnv;
-    go = lldbEnv;
-    rust = lldbEnv ++ rustEnv;
+    full = rustEnv ++ webEnv;
+    rust = rustEnv;
     web = webEnv;
-    zig = lldbEnv;
     # keep-sorted end
   };
 
@@ -153,8 +136,6 @@ let
       luaRcContent = ''
         vim.opt.runtimepath:prepend([[${src}]])
         vim.opt.runtimepath:append([[${src}/after]])
-
-        vim.g.nix_profile = "${profile}"
 
         vim.g.nix_nixd_nixpkgs = "import ${pkgs.path} {}"
         ${lib.strings.optionalString (nixd ? nixos) "vim.g.nix_nixd_nixos_options = [[${nixd.nixos}]]"}
