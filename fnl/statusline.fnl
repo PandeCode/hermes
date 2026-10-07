@@ -129,10 +129,14 @@
     (if (= reg "") ""
         (shl :WarningMsg (.. " (•_•) @" reg)))))
 
+;; only while matches are highlighted, and capped, since it searches the
+;; whole buffer on every redraw
 (fn searchcount []
-  (let [(ok? sc) (pcall vim.fn.searchcount)]
+  (let [(ok? sc) (if (= vim.v.hlsearch 1)
+                     (pcall vim.fn.searchcount {:maxcount 999 :timeout 20}))]
     (if (and ok? sc.total (> sc.total 0))
-        (.. "%#Comment#[" sc.current "/" sc.total "]%*")
+        (.. "%#Comment#[" sc.current "/"
+            (case sc.incomplete 1 "?" 2 (.. ">" sc.maxcount) _ sc.total) "]%*")
         "")))
 
 (fn wordcount []

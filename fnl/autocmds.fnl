@@ -109,43 +109,38 @@
                         :underline true
                         :update_in_insert false})
 
+;; the virtual_text setting while it is hidden, nil while it shows.
+;; vim.diagnostic.config redraws every buffer, so it only runs when the cursor
+;; moves onto or off a line with diagnostics
 (var og_virt_text nil)
-(var og_virt_line nil)
 
 (vim.api.nvim_create_autocmd [:CursorMoved :DiagnosticChanged]
                              {:group (vim.api.nvim_create_augroup :diagnostic_only_virtlines
                                                                   {})
                               :callback (fn []
-                                          (when (= og_virt_line nil)
-                                            (set og_virt_line
-                                                 (. (vim.diagnostic.config)
-                                                    :virtual_lines)))
-                                          ;; ignore if virtual_lines.current_line is disabled
-                                          (when (not (and og_virt_line
-                                                          og_virt_line.current_line))
-                                            (when og_virt_text
-                                              (vim.diagnostic.config {:virtual_text og_virt_text})
-                                              (set og_virt_text nil))
-                                            (lua :return))
-                                          (when (= og_virt_text nil)
-                                            (set og_virt_text
-                                                 (. (vim.diagnostic.config)
-                                                    :virtual_text)))
-                                          (local lnum
-                                                 (- (. (vim.api.nvim_win_get_cursor 0)
-                                                       1)
-                                                    1))
-                                          (if (vim.tbl_isempty (vim.diagnostic.get 0
-                                                                                   {: lnum}))
-                                              (vim.diagnostic.config {:virtual_text og_virt_text})
-                                              (vim.diagnostic.config {:virtual_text false})))})
-
-(vim.api.nvim_create_autocmd :ModeChanged
-                             {:group (vim.api.nvim_create_augroup :diagnostic_redraw
-                                                                  {})
-                              :callback #(do
-                                           (pcall vim.diagnostic.show)
-                                           nil)})
+                                          (let [lines (. (vim.diagnostic.config)
+                                                         :virtual_lines)
+                                                lnum (- (. (vim.api.nvim_win_get_cursor 0)
+                                                           1)
+                                                        1)
+                                                hide? (and (= (type lines)
+                                                              :table)
+                                                           lines.current_line
+                                                           (not (vim.tbl_isempty (vim.diagnostic.get 0
+                                                                                                     {: lnum}))))]
+                                            (if (and hide?
+                                                     (= og_virt_text nil))
+                                                (do
+                                                  (set og_virt_text
+                                                       (. (vim.diagnostic.config)
+                                                          :virtual_text))
+                                                  (vim.diagnostic.config {:virtual_text false}))
+                                                (and (not hide?)
+                                                     (not= og_virt_text nil))
+                                                (do
+                                                  (vim.diagnostic.config {:virtual_text og_virt_text})
+                                                  (set og_virt_text nil))))
+                                          nil)})
 
 ;; a file called f or fe is a typo for a <leader>f map, delete it after the write
 (vim.api.nvim_create_autocmd :BufWritePost
