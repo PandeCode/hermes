@@ -39,10 +39,6 @@
   (fn dap.listeners.before.event_terminated.dapui_config [] (frontend.close))
   (fn dap.listeners.before.event_exited.dapui_config [] (frontend.close))
 
-  (fn dap.listeners.before.event_terminated.my-plugin [session body]
-    (vim.notify (.. "Session terminated" (vim.inspect session)
-                    (vim.inspect body))))
-
   ;; only the web and full profiles ship the firefox adapter
   (let [firefox-debug (os.getenv :VSCODE_FIREFOX_DEBUG)]
     (when firefox-debug
@@ -89,30 +85,39 @@
   (set dap.configurations.rust (mk :rust-gdb))
 
   ;; K is dap-view hover while a session runs; every K it replaced, global
-  ;; and buffer-local, comes back with mapset when the session ends
+  ;; and buffer-local, comes back with mapset when the session ends. sessions
+  ;; counts open ones, a child session sends its own initialized and
+  ;; terminated, so only the first and the last swap K
   (var keymap_restore [])
+  (var sessions 0)
 
   (fn dap.listeners.after.event_initialized.me []
-    (set keymap_restore [])
-    (each [_ keymap (ipairs (vim.api.nvim_get_keymap :n))]
-      (when (= keymap.lhs :K)
-        (table.insert keymap_restore keymap)))
-    (each [_ buf (ipairs (vim.api.nvim_list_bufs))]
-      (each [_ keymap (ipairs (vim.api.nvim_buf_get_keymap buf :n))]
+    (set sessions (+ sessions 1))
+    (when (= sessions 1)
+      (set keymap_restore [])
+      (each [_ keymap (ipairs (vim.api.nvim_get_keymap :n))]
         (when (= keymap.lhs :K)
-          (table.insert keymap_restore keymap)
-          (vim.api.nvim_buf_del_keymap buf :n :K))))
-    (vim.keymap.set :n :K #(frontend.hover) {:silent true}))
+          (table.insert keymap_restore keymap)))
+      (each [_ buf (ipairs (vim.api.nvim_list_bufs))]
+        (each [_ keymap (ipairs (vim.api.nvim_buf_get_keymap buf :n))]
+          (when (= keymap.lhs :K)
+            (table.insert keymap_restore keymap)
+            (vim.api.nvim_buf_del_keymap buf :n :K))))
+      (vim.keymap.set :n :K #(frontend.hover) {:silent true})))
 
   (fn dap.listeners.after.event_terminated.me []
-    (vim.keymap.del :n :K)
-    (each [_ keymap (ipairs keymap_restore)]
-      (if (= keymap.buffer 0)
-          (vim.fn.mapset keymap)
-          ;; mapset puts buffer maps on the current buffer
-          (when (vim.api.nvim_buf_is_valid keymap.buffer)
-            (vim.api.nvim_buf_call keymap.buffer #(vim.fn.mapset keymap)))))
-    (set keymap_restore []))
+    (when (> sessions 0)
+      (set sessions (- sessions 1))
+      (when (= sessions 0)
+        (vim.keymap.del :n :K)
+        (each [_ keymap (ipairs keymap_restore)]
+          (if (= keymap.buffer 0)
+              (vim.fn.mapset keymap)
+              ;; mapset puts buffer maps on the current buffer
+              (when (vim.api.nvim_buf_is_valid keymap.buffer)
+                (vim.api.nvim_buf_call keymap.buffer
+                                       #(vim.fn.mapset keymap)))))
+        (set keymap_restore []))))
 
   (vim.keymap.set :n :<leader>db dap.toggle_breakpoint
                   {:desc "Dap toggle_breakpoint"})
@@ -131,7 +136,8 @@
 
   (vim.keymap.set :n :<leader>dui frontend.open {:desc "Dap ui open"})
   (vim.keymap.set :n :<leader>dux frontend.close {:desc "Dap ui close"})
-  (vim.keymap.set :n :<leader>det frontend.virtual_text_toggle
+  (vim.keymap.set :n :<leader>det
+                  (. (require :nvim-dap-virtual-text) :toggle)
                   {:desc "Dap virt text toggle"})
 
   (each [name sign (pairs {:DapBreakpoint {:text ""

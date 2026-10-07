@@ -1164,9 +1164,6 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
     dap.listeners.before.event_exited.dapui_config = function()
       return frontend.close()
     end
-    dap.listeners.before.event_terminated["my-plugin"] = function(session, body)
-      return vim.notify(("Session terminated" .. vim.inspect(session) .. vim.inspect(body)))
-    end
     do
       local firefox_debug = os.getenv("VSCODE_FIREFOX_DEBUG")
       if firefox_debug then
@@ -1207,45 +1204,60 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
       dap.configurations.rust = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _172_, program = pick_2_auto, request = "attach", type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "rust-gdb"}}
     end
     local keymap_restore = {}
+    local sessions = 0
     dap.listeners.after.event_initialized.me = function()
-      keymap_restore = {}
-      for _, keymap in ipairs(vim.api.nvim_get_keymap("n")) do
-        if (keymap.lhs == "K") then
-          table.insert(keymap_restore, keymap)
-        else
-        end
-      end
-      for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-        for _0, keymap in ipairs(vim.api.nvim_buf_get_keymap(buf, "n")) do
+      sessions = (sessions + 1)
+      if (sessions == 1) then
+        keymap_restore = {}
+        for _, keymap in ipairs(vim.api.nvim_get_keymap("n")) do
           if (keymap.lhs == "K") then
             table.insert(keymap_restore, keymap)
-            vim.api.nvim_buf_del_keymap(buf, "n", "K")
           else
           end
         end
+        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+          for _0, keymap in ipairs(vim.api.nvim_buf_get_keymap(buf, "n")) do
+            if (keymap.lhs == "K") then
+              table.insert(keymap_restore, keymap)
+              vim.api.nvim_buf_del_keymap(buf, "n", "K")
+            else
+            end
+          end
+        end
+        local function _175_()
+          return frontend.hover()
+        end
+        return vim.keymap.set("n", "K", _175_, {silent = true})
+      else
+        return nil
       end
-      local function _175_()
-        return frontend.hover()
-      end
-      return vim.keymap.set("n", "K", _175_, {silent = true})
     end
     dap.listeners.after.event_terminated.me = function()
-      vim.keymap.del("n", "K")
-      for _, keymap in ipairs(keymap_restore) do
-        if (keymap.buffer == 0) then
-          vim.fn.mapset(keymap)
-        else
-          if vim.api.nvim_buf_is_valid(keymap.buffer) then
-            local function _176_()
-              return vim.fn.mapset(keymap)
+      if (sessions > 0) then
+        sessions = (sessions - 1)
+        if (sessions == 0) then
+          vim.keymap.del("n", "K")
+          for _, keymap in ipairs(keymap_restore) do
+            if (keymap.buffer == 0) then
+              vim.fn.mapset(keymap)
+            else
+              if vim.api.nvim_buf_is_valid(keymap.buffer) then
+                local function _177_()
+                  return vim.fn.mapset(keymap)
+                end
+                vim.api.nvim_buf_call(keymap.buffer, _177_)
+              else
+              end
             end
-            vim.api.nvim_buf_call(keymap.buffer, _176_)
-          else
           end
+          keymap_restore = {}
+          return nil
+        else
+          return nil
         end
+      else
+        return nil
       end
-      keymap_restore = {}
-      return nil
     end
     vim.keymap.set("n", "<leader>db", dap.toggle_breakpoint, {desc = "Dap toggle_breakpoint"})
     vim.keymap.set("n", "<leader>dc", dap.continue, {desc = "Dap continue"})
@@ -1260,22 +1272,22 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
     vim.keymap.set("n", "<M-r>", dap.repl.open, {desc = "Dap repl.open."})
     vim.keymap.set("n", "<leader>dui", frontend.open, {desc = "Dap ui open"})
     vim.keymap.set("n", "<leader>dux", frontend.close, {desc = "Dap ui close"})
-    vim.keymap.set("n", "<leader>det", frontend.virtual_text_toggle, {desc = "Dap virt text toggle"})
+    vim.keymap.set("n", "<leader>det", require("nvim-dap-virtual-text").toggle, {desc = "Dap virt text toggle"})
     for name, sign in pairs({DapBreakpoint = {text = "\239\134\146", texthl = "DiagnosticError", linehl = "", numhl = ""}, DapBreakpointCondition = {text = "\239\129\153", texthl = "DiagnosticWarn", linehl = "", numhl = ""}, DapBreakpointRejected = {text = "\239\129\170", texthl = "DiagnosticError", linehl = "", numhl = ""}, DapLogPoint = {text = "\243\176\134\136", texthl = "DiagnosticInfo", linehl = "", numhl = ""}, DapStopped = {text = "\239\129\161", texthl = "DiagnosticWarn", linehl = "CursorLine", numhl = "DiagnosticWarn"}}) do
       vim.fn.sign_define(name, sign)
     end
     return nil
   end
-  local function _179_()
+  local function _182_()
     for _, p in ipairs({"nvim-dap-view", "nvim-dap-virtual-text", "nvim-dap-python"}) do
       vim.cmd.packadd(p)
     end
     return nil
   end
-  return require("lz.n").load({"nvim-dap", keys = {"<leader>db", "<leader>dc", "<leader>do", "<leader>di", "<leader>dt", "<leader>dr", "<M-c>", "<M-o>", "<M-i>", "<M-t>", "<M-r>", "<leader>dui", "<leader>dux", "<leader>det"}, cmd = {"DapContinue", "DapNew", "DapToggleBreakpoint"}, before = _179_, after = setup})
+  return require("lz.n").load({"nvim-dap", keys = {"<leader>db", "<leader>dc", "<leader>do", "<leader>di", "<leader>dt", "<leader>dr", "<M-c>", "<M-o>", "<M-i>", "<M-t>", "<M-r>", "<leader>dui", "<leader>dux", "<leader>det"}, cmd = {"DapContinue", "DapNew", "DapToggleBreakpoint"}, before = _182_, after = setup})
 end
 require("fnl.dap")
-local function _180_(opts)
+local function _183_(opts)
   return vim.print(Fennel.eval(opts.args))
 end
-return vim.api.nvim_create_user_command("Fnl", _180_, {nargs = "+"})
+return vim.api.nvim_create_user_command("Fnl", _183_, {nargs = "+"})
