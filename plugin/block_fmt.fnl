@@ -36,7 +36,10 @@
 
 (wrap-format-stop :zig "// zig fmt: off" "// zig fmt: on")
 
-(wrap-format-stop :nix "# keep-sorted start" "# keep-sorted end")
+;; split so keep-sorted, which treefmt runs on every file, doesn't read
+;; these strings as its own markers
+(wrap-format-stop :nix (.. "# keep-" "sorted start")
+                  (.. "# keep-" "sorted end"))
 
 ; // @typstyle off or /* @typstyle off */
 (top-format-stop :typst "/* @typstyle off */")

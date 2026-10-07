@@ -86,11 +86,11 @@ do
     fts_2_auto = {"nix"}
   end
   local function _17_(tbl_2_auto)
-    return vim.keymap.set("v", "<space>fo", ("vnoremap <buffer> " .. "<space>fo" .. " <esc>`>a" .. "# keep-sorted end" .. "<esc>`<i" .. "# keep-sorted start" .. "<esc>"), {buffer = tbl_2_auto.buf})
+    return vim.keymap.set("v", "<space>fo", ("vnoremap <buffer> " .. "<space>fo" .. " <esc>`>a" .. ("# keep-" .. "sorted end") .. "<esc>`<i" .. ("# keep-" .. "sorted start") .. "<esc>"), {buffer = tbl_2_auto.buf})
   end
   vim.api.nvim_create_autocmd("Filetype", {callback = _17_, pattern = fts_2_auto})
   local function _18_(tbl_2_auto)
-    return vim.keymap.set("n", "<space>fo", ("<esc>{o" .. "# keep-sorted start" .. "<esc>}O" .. "# keep-sorted end" .. "<esc>"), {buffer = tbl_2_auto.buf})
+    return vim.keymap.set("n", "<space>fo", ("<esc>{o" .. ("# keep-" .. "sorted start") .. "<esc>}O" .. ("# keep-" .. "sorted end") .. "<esc>"), {buffer = tbl_2_auto.buf})
   end
   vim.api.nvim_create_autocmd("Filetype", {callback = _18_, pattern = fts_2_auto})
 end
