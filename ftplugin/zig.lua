@@ -1,7 +1,13 @@
 vim.g.zig_fmt_parse_errors = 0
 vim.g.zig_fmt_autosave = 0
-vim.g.zig_organise_imports = false
-vim.g.zig_fix_all = false
+if (vim.g.zig_organise_imports == nil) then
+  vim.g.zig_organise_imports = false
+else
+end
+if (vim.g.zig_fix_all == nil) then
+  vim.g.zig_fix_all = false
+else
+end
 local function table_keys(tbl)
   local keys = {}
   local n = 0
@@ -34,21 +40,21 @@ local function find_ancestor_by(node, ancestor, query)
   end
 end
 local function find_ancestor_by_type(node, ancestor)
-  local function _2_(n)
+  local function _4_(n)
     return n:type()
   end
-  return find_ancestor_by(node, ancestor, _2_)
+  return find_ancestor_by(node, ancestor, _4_)
 end
 local function find_child_by(parent, child, query)
   if (nil ~= parent) then
     local rnode = nil
     for node, _ in parent:iter_children() do
-      local _3_
+      local _5_
       do
         rnode = node
-        _3_ = (query(node) == child)
+        _5_ = (query(node) == child)
       end
-      if _3_ then break end
+      if _5_ then break end
     end
     return rnode
   else
@@ -56,10 +62,10 @@ local function find_child_by(parent, child, query)
   end
 end
 local function find_child_by_type(parent, child)
-  local function _5_(n)
+  local function _7_(n)
     return n:type()
   end
-  return find_child_by(parent, child, _5_)
+  return find_child_by(parent, child, _7_)
 end
 local function current_node()
   vim.treesitter.get_parser():parse()
@@ -100,27 +106,27 @@ local function zig_toggle_fixall()
 end
 local null_ls = require("null-ls")
 if not null_ls.is_registered("zig-actions_no_show") then
-  local function _9_()
-    local _10_
+  local function _11_()
+    local _12_
     if vim.g.zig_fix_all then
-      _10_ = ": On"
+      _12_ = ": On"
     else
-      _10_ = ": Off"
+      _12_ = ": Off"
     end
-    local function _12_()
+    local function _14_()
       return zig_add_param("io: std.Io")
     end
-    local function _13_()
+    local function _15_()
       return zig_add_param("gpa: std.mem.Allocator")
     end
-    return {{title = "Errors", action = zig_gen_errs}, {title = ("Toggle_FixAll" .. _10_), action = zig_toggle_fixall}, {title = "Add_Io", action = _12_}, {title = "Add_Allocator", action = _13_}}
+    return {{title = "Errors", action = zig_gen_errs}, {title = ("Toggle_FixAll" .. _12_), action = zig_toggle_fixall}, {title = "Add_Io", action = _14_}, {title = "Add_Allocator", action = _15_}}
   end
-  null_ls.register({name = "zig-actions_no_show", method = {null_ls.methods.CODE_ACTION}, filetypes = {"zig"}, generator = {fn = _9_}})
+  null_ls.register({name = "zig-actions_no_show", method = {null_ls.methods.CODE_ACTION}, filetypes = {"zig"}, generator = {fn = _11_}})
 else
 end
 local group = vim.api.nvim_create_augroup("zig_on_save", {clear = false})
 vim.api.nvim_clear_autocmds({group = group, buffer = 0})
-local function _15_(_)
+local function _17_(_)
   if vim.g.zig_organise_imports then
     vim.lsp.buf.code_action({context = {only = {"source.organizeImports"}}, apply = true})
   else
@@ -131,6 +137,6 @@ local function _15_(_)
     return nil
   end
 end
-vim.api.nvim_create_autocmd("BufWritePre", {group = group, buffer = 0, callback = _15_})
+vim.api.nvim_create_autocmd("BufWritePre", {group = group, buffer = 0, callback = _17_})
 vim.lsp.config.zls = {settings = {zls = {enable_build_on_save = true, inlay_hints_hide_redundant_param_names = true, inlay_hints_hide_redundant_param_names_last_token = true, warn_style = true, highlight_global_var_declarations = true, build_on_save_args = {"-fincremental", "-j4"}}}}
 return nil

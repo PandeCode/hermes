@@ -47,13 +47,17 @@
                                                           :p))
                                           nil)})
 
+;; absolute numbers while inserting, per window, and only put back in the
+;; windows it was taken from
 (vim.api.nvim_create_autocmd :InsertEnter
-                             {:pattern "*"
-                              :callback #(set vim.opt.relativenumber false)})
+                             {:callback #(when vim.wo.relativenumber
+                                           (set vim.wo.relativenumber false)
+                                           (set vim.w.rnu_insert true))})
 
 (vim.api.nvim_create_autocmd :InsertLeave
-                             {:pattern "*"
-                              :callback #(set vim.opt.relativenumber true)})
+                             {:callback #(when vim.w.rnu_insert
+                                           (set vim.wo.relativenumber true)
+                                           (set vim.w.rnu_insert nil))})
 
 ;; with several files, load the last one and come back to the first. on
 ;; VimEnter, since filetype detection is still off while init runs
@@ -142,9 +146,22 @@
                                                   (set og_virt_text nil))))
                                           nil)})
 
-;; a file called f or fe is a typo for a <leader>f map, delete it after the write
+;; a new file called f or fe in the working directory is a typo for a
+;; <leader>f map, delete it after the write. one that already existed stays
+(vim.api.nvim_create_autocmd :BufWritePre
+                             {:pattern [:f :fe]
+                              :callback (fn [args]
+                                          (tset vim.b args.buf :typo_file
+                                                (and (= (vim.fn.fnamemodify args.match
+                                                                            ":p:h")
+                                                        (vim.fn.getcwd))
+                                                     (= (vim.fn.filereadable args.match)
+                                                        0)))
+                                          nil)})
+
 (vim.api.nvim_create_autocmd :BufWritePost
                              {:pattern [:f :fe]
                               :callback (fn [args]
-                                          (vim.fn.delete args.match)
+                                          (when (. vim.b args.buf :typo_file)
+                                            (vim.fn.delete args.match))
                                           nil)})

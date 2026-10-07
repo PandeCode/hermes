@@ -1,8 +1,13 @@
 (set vim.g.zig_fmt_parse_errors 0)
 (set vim.g.zig_fmt_autosave 0)
 
-(set vim.g.zig_organise_imports false)
-(set vim.g.zig_fix_all false)
+;; flipped by hand or by zig_toggle_fixall, a second zig buffer must not
+;; reset them
+(when (= vim.g.zig_organise_imports nil)
+  (set vim.g.zig_organise_imports false))
+
+(when (= vim.g.zig_fix_all nil)
+  (set vim.g.zig_fix_all false))
 
 (fn table_keys [tbl]
   (local keys [])

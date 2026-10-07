@@ -99,21 +99,15 @@
                                               :**/Debug/*
                                               :**/build/*
                                               :**/node_modules/*
-                                              :**/android/*
-                                              :**/ios/*
                                               :**/.git/*
-                                              :*.lock
                                               :*.aux
                                               :*.bbl
                                               :*.bcf
                                               :*.blg
                                               :*.fdb_latexmk
                                               :*.fls
-                                              :*.log
-                                              :*.pdf
                                               :*.run.xml
                                               :*.synctex.gz
-                                              :*.tex
                                               :*.toc
                                               :*.DS_Store
                                               :*.class
