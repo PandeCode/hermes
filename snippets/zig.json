@@ -24,7 +24,7 @@
             "const wf = b.addWriteFiles();",
             "const wf_path = wf.add(\"c_somelib.h\",",
             "// c",
-            "\\\\#include \"somelib_c.h\"",
+            "\\\\\\\\#include \"somelib_c.h\"",
             ");",
             "break :blk wf_path;",
             "},",
@@ -56,8 +56,10 @@
     "rand": {
         "prefix": "rand",
         "body": [
-            "const seed = @truncate(u64, @bitCast(u128, std.time.nanoTimestamp()));",
-            "var prng = std.rand.DefaultPrng.init(seed);"
+            "var seed: u64 = undefined;",
+            "io.random(std.mem.asBytes(&seed));",
+            "var prng: std.Random.DefaultPrng = .init(seed);",
+            "const rand = prng.random();"
         ],
         "description": "get a rand"
     },
@@ -77,7 +79,7 @@
             "var stdout_buffer: [1024]u8 = undefined;",
             "var stdout_writer = std.Io.File.stdout().writer(init.io, &stdout_buffer);",
             "const stdout = &stdout_writer.interface;",
-            "defer stdout.flush();"
+            "defer stdout.flush() catch {};"
         ]
     },
     "panic": {
@@ -85,24 +87,16 @@
         "description": "zig custom panic",
         "body": [
             "pub const panic = std.debug.FullPanic(struct {",
-            "    extern",
-            "    pub fn crashed(msg: []const u8, trace: ?usize) noreturn {",
-            "        var buf: [",
-            "                        4098",
-            "                    ]u8 = undefined;",
-            "        const s = std.fmt.bufPrintSentinel(&buf,",
-            "                    \"zenity --error --text '{s}'\", .{msg",
-            "                    },",
-            "                    0) catch",
-            "            std.debug.defaultPanic(msg, trace);",
+            "    extern \"c\" fn system(command: [*:0]const u8) c_int;",
             "",
-            "        _ = c_std.system(s.ptr);",
-            "        std.debug.defaultPanic(msg, trace);",
-            "                }",
-            "            }.crashed);",
-            "        ]",
+            "    fn crashed(msg: []const u8, first_trace_addr: ?usize) noreturn {",
+            "        var buf: [4096]u8 = undefined;",
+            "        if (std.fmt.bufPrintSentinel(&buf, \"zenity --error --text '{s}'\", .{msg}, 0)) |cmd| {",
+            "            _ = system(cmd.ptr);",
+            "        } else |_| {}",
+            "        std.debug.defaultPanic(msg, first_trace_addr);",
             "    }",
-            "}"
+            "}.crashed);"
         ]
     }
 }
