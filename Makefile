@@ -20,7 +20,7 @@ clean:
 	rm -f $(LUA)
 
 update:
-	nix flake update
+	nix --accept-flake-config flake update
 	git add flake.lock
 	git commit -m "update"
 	git push
