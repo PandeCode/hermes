@@ -130,6 +130,7 @@
                     :clojure_lsp
                     ; :cmake ; in python vs rust
                     :fennel_ls
+                    :janet_lsp
                     :glsl_analyzer
                     :neocmake
                     :nixd

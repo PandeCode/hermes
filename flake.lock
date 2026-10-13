@@ -152,14 +152,15 @@
         "nix-alien": "nix-alien",
         "nixpkgs": "nixpkgs",
         "nixutils": "nixutils",
+        "sddm-foundry-theme": "sddm-foundry-theme",
         "zig-overlay": "zig-overlay"
       },
       "locked": {
-        "lastModified": 1790453664,
-        "narHash": "sha256-D0sLT0G3nHXr1jzOn5n9Gu6mQCkfitHRSDzs/lUDm+s=",
+        "lastModified": 1791919376,
+        "narHash": "sha256-4b+pQq4FXINKTQ8YuSeJ+Hqs4PbLOXQUd306wa5Lipc=",
         "owner": "PandeCode",
         "repo": "nixbuilds",
-        "rev": "5f2daaeab79f2d14cced14f584afdeb9b6d72d10",
+        "rev": "7b41762ef9b393e75fe71829a82942a265840e2e",
         "type": "github"
       },
       "original": {
@@ -170,11 +171,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1789286504,
-        "narHash": "sha256-3i80JnZ9pZ7tWReb/Sqpc32cfzffCu8TWLnbnH0hN9c=",
-        "rev": "ef34387ddd751e1ab8857adf4676492d32eb24ec",
+        "lastModified": 1791456040,
+        "narHash": "sha256-gRZ/s8WQJ2CsXdhcDVQH34qxuL0MuMCOs3aBiK1Prsw=",
+        "rev": "e7439b6b14ad3cc35d05608ebca9bce01a25f5f8",
         "type": "tarball",
-        "url": "https://releases.nixos.org/nixos/unstable/nixos-26.11pre1073009.ef34387ddd75/nixexprs.tar.zst"
+        "url": "https://releases.nixos.org/nixos/unstable/nixos-26.11pre1087755.e7439b6b14ad/nixexprs.tar.zst"
       },
       "original": {
         "type": "tarball",
@@ -189,11 +190,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790453137,
-        "narHash": "sha256-v69nNCWxaAJD0KcniAa2c7P3g3u5yWtUwcpl/U8ogbA=",
+        "lastModified": 1790459615,
+        "narHash": "sha256-KFhlMyfgrM8qzumGMWcpEkBrAjGdOKlMOA0FUFtC28o=",
         "owner": "PandeCode",
         "repo": "nixutils",
-        "rev": "0046e91777225216b8d451dd3591a84507632a8b",
+        "rev": "f99c23bdef5279e811b398d1fcf050ed28a8cddd",
         "type": "github"
       },
       "original": {
@@ -232,6 +233,31 @@
         ],
         "nixutils": "nixutils_2",
         "vlime": "vlime"
+      }
+    },
+    "sddm-foundry-theme": {
+      "inputs": {
+        "nixpkgs": [
+          "nixbuilds",
+          "nixpkgs"
+        ],
+        "nixutils": [
+          "nixbuilds",
+          "nixutils"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791861328,
+        "narHash": "sha256-Y1E71gON9K9ajWswZFgfAD1VJygQMtFNK1wal7J6/xw=",
+        "owner": "PandeCode",
+        "repo": "sddm-foundry-theme",
+        "rev": "a19a701d2b2cf9089b42531cbc5a29aa6583da99",
+        "type": "github"
+      },
+      "original": {
+        "owner": "PandeCode",
+        "repo": "sddm-foundry-theme",
+        "type": "github"
       }
     },
     "systems": {
@@ -293,11 +319,11 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1789388970,
-        "narHash": "sha256-FLe1anYsV+/kqj6fb1kuHpIofnO358ggDRCsv9hRA4I=",
+        "lastModified": 1791548927,
+        "narHash": "sha256-Iccx92QDtW4Ec6eEi0ngtdpGdpWSfQdsVPG4R9k6zBc=",
         "owner": "mitchellh",
         "repo": "zig-overlay",
-        "rev": "45488791fd332ace7ef242acbc4f631990a48c7f",
+        "rev": "940ecf1b56179c7d51e595df0a453410d7249d32",
         "type": "github"
       },
       "original": {

@@ -1143,7 +1143,7 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
   n("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")
   n("gd", vim.lsp.buf.definition, "[G]oto [D]efinition")
   n("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
-  for _, k in ipairs({"asm_lsp", "ast_grep", "bashls", "cir_lsp_server", "clojure_lsp", "fennel_ls", "glsl_analyzer", "neocmake", "nixd", "html", "cssls", "fish_lsp", "omnisharp", "tinymist", "ocamllsp", "nushell", "denols", "jsonls", "pyrefly", "racket_langserver", "wasm_language_tools", "wgsl_analyzer", "zls", "matlab_ls", "gopls"}) do
+  for _, k in ipairs({"asm_lsp", "ast_grep", "bashls", "cir_lsp_server", "clojure_lsp", "fennel_ls", "janet_lsp", "glsl_analyzer", "neocmake", "nixd", "html", "cssls", "fish_lsp", "omnisharp", "tinymist", "ocamllsp", "nushell", "denols", "jsonls", "pyrefly", "racket_langserver", "wasm_language_tools", "wgsl_analyzer", "zls", "matlab_ls", "gopls"}) do
     vim.lsp.enable(k)
   end
   vim.lsp.config("matlab_ls", {settings = {MATLAB = {indexWorkspace = true, installPath = vim.fn.expand("~/apps/matlab/installation/"), matlabConnectionTiming = "onStart", telemetry = true}}})
