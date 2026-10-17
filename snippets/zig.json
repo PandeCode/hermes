@@ -19,19 +19,20 @@
     "translate c": {
         "prefix": "translate",
         "body": [
-            "const somelib = b.addTranslateC(.{",
-            ".root_source_file = blk: {",
-            "const wf = b.addWriteFiles();",
-            "const wf_path = wf.add(\"c_somelib.h\",",
-            "// c",
-            "\\\\\\\\#include \"somelib_c.h\"",
-            ");",
-            "break :blk wf_path;",
-            "},",
-            ".optimize = optimize,",
-            ".target = target,",
+            "const ${1:somelib} = b.addTranslateC(.{",
+            "    .root_source_file = blk: {",
+            "        const wf = b.addWriteFiles();",
+            "        const wf_path = wf.add(\"c_${1:somelib}.h\",",
+            "            // c",
+            "            \\\\\\\\#include \"${2:somelib.h}\"",
+            "        );",
+            "        break :blk wf_path;",
+            "    },",
+            "    .optimize = optimize,",
+            "    .target = target,",
             "});",
-            "exe_mod.linkSystemLibrary(\"somelib\", .{});"
+            "exe_mod.addImport(\"${3:c}\", ${1:somelib}.createModule());",
+            "exe_mod.linkSystemLibrary(\"${1:somelib}\", .{});"
         ],
         "description": "translate c"
     },
@@ -98,5 +99,157 @@
             "    }",
             "}.crashed);"
         ]
+    },
+    "main": {
+        "prefix": "main",
+        "body": [
+            "pub fn main(init: std.process.Init) !void {",
+            "    const gpa = init.gpa;",
+            "    const io = init.io;",
+            "    const arena = init.arena.allocator();",
+            "    const args = try init.minimal.args.toSlice(arena);",
+            "    _ = .{ gpa, io, args };",
+            "    $0",
+            "}"
+        ],
+        "description": "main with gpa, io, arena and args"
+    },
+    "test": {
+        "prefix": "test",
+        "body": [
+            "test \"${1:name}\" {",
+            "    const gpa = std.testing.allocator;",
+            "    _ = gpa;",
+            "    try std.testing.expectEqual(${2:1}, ${3:1});$0",
+            "}"
+        ],
+        "description": "test with the leak checking allocator"
+    },
+    "fuzz": {
+        "prefix": "fuzz",
+        "body": [
+            "test \"${1:fuzz}\" {",
+            "    try std.testing.fuzz({}, ${2:fuzzOne}, .{});",
+            "}",
+            "",
+            "fn ${2:fuzzOne}(_: void, smith: *std.testing.Smith) !void {",
+            "    var buf: [64]u8 = undefined;",
+            "    const input = buf[0..smith.value(u6)];",
+            "    smith.bytes(input);",
+            "    $0",
+            "}"
+        ],
+        "description": "fuzz test, run with zig build test --fuzz"
+    },
+    "list": {
+        "prefix": "list",
+        "body": [
+            "var ${1:list}: std.ArrayList(${2:u8}) = .empty;",
+            "defer ${1:list}.deinit(gpa);",
+            "try ${1:list}.append(gpa, ${3:0});$0"
+        ],
+        "description": "ArrayList"
+    },
+    "map": {
+        "prefix": "map",
+        "body": [
+            "var ${1:map}: std.StringHashMapUnmanaged(${2:u32}) = .empty;",
+            "defer ${1:map}.deinit(gpa);",
+            "try ${1:map}.put(gpa, ${3:\"key\"}, ${4:0});$0"
+        ],
+        "description": "string hash map"
+    },
+    "arena": {
+        "prefix": "arena",
+        "body": [
+            "var arena_state: std.heap.ArenaAllocator = .init(gpa);",
+            "defer arena_state.deinit();",
+            "const arena = arena_state.allocator();$0"
+        ],
+        "description": "arena on top of gpa"
+    },
+    "debugalloc": {
+        "prefix": "debugalloc",
+        "body": [
+            "var debug_allocator: std.heap.DebugAllocator(.{}) = .init;",
+            "defer _ = debug_allocator.deinit();",
+            "const gpa = debug_allocator.allocator();$0"
+        ],
+        "description": "leak checking gpa when main has no init"
+    },
+    "readfile": {
+        "prefix": "readfile",
+        "body": [
+            "const ${1:contents} = try std.Io.Dir.cwd().readFileAlloc(io, ${2:\"file.txt\"}, gpa, .limited(${3:1 << 20}));",
+            "defer gpa.free(${1:contents});$0"
+        ],
+        "description": "read a whole file"
+    },
+    "writefile": {
+        "prefix": "writefile",
+        "body": [
+            "try std.Io.Dir.cwd().writeFile(io, .{ .sub_path = ${1:\"out.txt\"}, .data = ${2:data} });$0"
+        ],
+        "description": "write a whole file"
+    },
+    "json": {
+        "prefix": "json",
+        "body": [
+            "const ${1:parsed} = try std.json.parseFromSlice(${2:T}, gpa, ${3:text}, .{});",
+            "defer ${1:parsed}.deinit();",
+            "const ${4:value} = ${1:parsed}.value;$0"
+        ],
+        "description": "parse json into a type"
+    },
+    "async": {
+        "prefix": "async",
+        "body": [
+            "var ${1:future} = io.async(${2:work}, .{${3}});",
+            "defer _ = ${1:future}.cancel(io);",
+            "const ${4:result} = ${1:future}.await(io);$0"
+        ],
+        "description": "run a function on io and wait for it"
+    },
+    "group": {
+        "prefix": "group",
+        "body": [
+            "var group: std.Io.Group = .init;",
+            "defer group.cancel(io);",
+            "for (${1:items}) |${2:item}| group.async(io, ${3:visit}, .{${2:item}});",
+            "try group.await(io);$0"
+        ],
+        "description": "run a function per item on io and wait for all"
+    },
+    "sleep": {
+        "prefix": "sleep",
+        "body": [
+            "try io.sleep(.fromMilliseconds(${1:100}), .awake);$0"
+        ],
+        "description": "sleep"
+    },
+    "timer": {
+        "prefix": "timer",
+        "body": [
+            "const ${1:start} = std.Io.Clock.awake.now(io);",
+            "$0",
+            "std.log.info(\"${2:took} {d} ms\", .{${1:start}.untilNow(io, .awake).toMilliseconds()});"
+        ],
+        "description": "time a block"
+    },
+    "fields": {
+        "prefix": "fields",
+        "body": [
+            "inline for (comptime std.meta.fieldNames(@TypeOf(${1:value}))) |name| {",
+            "    std.log.info(\"{s} = {any}\", .{ name, @field(${1:value}, name) });$0",
+            "}"
+        ],
+        "description": "loop over a struct's fields"
+    },
+    "log": {
+        "prefix": "log",
+        "body": [
+            "const log = std.log.scoped(.${1:name});$0"
+        ],
+        "description": "scoped logger"
     }
 }

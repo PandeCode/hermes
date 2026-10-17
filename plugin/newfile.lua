@@ -74,11 +74,22 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    // @cImport is gone, c headers go through translate-c as the "c" module
+    const c = b.addTranslateC(.{
+        .root_source_file = b.addWriteFiles().add("c.h",
+            \\#include <stdio.h>
+            \\#include <stdlib.h>
+        ),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
         .link_libc = true,
         .target = target,
         .optimize = optimize,
+        .imports = &.{.{ .name = "c", .module = c.createModule() }},
     });
     const exe = b.addExecutable(.{ .name = "{{cwd}}", .root_module = exe_mod });
 
@@ -90,9 +101,10 @@ pub fn build(b: *std.Build) void {
     run_step.dependOn(&run_exe.step);
 
     run_exe.step.dependOn(b.getInstallStep());
-    if (b.args) |args| {
-        run_exe.addArgs(args);
-    }
+    run_exe.addPassthruArgs();
+
+    const test_step = b.step("test", "run the tests");
+    test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = exe_mod })).step);
 
     const exe_check = b.addExecutable(.{
         .name = "check",
@@ -107,12 +119,9 @@ pub fn build(b: *std.Build) void {
 		"main.zig",
 		-- zig
 		[[const std = @import("std");
-const builtins = @import("builtins");
+const builtin = @import("builtin");
 
-const c = @cImport({
-    @cInclude("stdio.h");
-    @cInclude("stdlib.h");
-});
+const c = @import("c");
 
 const print = std.debug.print;
 
@@ -132,7 +141,7 @@ pub fn main(init: std.process.Init) !void {
 
     std.log.info("{d} env vars", .{init.environ_map.count()});
 }]],
-		{ 12, 1 },
+		{ 9, 1 },
 	},
 	{ "zls.json", [[{
   "enable_build_on_save": true,
@@ -290,10 +299,26 @@ fi
 			{
 				"build.zig",
 				[[
-Utils.bind_term("<leader>mr", "zig build run -freference-trace=10 -j$(nproc)")
+-- <leader>mb builds into the quickfix list, <leader>mr builds then runs
+vim.g.build_cmd = "zig build"
+vim.g.run_cmd = "zig build run -freference-trace=10 -j$(nproc)"
 vim.lsp.enable("ccls")
 vim.g.zig_organise_imports = false
 vim.g.zig_fix_all = false
+		]],
+			},
+			{
+				"Cargo.toml",
+				[[
+vim.g.build_cmd = "cargo build"
+vim.g.run_cmd = "cargo run"
+		]],
+			},
+			{
+				"Makefile",
+				[[
+vim.g.build_cmd = "make -j$(nproc)"
+vim.g.run_cmd = "make run"
 		]],
 			},
 		}),
@@ -304,10 +329,26 @@ vim.g.zig_fix_all = false
 			{
 				"build.zig",
 				[[
-(Utils.bind_term "<leader>mr" "zig build run -freference-trace=10 -j$(nproc)")
+;; <leader>mb builds into the quickfix list, <leader>mr builds then runs
+(set vim.g.build_cmd "zig build")
+(set vim.g.run_cmd "zig build run -freference-trace=10 -j$(nproc)")
 (vim.lsp.enable :ccls)
 (set vim.g.zig_organise_imports false)
 (set vim.g.zig_fix_all false)
+		]],
+			},
+			{
+				"Cargo.toml",
+				[[
+(set vim.g.build_cmd "cargo build")
+(set vim.g.run_cmd "cargo run")
+		]],
+			},
+			{
+				"Makefile",
+				[[
+(set vim.g.build_cmd "make -j$(nproc)")
+(set vim.g.run_cmd "make run")
 		]],
 			},
 		}),
