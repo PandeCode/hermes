@@ -165,3 +165,15 @@
                                              :home-manager {:expr vim.g.nix_nixd_home_manager_options}}
                                    :formatting {:command [:nixfmt]}
                                    :diagnostic {:suppress [:sema-escaping-with]}}}})
+
+;; here and not in ftplugin/zig, so it is set before the first zig buffer
+;; starts zls
+; -- https://zigtools.org/zls/configure/
+; -- https://zigtools.org/zls/guides/build-on-save/
+(vim.lsp.config :zls
+                {:settings {:zls {:enable_build_on_save true
+                                  :inlay_hints_hide_redundant_param_names true
+                                  :inlay_hints_hide_redundant_param_names_last_token true
+                                  :warn_style true
+                                  :highlight_global_var_declarations true
+                                  :build_on_save_args [:-fincremental :-j4]}}})

@@ -1,24 +1,13 @@
 (set vim.g.zig_fmt_parse_errors 0)
 (set vim.g.zig_fmt_autosave 0)
 
-;; flipped by hand or by zig_toggle_fixall, a second zig buffer must not
+;; flipped by hand or by zig_toggle, a second zig buffer must not
 ;; reset them
 (when (= vim.g.zig_organise_imports nil)
   (set vim.g.zig_organise_imports false))
 
 (when (= vim.g.zig_fix_all nil)
   (set vim.g.zig_fix_all false))
-
-(fn get_from [sr sc er ec] (vim.api.nvim_buf_get_lines 0 sr er false))
-
-(fn insert_at [row col text]
-  (let [buf 0
-        lnum (+ row 1)
-        line (. (vim.api.nvim_buf_get_lines buf (- lnum 1) lnum false) 1)
-        before (line:sub 1 col)
-        after (line:sub (+ col 1))]
-    (vim.api.nvim_buf_set_lines buf (- lnum 1) lnum false
-                                [(.. before text after)])))
 
 (fn find_ancestor_by [node ancestor query]
   (if (not= nil node)
@@ -32,19 +21,49 @@
 (fn find_ancestor_by_type [node ancestor]
   (find_ancestor_by node ancestor (fn [n] (n:type))))
 
-(fn find_child_by [parent child query]
-  (if (not= nil parent)
-      (do
-        (var rnode nil)
-        (each [node _ (parent:iter_children)
-               &until (do
-                        (set rnode node)
-                        (= (query node) child))]
-          nil)
-        rnode)))
+;; parameters has no field name in tree-sitter-zig
+(fn child_of_type [node t]
+  (accumulate [found nil child (node:iter_children)]
+    (or found (when (= (child:type) t) child))))
 
-(fn find_child_by_type [parent child]
-  (find_child_by parent child (fn [n] (n:type))))
+(fn text_of [node]
+  (vim.treesitter.get_node_text node 0))
+
+(fn field [node name]
+  (. (node:field name) 1))
+
+(fn current_node []
+  ;; reparse first, the tree is stale right after an edit. no zig parser
+  ;; gives nil here
+  (let [parser (vim.treesitter.get_parser 0 :zig {:error false})]
+    (when parser
+      (parser:parse)
+      (vim.treesitter.get_node))))
+
+;; the cursor can be on `fn` or `pub`, where the node is the function itself
+(fn current_fn []
+  (let [node (current_node)
+        fn_node (if (and node (= (node:type) :function_declaration)) node
+                    (find_ancestor_by_type node :function_declaration))]
+    (if (not fn_node) (vim.notify "not in a function" vim.log.levels.WARN)
+        (not (field fn_node :body)) (vim.notify "extern function, no body"
+                                                vim.log.levels.WARN)
+        fn_node)))
+
+(fn line_indent [row]
+  (: (. (vim.api.nvim_buf_get_lines 0 row (+ row 1) false) 1) :match "^%s*"))
+
+(fn replace_node [node text]
+  (let [(sr sc er ec) (node:range)]
+    (vim.api.nvim_buf_set_text 0 sr sc er ec (vim.split text "\n"))))
+
+(fn insert_text [row col text]
+  (vim.api.nvim_buf_set_text 0 row col row col (vim.split text "\n")))
+
+(fn has_param [params name]
+  (accumulate [found false child (params:iter_children)]
+    (or found (and (= (child:type) :parameter)
+                   (= (text_of (field child :name)) name)))))
 
 ;; fn func() void {
 ; // if i im here
@@ -55,23 +74,36 @@
 ; // if i im here
 ; }
 ;
-; for gpa, io, ctx (Context, i usually have a struct context {io: Io, gpa: Allocator})
+; the discard keeps the new param compiling until it is used, then zig asks
+; for it to go
+(fn zig_add_param [name type]
+  (let [fn_node (current_fn)
+        params (and fn_node (child_of_type fn_node :parameters))]
+    (if (not params) nil (has_param params name)
+        (vim.notify (.. name " is already a parameter"))
+        (let [body (field fn_node :body)
+              (_ _ end_row) (body:range)
+              (brow bcol) (body:start)
+              (prow pcol) (params:start)
+              indent (line_indent (fn_node:start))
+              one_line (= brow end_row)
+              param (.. name ": " type)]
+          ;; the body comes after the params, edit it first so the params
+          ;; position still holds
+          (insert_text brow (+ bcol 1)
+                       (.. "\n" indent "    _ = " name ";"
+                           (if one_line (.. "\n" indent) "")))
+          ;; after self in methods, so obj.method() calls stay valid
+          (let [first (params:named_child 0)
+                self? (and first (= (text_of (field first :name)) :self))]
+            (if self?
+                (let [(srow scol) (first:end_)]
+                  (insert_text srow scol (.. ", " param)))
+                (insert_text prow (+ pcol 1)
+                             (if (= 0 (params:named_child_count)) param
+                                 (.. param ", ")))))))))
 
-(fn current_node []
-  ;; reparse first, the tree is stale right after an edit
-  (: (vim.treesitter.get_parser) :parse)
-  (vim.treesitter.get_node))
-
-(fn zig_add_param [param]
-  (let [cur_node (current_node)
-        parent_fn (find_ancestor_by_type cur_node :function_declaration)
-        params (find_child_by_type parent_fn :parameters)]
-    (when params
-      (let [(row col _) (params:start)
-            text (if (= 2 (params:child_count)) param (.. param ", "))] ; idk y 2 maybe the parens
-        (insert_at row (+ 1 col) text)))))
-
-; zig error set generation
+;; zig error set generation
 ; fn f() !void {
 ;     // when i am within the tscontext of is function
 ;     return error.hello;
@@ -79,61 +111,163 @@
 ;
 ; // generate
 ;
-; const f_errors = error {
-;     a, b, c, d
-; };
+; const f_errors = error{ hello };
 ; fn f() f_errors!void {
-;     // when i am within the tscontext of is function
-;     if(false) return error.a;
-;     if(false) return error.b;
-;     if(false) return error.c;
-;     return error.d;
+;     return error.hello;
 ; }
-; updates error set
-(fn zig_gen_errs []
-  (let [cur_node (current_node)
-        parent_fn (find_ancestor_by_type cur_node :function_declaration)]
-    (when parent_fn
-      (let [body (. (parent_fn:field :body) 1)
-            (start_row start_col end_row end_col) (body:range)
-            fn_body (get_from start_row start_col (+ end_row 1) end_col)]
-        (vim.notify (vim.inspect fn_body))))))
+;
+; running it again adds new errors to f_errors and keeps the ones there, so
+; errors that only come in through try can be added by hand
+(fn returned_errors [body]
+  (let [names []]
+    (fn walk [node in_return]
+      (each [child (node:iter_children)]
+        (case (child:type)
+          :function_declaration nil
+          (where :error_type in_return)
+          (table.insert names (text_of (child:named_child 0)))
+          t (walk child (or in_return (= t :return_expression))))))
 
-(fn zig_toggle_fixall []
-  (set vim.g.zig_fix_all (not vim.g.zig_fix_all))
-  (vim.print "Zig FixAll is now: " vim.g.zig_fix_all))
+    (walk body false)
+    names))
+
+(fn set_members [set_node]
+  (icollect [child (set_node:iter_children)]
+    (when (= (child:type) :identifier) (text_of child))))
+
+(fn merge [existing found]
+  (let [seen (collect [_ n (ipairs existing)] n true)
+        out (icollect [_ n (ipairs existing)] n)]
+    (each [_ n (ipairs found)]
+      (when (not (. seen n))
+        (tset seen n true)
+        (table.insert out n)))
+    out))
+
+;; the error set declaration named `name` next to the function
+(fn find_set_decl [fn_node name]
+  (accumulate [found nil child (: (fn_node:parent) :iter_children)]
+    (or found (when (and (= (child:type) :variable_declaration)
+                         (= (text_of (child:named_child 0)) name)
+                         (= (: (child:named_child 1) :type)
+                            :error_set_declaration))
+                (child:named_child 1)))))
+
+;; above the function and its /// doc comment
+(fn insert_set_decl [fn_node decl]
+  (var row (fn_node:start))
+  (while (and (> row 0) (: (. (vim.api.nvim_buf_get_lines 0 (- row 1) row false)
+                              1) :match "^%s*///"))
+    (set row (- row 1)))
+  (vim.api.nvim_buf_set_lines 0 row row false
+                              [(.. (line_indent (fn_node:start)) decl)]))
+
+(fn zig_gen_errs []
+  (let [fn_node (current_fn)]
+    (when fn_node
+      (let [name (.. (text_of (field fn_node :name)) :_errors)
+            ret (field fn_node :type)
+            err (and (= (ret:type) :error_union_type) (field ret :error))
+            decl_set (find_set_decl fn_node name)
+            inline_set (and err (= (err:type) :error_set_declaration) err)
+            found (returned_errors (field fn_node :body))
+            members (merge (if decl_set (set_members decl_set)
+                               inline_set (set_members inline_set)
+                               []) found)
+            ;; zig fmt style, error{a} and error{ a, b }
+            set_text (if (= 1 (length members))
+                         (.. "error{" (. members 1) "}")
+                         (.. "error{ " (table.concat members ", ") " }"))
+            pub (if (vim.startswith (text_of fn_node) "pub ") "pub " "")]
+        (if (= 0 (length members))
+            (vim.notify "no return error.X in this function")
+            (and err (not inline_set) (not= (text_of err) name))
+            (vim.notify (.. "returns " (text_of err) ", left alone"))
+            (do
+              ;; the return type comes after where the declaration goes, so
+              ;; change it first
+              (if (not err)
+                  (replace_node ret
+                                (.. name "!"
+                                    (if (= (ret:type) :error_union_type)
+                                        (text_of (field ret :ok))
+                                        (text_of ret))))
+                  inline_set
+                  (replace_node inline_set name))
+              (if decl_set
+                  (replace_node decl_set set_text)
+                  (insert_set_decl fn_node
+                                   (.. pub "const " name " = " set_text ";")))))))))
+
+(fn zig_toggle [flag label]
+  (tset vim.g flag (not (. vim.g flag)))
+  (vim.notify (.. label " on save: " (if (. vim.g flag) :on :off))))
 
 (local null_ls (require :null-ls))
+
+;; the function actions only show up with the cursor in a function
+(fn in_fn? [params]
+  (let [parser (vim.treesitter.get_parser params.bufnr :zig {:error false})]
+    (when parser
+      (parser:parse)
+      (let [node (parser:named_node_for_range [(- params.row 1)
+                                               params.col
+                                               (- params.row 1)
+                                               params.col])]
+        (and node
+             (or (= (node:type) :function_declaration)
+                 (find_ancestor_by_type node :function_declaration)))))))
+
+(fn zig_actions [params]
+  (let [toggles [{:title (.. :Toggle_FixAll
+                             (if vim.g.zig_fix_all ": On" ": Off"))
+                  :action #(zig_toggle :zig_fix_all "fix all")}
+                 {:title (.. :Toggle_OrganiseImports
+                             (if vim.g.zig_organise_imports ": On" ": Off"))
+                  :action #(zig_toggle :zig_organise_imports "organise imports")}]]
+    (if (in_fn? params)
+        [{:title :Errors :action zig_gen_errs}
+         {:title :Add_Io :action #(zig_add_param :io :std.Io)}
+         {:title :Add_Allocator
+          :action #(zig_add_param :gpa :std.mem.Allocator)}
+         {:title :Add_Ctx :action #(zig_add_param :ctx :Context)}
+         (unpack toggles)]
+        toggles)))
 
 ;; this file runs for every zig buffer, the source is global
 (when (not (null_ls.is_registered :zig-actions_no_show))
   (null_ls.register {:name :zig-actions_no_show
                      :method [null_ls.methods.CODE_ACTION]
                      :filetypes [:zig]
-                     :generator {:fn #[{:title :Errors :action zig_gen_errs}
-                                       {:title (.. :Toggle_FixAll
-                                                   (if vim.g.zig_fix_all
-                                                       ": On"
-                                                       ": Off"))
-                                        :action zig_toggle_fixall}
-                                       {:title :Add_Io
-                                        :action #(zig_add_param "io: std.Io")}
-                                       {:title :Add_Allocator
-                                        :action #(zig_add_param "gpa: std.mem.Allocator")}]}}))
+                     :generator {:fn zig_actions}}))
 
 (local group (vim.api.nvim_create_augroup :zig_on_save {:clear false}))
 (vim.api.nvim_clear_autocmds {: group :buffer 0})
 
+;; vim.lsp.buf.code_action is async, its edits land after the write and leave
+;; the buffer modified, so ask zls and apply the edits before writing
+(fn apply_source_action [buf kind]
+  (each [_ client (ipairs (vim.lsp.get_clients {:bufnr buf :name :zls}))]
+    (let [params {:textDocument (vim.lsp.util.make_text_document_params buf)
+                  :range {:start {:line 0 :character 0}
+                          :end {:line (vim.api.nvim_buf_line_count buf)
+                                :character 0}}
+                  :context {:only [kind] :diagnostics []}}
+          res (client:request_sync :textDocument/codeAction params 1000 buf)]
+      (each [_ action (ipairs (or (and res res.result) []))]
+        (when action.edit
+          (vim.lsp.util.apply_workspace_edit action.edit client.offset_encoding))))))
+
 (vim.api.nvim_create_autocmd :BufWritePre
                              {: group
                               :buffer 0
-                              :callback (fn [_]
+                              :callback (fn [args]
                                           (when vim.g.zig_organise_imports
-                                            (vim.lsp.buf.code_action {:context {:only [:source.organizeImports]}
-                                                                      :apply true}))
+                                            (apply_source_action args.buf
+                                                                 :source.organizeImports))
                                           (when vim.g.zig_fix_all
-                                            (vim.lsp.buf.code_action {:context {:only [:source.fixAll]}
-                                                                      :apply true})))})
+                                            (apply_source_action args.buf
+                                                                 :source.fixAll)))})
 
 ;; :make, <leader>mb and <leader>mr run zig build and fill the quickfix list.
 ;; only the error and note lines are kept, the build tree, source excerpts and
@@ -142,13 +276,3 @@
 (set vim.bo.errorformat "%f:%l:%c: %trror: %m,%f:%l:%c: %tote: %m,%-G%.%#")
 (set vim.b.build_cmd "zig build")
 (set vim.b.run_cmd "zig build run -freference-trace=10 -j$(nproc)")
-
-; -- https://zigtools.org/zls/configure/
-; -- https://zigtools.org/zls/guides/build-on-save/
-(set vim.lsp.config.zls
-     {:settings {:zls {:enable_build_on_save true
-                       :inlay_hints_hide_redundant_param_names true
-                       :inlay_hints_hide_redundant_param_names_last_token true
-                       :warn_style true
-                       :highlight_global_var_declarations true
-                       :build_on_save_args [:-fincremental :-j4]}}})
