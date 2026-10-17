@@ -128,8 +128,55 @@ When (= ?start ?end), returns an empty iterator
                    (when choice
                      ((. tbl choice))))))
 
+;; <leader>mb builds into the quickfix list, <leader>mr builds the same way and
+;; runs the program in a terminal when the build passes. a filetype sets
+;; vim.b.build_cmd and vim.b.run_cmd, a .nvimrc.fnl overrides them for the
+;; project with vim.g.build_cmd and vim.g.run_cmd. errors are read with the
+;; buffer's errorformat
+(fn cmd_for [name]
+  (or (. vim.g name) (. vim.b name)))
+
+(fn Utils.build [on_ok]
+  (let [cmd (cmd_for :build_cmd)
+        efm (vim.api.nvim_get_option_value :errorformat {})]
+    (if (not cmd)
+        (when on_ok (on_ok))
+        (do
+          (vim.cmd "silent! wall")
+          (vim.notify cmd)
+          ;; paths in the output are relative to the cwd, so the build runs
+          ;; in neovim's like :make does
+          (vim.system [:sh :-c (vim.fn.expandcmd cmd)] {:text true}
+                      (vim.schedule_wrap (fn [out]
+                                           (local output
+                                                  (.. out.stdout out.stderr))
+                                           (vim.fn.setqflist [] " "
+                                                             {:title cmd
+                                                              :lines (vim.split output
+                                                                                "\n")
+                                                              : efm})
+                                           (if (= out.code 0)
+                                               (do
+                                                 (vim.cmd.cclose)
+                                                 (if on_ok (on_ok)
+                                                     (vim.notify (.. cmd " ok"))))
+                                               (= 0 (length (vim.fn.getqflist)))
+                                               ;; failed before compiling, a missing build file and the like
+                                               (vim.notify output
+                                                           vim.log.levels.ERROR)
+                                               (vim.cmd "botright copen")))))))))
+
+(fn Utils.run []
+  (Utils.build #(let [cmd (cmd_for :run_cmd)]
+                  (if cmd
+                      (Utils.open_tmp_term cmd)
+                      (vim.notify "no run_cmd" vim.log.levels.WARN)))))
+
+(vim.keymap.set :n :<leader>mb #(Utils.build))
+(vim.keymap.set :n :<leader>mr Utils.run)
+
 (fn runner [cmd]
-  #(Utils.bind_term :<leader>mr cmd))
+  #(set vim.g.run_cmd cmd))
 
 (vim.keymap.set :n :<leader>bb
                 #(def_ui {:bind_nix (runner "nix-instantiate --show-trace --eval ./%")

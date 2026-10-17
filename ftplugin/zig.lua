@@ -129,26 +129,9 @@ local function _17_(_)
   end
 end
 vim.api.nvim_create_autocmd("BufWritePre", {group = group, buffer = 0, callback = _17_})
-local zig_efm = "%f:%l:%c: %trror: %m,%f:%l:%c: %tote: %m,%-G%.%#"
 vim.bo.makeprg = "zig build $*"
-vim.bo.errorformat = zig_efm
-local function zig_build()
-  vim.cmd("silent! wall")
-  vim.notify("zig build")
-  local function _20_(out)
-    local output = (out.stdout .. out.stderr)
-    vim.fn.setqflist({}, " ", {title = "zig build", lines = vim.split(output, "\n"), efm = zig_efm})
-    if (out.code == 0) then
-      vim.cmd.cclose()
-      return vim.notify("zig build ok")
-    elseif (0 == #vim.fn.getqflist()) then
-      return vim.notify(output, vim.log.levels.ERROR)
-    else
-      return vim.cmd("botright copen")
-    end
-  end
-  return vim.system({"zig", "build"}, {text = true}, vim.schedule_wrap(_20_))
-end
-vim.keymap.set("n", "<leader>mb", zig_build, {buffer = 0})
+vim.bo.errorformat = "%f:%l:%c: %trror: %m,%f:%l:%c: %tote: %m,%-G%.%#"
+vim.b.build_cmd = "zig build"
+vim.b.run_cmd = "zig build run -freference-trace=10 -j$(nproc)"
 vim.lsp.config.zls = {settings = {zls = {enable_build_on_save = true, inlay_hints_hide_redundant_param_names = true, inlay_hints_hide_redundant_param_names_last_token = true, warn_style = true, highlight_global_var_declarations = true, build_on_save_args = {"-fincremental", "-j4"}}}}
 return nil

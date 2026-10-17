@@ -135,35 +135,13 @@
                                             (vim.lsp.buf.code_action {:context {:only [:source.fixAll]}
                                                                       :apply true})))})
 
-;; :make runs zig build and fills the quickfix list. only the error and note
-;; lines are kept, the build tree, source excerpts and reference trace go
-(local zig_efm "%f:%l:%c: %trror: %m,%f:%l:%c: %tote: %m,%-G%.%#")
+;; :make, <leader>mb and <leader>mr run zig build and fill the quickfix list.
+;; only the error and note lines are kept, the build tree, source excerpts and
+;; reference trace go
 (set vim.bo.makeprg "zig build $*")
-(set vim.bo.errorformat zig_efm)
-
-;; :make without blocking the editor. zig prints paths relative to its cwd,
-;; so it runs in neovim's like :make does
-(fn zig_build []
-  (vim.cmd "silent! wall")
-  (vim.notify "zig build")
-  (vim.system [:zig :build] {:text true}
-              (vim.schedule_wrap (fn [out]
-                                   (local output (.. out.stdout out.stderr))
-                                   (vim.fn.setqflist [] " "
-                                                     {:title "zig build"
-                                                      :lines (vim.split output
-                                                                        "\n")
-                                                      :efm zig_efm})
-                                   (if (= out.code 0)
-                                       (do
-                                         (vim.cmd.cclose)
-                                         (vim.notify "zig build ok"))
-                                       (= 0 (length (vim.fn.getqflist)))
-                                       ;; failed before compiling, no build.zig and the like
-                                       (vim.notify output vim.log.levels.ERROR)
-                                       (vim.cmd "botright copen"))))))
-
-(vim.keymap.set :n :<leader>mb zig_build {:buffer 0})
+(set vim.bo.errorformat "%f:%l:%c: %trror: %m,%f:%l:%c: %tote: %m,%-G%.%#")
+(set vim.b.build_cmd "zig build")
+(set vim.b.run_cmd "zig build run -freference-trace=10 -j$(nproc)")
 
 ; -- https://zigtools.org/zls/configure/
 ; -- https://zigtools.org/zls/guides/build-on-save/
