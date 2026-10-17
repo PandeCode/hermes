@@ -103,8 +103,14 @@ pub fn build(b: *std.Build) void {
     run_exe.step.dependOn(b.getInstallStep());
     run_exe.addPassthruArgs();
 
+    // zig build test -Dtest-filter=name runs only the tests with name in
+    // theirs, <leader>mt passes the one under the cursor
+    const test_filters = b.option([]const []const u8, "test-filter", "Skip tests that do not match any filter") orelse &.{};
     const test_step = b.step("test", "run the tests");
-    test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = exe_mod })).step);
+    test_step.dependOn(&b.addRunArtifact(b.addTest(.{
+        .root_module = exe_mod,
+        .filters = test_filters,
+    })).step);
 
     const exe_check = b.addExecutable(.{
         .name = "check",
@@ -299,7 +305,8 @@ fi
 			{
 				"build.zig",
 				[[
--- <leader>mb builds into the quickfix list, <leader>mr builds then runs
+-- <leader>mb builds into the quickfix list, <leader>mr builds then runs,
+-- <leader>mt tests the one under the cursor, <leader>ms picks a build step
 vim.g.build_cmd = "zig build"
 vim.g.run_cmd = "zig build run -freference-trace=10 -j$(nproc)"
 vim.lsp.enable("ccls")
@@ -312,6 +319,7 @@ vim.g.zig_fix_all = false
 				[[
 vim.g.build_cmd = "cargo build"
 vim.g.run_cmd = "cargo run"
+vim.g.test_cmd = "cargo test"
 		]],
 			},
 			{
@@ -329,7 +337,8 @@ vim.g.run_cmd = "make run"
 			{
 				"build.zig",
 				[[
-;; <leader>mb builds into the quickfix list, <leader>mr builds then runs
+;; <leader>mb builds into the quickfix list, <leader>mr builds then runs,
+;; <leader>mt tests the one under the cursor, <leader>ms picks a build step
 (set vim.g.build_cmd "zig build")
 (set vim.g.run_cmd "zig build run -freference-trace=10 -j$(nproc)")
 (vim.lsp.enable :ccls)
@@ -342,6 +351,7 @@ vim.g.run_cmd = "make run"
 				[[
 (set vim.g.build_cmd "cargo build")
 (set vim.g.run_cmd "cargo run")
+(set vim.g.test_cmd "cargo test")
 		]],
 			},
 			{

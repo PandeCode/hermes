@@ -129,15 +129,26 @@ When (= ?start ?end), returns an empty iterator
                      ((. tbl choice))))))
 
 ;; <leader>mb builds into the quickfix list, <leader>mr builds the same way and
-;; runs the program in a terminal when the build passes. a filetype sets
-;; vim.b.build_cmd and vim.b.run_cmd, a .nvimrc.fnl overrides them for the
-;; project with vim.g.build_cmd and vim.g.run_cmd. errors are read with the
+;; runs the program in a terminal when the build passes, <leader>mt runs the
+;; test under the cursor (or all of them) into the quickfix list. a filetype
+;; sets vim.b.build_cmd, vim.b.run_cmd and vim.b.test_cmd, a .nvimrc.fnl
+;; overrides them for the project with vim.g.*. errors are read with the
 ;; buffer's errorformat
 (fn cmd_for [name]
   (or (. vim.g name) (. vim.b name)))
 
-(fn Utils.build [on_ok]
-  (let [cmd (cmd_for :build_cmd)
+;; lines kept as text (a panic message, a failed test's name) come back from
+;; the errorformat as valid entries with no file. marked as text, ]q goes from
+;; one location to the next without stopping on them
+(fn set_qf [title lines efm]
+  (vim.fn.setqflist [] " " {: title : lines : efm})
+  (vim.fn.setqflist [] :r {:items (icollect [_ e (ipairs (vim.fn.getqflist))]
+                                    (do
+                                      (when (= e.bufnr 0) (set e.valid 0))
+                                      e))}))
+
+(fn Utils.build [on_ok cmd?]
+  (let [cmd (or cmd? (cmd_for :build_cmd))
         efm (vim.api.nvim_get_option_value :errorformat {})]
     (if (not cmd)
         (when on_ok (on_ok))
@@ -150,11 +161,8 @@ When (= ?start ?end), returns an empty iterator
                       (vim.schedule_wrap (fn [out]
                                            (local output
                                                   (.. out.stdout out.stderr))
-                                           (vim.fn.setqflist [] " "
-                                                             {:title cmd
-                                                              :lines (vim.split output
-                                                                                "\n")
-                                                              : efm})
+                                           (set_qf cmd (vim.split output "\n")
+                                                   efm)
                                            (if (= out.code 0)
                                                (do
                                                  (vim.cmd.cclose)
@@ -166,14 +174,54 @@ When (= ?start ?end), returns an empty iterator
                                                            vim.log.levels.ERROR)
                                                (vim.cmd "botright copen")))))))))
 
+;; a program that dies leaves its trace in the terminal, the lines the
+;; errorformat knows go to the quickfix list
+(fn trace_to_qf [term title efm]
+  (when (vim.api.nvim_buf_is_valid term)
+    (set_qf title (vim.api.nvim_buf_get_lines term 0 -1 false) efm)
+    (when (accumulate [any false _ e (ipairs (vim.fn.getqflist))]
+            (or any (= e.valid 1)))
+      (vim.cmd "botright copen"))))
+
 (fn Utils.run []
-  (Utils.build #(let [cmd (cmd_for :run_cmd)]
-                  (if cmd
-                      (Utils.open_tmp_term cmd)
-                      (vim.notify "no run_cmd" vim.log.levels.WARN)))))
+  (let [efm (vim.api.nvim_get_option_value :errorformat {})]
+    (Utils.build #(let [cmd (cmd_for :run_cmd)]
+                    (if cmd
+                        (Utils.open_tmp_term cmd
+                                             (fn [term]
+                                               (vim.api.nvim_create_autocmd :TermClose
+                                                                            {:buffer term
+                                                                             :once true
+                                                                             :callback #(when (not= 0
+                                                                                                    vim.v.event.status)
+                                                                                          (vim.schedule #(trace_to_qf term
+                                                                                                                      cmd
+                                                                                                                      efm)))})))
+                        (vim.notify "no run_cmd" vim.log.levels.WARN))))))
+
+;; Utils.test_name.<filetype> returns the name of the test under the cursor,
+;; vim.b.test_filter is what goes in front of it, like -Dtest-filter=
+(set Utils.test_name {})
+
+(fn Utils.test []
+  (let [cmd (cmd_for :test_cmd)
+        find (. Utils.test_name vim.bo.filetype)
+        name (and find (find))
+        filter (cmd_for :test_filter)]
+    (if (not cmd)
+        (vim.notify "no test_cmd" vim.log.levels.WARN)
+        (and name filter)
+        ;; expandcmd would turn % and # in the name into file names
+        (Utils.build nil
+                     (.. cmd " " filter
+                         (pick-values 1
+                                      (: (vim.fn.shellescape name) :gsub
+                                         "[%%#]" "\\%0"))))
+        (Utils.build nil cmd))))
 
 (vim.keymap.set :n :<leader>mb #(Utils.build))
 (vim.keymap.set :n :<leader>mr Utils.run)
+(vim.keymap.set :n :<leader>mt Utils.test)
 
 (fn runner [cmd]
   #(set vim.g.run_cmd cmd))
