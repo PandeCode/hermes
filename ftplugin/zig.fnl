@@ -383,21 +383,31 @@
 (set vim.b.build_cmd "zig build")
 (set vim.b.run_cmd "zig build run -freference-trace=10 -j$(nproc)")
 
-;; the build.zig needs a test-filter option for -Dtest-filter, the new file
-;; template has one. without it zig says invalid option
+;; -Dtest-filter needs a test-filter option in build.zig, the new file
+;; template has one
 (set vim.b.test_cmd "zig build test")
 (set vim.b.test_filter :-Dtest-filter=)
 
-;; test "name" {} or test decl {}
+;; zig build runs the build.zig it finds up from the cwd
+(fn has_test_filter []
+  (let [file (. (vim.fs.find :build.zig {:upward true :path (vim.fn.getcwd)}) 1)]
+    (and file (not= nil (: (table.concat (vim.fn.readfile file) "\n") :find
+                           "\"test-filter\"" 1 true)))))
+
+;; test "name" {} or test decl {}. a build.zig without the test-filter option
+;; gets nil, so every test runs instead of zig failing on -Dtest-filter
 (fn zig_test_name []
   (let [node (current_node)
         test (if (and node (= (node:type) :test_declaration)) node
                  (find_ancestor_by_type node :test_declaration))
         name (and test (test:named_child 0))]
-    (case (and name (name:type))
-      :identifier (text_of name)
-      :string (let [content (child_of_type name :string_content)]
-                (and content (text_of content))))))
+    (if (not name) nil (not (has_test_filter))
+        (vim.notify "build.zig has no test-filter option, running every test"
+                    vim.log.levels.WARN)
+        (case (name:type)
+          :identifier (text_of name)
+          :string (let [content (child_of_type name :string_content)]
+                    (and content (text_of content)))))))
 
 (when (and _G.Utils _G.Utils.test_name)
   (tset _G.Utils.test_name :zig zig_test_name))

@@ -515,6 +515,10 @@ vim.b.build_cmd = "zig build"
 vim.b.run_cmd = "zig build run -freference-trace=10 -j$(nproc)"
 vim.b.test_cmd = "zig build test"
 vim.b.test_filter = "-Dtest-filter="
+local function has_test_filter()
+  local file = vim.fs.find("build.zig", {upward = true, path = vim.fn.getcwd()})[1]
+  return (file and (nil ~= table.concat(vim.fn.readfile(file), "\n"):find("\"test-filter\"", 1, true)))
+end
 local function zig_test_name()
   local node = current_node()
   local test
@@ -524,14 +528,20 @@ local function zig_test_name()
     test = find_ancestor_by_type(node, "test_declaration")
   end
   local name = (test and test:named_child(0))
-  local case_73_ = (name and name:type())
-  if (case_73_ == "identifier") then
-    return text_of(name)
-  elseif (case_73_ == "string") then
-    local content = child_of_type(name, "string_content")
-    return (content and text_of(content))
-  else
+  if not name then
     return nil
+  elseif not has_test_filter() then
+    return vim.notify("build.zig has no test-filter option, running every test", vim.log.levels.WARN)
+  else
+    local case_73_ = name:type()
+    if (case_73_ == "identifier") then
+      return text_of(name)
+    elseif (case_73_ == "string") then
+      local content = child_of_type(name, "string_content")
+      return (content and text_of(content))
+    else
+      return nil
+    end
   end
 end
 if (_G.Utils and _G.Utils.test_name) then
@@ -539,7 +549,7 @@ if (_G.Utils and _G.Utils.test_name) then
 else
 end
 local function zig_pick_step()
-  local function _76_(out)
+  local function _77_(out)
     if (0 ~= out.code) then
       return vim.notify(out.stderr, vim.log.levels.ERROR)
     else
@@ -557,7 +567,7 @@ local function zig_pick_step()
         end
         steps = tbl_26_
       end
-      local function _78_(step)
+      local function _79_(step)
         if step then
           vim.g.run_cmd = ("zig build " .. step)
           return _G.Utils.run()
@@ -565,9 +575,9 @@ local function zig_pick_step()
           return nil
         end
       end
-      return vim.ui.select(steps, {prompt = "zig build step"}, _78_)
+      return vim.ui.select(steps, {prompt = "zig build step"}, _79_)
     end
   end
-  return vim.system({"zig", "build", "-l"}, {text = true}, vim.schedule_wrap(_76_))
+  return vim.system({"zig", "build", "-l"}, {text = true}, vim.schedule_wrap(_77_))
 end
 return vim.keymap.set("n", "<leader>ms", zig_pick_step, {buffer = 0, desc = "zig build step into run_cmd"})
