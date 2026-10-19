@@ -183,7 +183,7 @@
 
 (local group (vim.api.nvim_create_augroup :typst_watch {:clear false}))
 (vim.api.nvim_clear_autocmds {: group :buffer 0})
-(vim.api.nvim_create_autocmd :BufUnload
+(vim.api.nvim_create_autocmd [:BufDelete :BufWipeout]
                              {: group :buffer 0 :callback (quiet unload)})
 
 (vim.api.nvim_create_autocmd [:TextChanged :TextChangedI :InsertLeave]

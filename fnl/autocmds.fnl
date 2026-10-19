@@ -165,3 +165,19 @@
                                           (when (. vim.b args.buf :typo_file)
                                             (vim.fn.delete args.match))
                                           nil)})
+
+;; a pdf with a typst source next to it (typst watch writes main.pdf beside
+;; main.typ) opens the source instead, the pdf buffer goes
+(vim.api.nvim_create_autocmd [:BufReadPre :BufNewFile]
+                             {:pattern "*.pdf"
+                              :callback (fn [args]
+                                          (let [typ (.. (vim.fn.fnamemodify args.file
+                                                                            ":p:r")
+                                                        ".typ")]
+                                            (when (= 1 (vim.fn.filereadable typ))
+                                              (vim.schedule (fn []
+                                                              (vim.cmd.edit typ)
+                                                              (when (vim.api.nvim_buf_is_valid args.buf)
+                                                                (vim.api.nvim_buf_delete args.buf
+                                                                                         {:force true})))))
+                                            nil))})

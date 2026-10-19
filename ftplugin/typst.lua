@@ -219,7 +219,7 @@ local function quiet(f)
 end
 local group = vim.api.nvim_create_augroup("typst_watch", {clear = false})
 vim.api.nvim_clear_autocmds({group = group, buffer = 0})
-vim.api.nvim_create_autocmd("BufUnload", {group = group, buffer = 0, callback = quiet(unload)})
+vim.api.nvim_create_autocmd({"BufDelete", "BufWipeout"}, {group = group, buffer = 0, callback = quiet(unload)})
 vim.api.nvim_create_autocmd({"TextChanged", "TextChangedI", "InsertLeave"}, {group = group, buffer = 0, callback = quiet(autosave)})
 local function _26_(args)
   if not vim.b[args.buf].typst_autosaving then
