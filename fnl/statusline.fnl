@@ -153,7 +153,8 @@
                 (shl :DiagnosticError (.. "typst " errors))
                 (shl :DiagnosticOk :typst))
             " "
-            (shl (if vim.b.typst_viewer :DiagnosticOk :Comment) :zathura))
+            (shl (if vim.b.typst_viewer :DiagnosticOk :Comment) :zathura)
+            (if vim.b.typst_mode (shl :DiagnosticInfo " auto") ""))
         "")))
 
 (fn nix-shell []

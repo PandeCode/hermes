@@ -85,7 +85,11 @@
 
 (vim.api.nvim_create_autocmd :BufWritePre
                              {:pattern "*"
-                              :callback #(lsp_format_with_fallback {:timeout_ms 500})})
+                              ;; typst autosave writes on every change, so keep the text as typed
+                              :callback (fn [args]
+                                          (when (not (. vim.b args.buf
+                                                        :typst_autosaving))
+                                            (lsp_format_with_fallback {:timeout_ms 500})))})
 
 (vim.keymap.set [:n :v] :<leader>cf #(lsp_format_with_fallback))
 
