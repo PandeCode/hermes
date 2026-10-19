@@ -186,7 +186,7 @@
 (vim.api.nvim_create_autocmd :BufUnload
                              {: group :buffer 0 :callback (quiet unload)})
 
-(vim.api.nvim_create_autocmd [:TextChanged :InsertLeave]
+(vim.api.nvim_create_autocmd [:TextChanged :TextChangedI :InsertLeave]
                              {: group :buffer 0 :callback (quiet autosave)})
 
 (vim.api.nvim_create_autocmd :BufWritePost
