@@ -197,41 +197,47 @@ package.preload["fnl.utils"] = package.preload["fnl.utils"] or function(...)
       return nil
     end
   end
-  Utils.run = function()
+  Utils.term_with_trace = function(cmd)
     local efm = vim.api.nvim_get_option_value("errorformat", {})
-    local function _28_()
+    local function _28_(term)
+      local function _29_()
+        if (0 ~= vim.v.event.status) then
+          local function _30_()
+            return trace_to_qf(term, cmd, efm)
+          end
+          return vim.schedule(_30_)
+        else
+          return nil
+        end
+      end
+      return vim.api.nvim_create_autocmd("TermClose", {buffer = term, once = true, callback = _29_})
+    end
+    return Utils.open_tmp_term(cmd, _28_)
+  end
+  Utils.run = function()
+    local function _32_()
       local cmd = cmd_for("run_cmd")
       if cmd then
-        local function _29_(term)
-          local function _30_()
-            if (0 ~= vim.v.event.status) then
-              local function _31_()
-                return trace_to_qf(term, cmd, efm)
-              end
-              return vim.schedule(_31_)
-            else
-              return nil
-            end
-          end
-          return vim.api.nvim_create_autocmd("TermClose", {buffer = term, once = true, callback = _30_})
-        end
-        return Utils.open_tmp_term(cmd, _29_)
+        return Utils.term_with_trace(cmd)
       else
         return vim.notify("no run_cmd", vim.log.levels.WARN)
       end
     end
-    return Utils.build(_28_)
+    return Utils.build(_32_)
   end
-  Utils.test_name = {}
+  Utils.test_at = {}
   Utils.test = function()
     local cmd = cmd_for("test_cmd")
-    local find = Utils.test_name[vim.bo.filetype]
-    local name = (find and find())
+    local find = Utils.test_at[vim.bo.filetype]
+    local plan = ((find and find()) or {})
     local filter = cmd_for("test_filter")
-    if not cmd then
+    if plan.term then
+      vim.cmd("silent! wall")
+      return Utils.term_with_trace(plan.term)
+    elseif not cmd then
       return vim.notify("no test_cmd", vim.log.levels.WARN)
-    elseif (name and filter) then
-      return Utils.build(nil, (cmd .. " " .. filter .. (vim.fn.shellescape(name):gsub("[%%#]", "\\%0"))))
+    elseif (plan.name and filter) then
+      return Utils.build(nil, (cmd .. " " .. filter .. (vim.fn.shellescape(plan.name):gsub("[%%#]", "\\%0"))))
     else
       return Utils.build(nil, cmd)
     end

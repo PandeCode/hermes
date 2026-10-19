@@ -383,34 +383,45 @@
 (set vim.b.build_cmd "zig build")
 (set vim.b.run_cmd "zig build run -freference-trace=10 -j$(nproc)")
 
-;; -Dtest-filter needs a test-filter option in build.zig, the new file
-;; template has one
 (set vim.b.test_cmd "zig build test")
 (set vim.b.test_filter :-Dtest-filter=)
 
-;; zig build runs the build.zig it finds up from the cwd
-(fn has_test_filter []
-  (let [file (. (vim.fs.find :build.zig {:upward true :path (vim.fn.getcwd)}) 1)]
-    (and file (not= nil (: (table.concat (vim.fn.readfile file) "\n") :find
-                           "\"test-filter\"" 1 true)))))
+;; the build.zig zig build would use, the one up from the cwd
+(fn build_file []
+  (. (vim.fs.find :build.zig {:upward true :path (vim.fn.getcwd)}) 1))
 
-;; test "name" {} or test decl {}. a build.zig without the test-filter option
-;; gets nil, so every test runs instead of zig failing on -Dtest-filter
-(fn zig_test_name []
+;; test "name" {} or test decl {}
+(fn test_name []
   (let [node (current_node)
         test (if (and node (= (node:type) :test_declaration)) node
                  (find_ancestor_by_type node :test_declaration))
         name (and test (test:named_child 0))]
-    (if (not name) nil (not (has_test_filter))
-        (vim.notify "build.zig has no test-filter option, running every test"
-                    vim.log.levels.WARN)
-        (case (name:type)
-          :identifier (text_of name)
-          :string (let [content (child_of_type name :string_content)]
-                    (and content (text_of content)))))))
+    (case (and name (name:type))
+      :identifier (text_of name)
+      :string (let [content (child_of_type name :string_content)]
+                (and content (text_of content))))))
 
-(when (and _G.Utils _G.Utils.test_name)
-  (tset _G.Utils.test_name :zig zig_test_name))
+;; zig build test when the file is in the build and build.zig has the
+;; test-filter option (the new file template does). otherwise zig test on the
+;; file alone, in a terminal at the bottom, which works for a file outside any
+;; project too
+(fn zig_test_at []
+  (let [name (test_name)
+        file (vim.api.nvim_buf_get_name 0)
+        build (build_file)
+        in_build (and build
+                      (vim.startswith file (.. (vim.fs.dirname build) "/")))
+        filters (and in_build
+                     (: (table.concat (vim.fn.readfile build) "\n") :find
+                        "\"test-filter\"" 1 true))]
+    (if (and in_build (or filters (not name))) {: name}
+        {:term (.. "zig test " (vim.fn.shellescape file 1)
+                   (if name
+                       (.. " --test-filter " (vim.fn.shellescape name 1))
+                       ""))})))
+
+(when (and _G.Utils _G.Utils.test_at)
+  (tset _G.Utils.test_at :zig zig_test_at))
 
 ;; pick a step from zig build -l, it becomes the run_cmd so <leader>mr does it
 ;; again

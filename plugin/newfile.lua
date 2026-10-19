@@ -199,17 +199,20 @@ in {
 	{
 		"shell.nix",
 		[[{
-			pkgs ? import <nixpkgs> {}
-			# pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-26.05.tar.gz") { },
-		}:
+# pkgs ? import <nixpkgs> { } :
+# pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-26.05.tar.gz") { } :
+let
+  nixbuilds = builtins.getFlake "github:PandeCode/nixbuilds";
+  system = builtins.currentSystem;
+  pkgs = nixbuilds.inputs.nixpkgs.legacyPackages.${system};
+in
 pkgs.mkShell {
-  packages = with pkgs; [
-
+  packages = [
+    pkgs.zig_0_17
+    nixbuilds.packages.${system}.zls-master
   ];
-
-  shellHook = ''
-  '';
-}]],
+}
+]],
 		{ 4, 2 },
 	},
 	{ "*.nix", [[{...}: {

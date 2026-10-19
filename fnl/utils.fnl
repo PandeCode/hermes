@@ -183,39 +183,48 @@ When (= ?start ?end), returns an empty iterator
             (or any (= e.valid 1)))
       (vim.cmd "botright copen"))))
 
-(fn Utils.run []
+(fn Utils.term_with_trace [cmd]
   (let [efm (vim.api.nvim_get_option_value :errorformat {})]
-    (Utils.build #(let [cmd (cmd_for :run_cmd)]
-                    (if cmd
-                        (Utils.open_tmp_term cmd
-                                             (fn [term]
-                                               (vim.api.nvim_create_autocmd :TermClose
-                                                                            {:buffer term
-                                                                             :once true
-                                                                             :callback #(when (not= 0
-                                                                                                    vim.v.event.status)
-                                                                                          (vim.schedule #(trace_to_qf term
-                                                                                                                      cmd
-                                                                                                                      efm)))})))
-                        (vim.notify "no run_cmd" vim.log.levels.WARN))))))
+    (Utils.open_tmp_term cmd
+                         (fn [term]
+                           (vim.api.nvim_create_autocmd :TermClose
+                                                        {:buffer term
+                                                         :once true
+                                                         :callback #(when (not= 0
+                                                                                vim.v.event.status)
+                                                                      (vim.schedule #(trace_to_qf term
+                                                                                                  cmd
+                                                                                                  efm)))})))))
 
-;; Utils.test_name.<filetype> returns the name of the test under the cursor,
-;; vim.b.test_filter is what goes in front of it, like -Dtest-filter=
-(set Utils.test_name {})
+(fn Utils.run []
+  (Utils.build #(let [cmd (cmd_for :run_cmd)]
+                  (if cmd
+                      (Utils.term_with_trace cmd)
+                      (vim.notify "no run_cmd" vim.log.levels.WARN)))))
+
+;; Utils.test_at.<filetype> looks at the cursor and returns {:name name} to
+;; run that test through test_cmd with vim.b.test_filter in front of the name
+;; (like -Dtest-filter=), {:term cmd} to run cmd in a terminal at the bottom
+;; instead, or nil to run test_cmd as it is
+(set Utils.test_at {})
 
 (fn Utils.test []
   (let [cmd (cmd_for :test_cmd)
-        find (. Utils.test_name vim.bo.filetype)
-        name (and find (find))
+        find (. Utils.test_at vim.bo.filetype)
+        plan (or (and find (find)) {})
         filter (cmd_for :test_filter)]
-    (if (not cmd)
+    (if plan.term
+        (do
+          (vim.cmd "silent! wall")
+          (Utils.term_with_trace plan.term))
+        (not cmd)
         (vim.notify "no test_cmd" vim.log.levels.WARN)
-        (and name filter)
+        (and plan.name filter)
         ;; expandcmd would turn % and # in the name into file names
         (Utils.build nil
                      (.. cmd " " filter
                          (pick-values 1
-                                      (: (vim.fn.shellescape name) :gsub
+                                      (: (vim.fn.shellescape plan.name) :gsub
                                          "[%%#]" "\\%0"))))
         (Utils.build nil cmd))))
 

@@ -515,11 +515,10 @@ vim.b.build_cmd = "zig build"
 vim.b.run_cmd = "zig build run -freference-trace=10 -j$(nproc)"
 vim.b.test_cmd = "zig build test"
 vim.b.test_filter = "-Dtest-filter="
-local function has_test_filter()
-  local file = vim.fs.find("build.zig", {upward = true, path = vim.fn.getcwd()})[1]
-  return (file and (nil ~= table.concat(vim.fn.readfile(file), "\n"):find("\"test-filter\"", 1, true)))
+local function build_file()
+  return vim.fs.find("build.zig", {upward = true, path = vim.fn.getcwd()})[1]
 end
-local function zig_test_name()
+local function test_name()
   local node = current_node()
   local test
   if (node and (node:type() == "test_declaration")) then
@@ -528,28 +527,40 @@ local function zig_test_name()
     test = find_ancestor_by_type(node, "test_declaration")
   end
   local name = (test and test:named_child(0))
-  if not name then
-    return nil
-  elseif not has_test_filter() then
-    return vim.notify("build.zig has no test-filter option, running every test", vim.log.levels.WARN)
+  local case_73_ = (name and name:type())
+  if (case_73_ == "identifier") then
+    return text_of(name)
+  elseif (case_73_ == "string") then
+    local content = child_of_type(name, "string_content")
+    return (content and text_of(content))
   else
-    local case_73_ = name:type()
-    if (case_73_ == "identifier") then
-      return text_of(name)
-    elseif (case_73_ == "string") then
-      local content = child_of_type(name, "string_content")
-      return (content and text_of(content))
-    else
-      return nil
-    end
+    return nil
   end
 end
-if (_G.Utils and _G.Utils.test_name) then
-  _G.Utils.test_name["zig"] = zig_test_name
+local function zig_test_at()
+  local name = test_name()
+  local file = vim.api.nvim_buf_get_name(0)
+  local build = build_file()
+  local in_build = (build and vim.startswith(file, (vim.fs.dirname(build) .. "/")))
+  local filters = (in_build and table.concat(vim.fn.readfile(build), "\n"):find("\"test-filter\"", 1, true))
+  if (in_build and (filters or not name)) then
+    return {name = name}
+  else
+    local _75_
+    if name then
+      _75_ = (" --test-filter " .. vim.fn.shellescape(name, 1))
+    else
+      _75_ = ""
+    end
+    return {term = ("zig test " .. vim.fn.shellescape(file, 1) .. _75_)}
+  end
+end
+if (_G.Utils and _G.Utils.test_at) then
+  _G.Utils.test_at["zig"] = zig_test_at
 else
 end
 local function zig_pick_step()
-  local function _77_(out)
+  local function _79_(out)
     if (0 ~= out.code) then
       return vim.notify(out.stderr, vim.log.levels.ERROR)
     else
@@ -567,7 +578,7 @@ local function zig_pick_step()
         end
         steps = tbl_26_
       end
-      local function _79_(step)
+      local function _81_(step)
         if step then
           vim.g.run_cmd = ("zig build " .. step)
           return _G.Utils.run()
@@ -575,9 +586,9 @@ local function zig_pick_step()
           return nil
         end
       end
-      return vim.ui.select(steps, {prompt = "zig build step"}, _79_)
+      return vim.ui.select(steps, {prompt = "zig build step"}, _81_)
     end
   end
-  return vim.system({"zig", "build", "-l"}, {text = true}, vim.schedule_wrap(_77_))
+  return vim.system({"zig", "build", "-l"}, {text = true}, vim.schedule_wrap(_79_))
 end
 return vim.keymap.set("n", "<leader>ms", zig_pick_step, {buffer = 0, desc = "zig build step into run_cmd"})
