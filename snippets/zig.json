@@ -251,5 +251,53 @@
             "const log = std.log.scoped(.${1:name});$0"
         ],
         "description": "scoped logger"
+    },
+    "script": {
+        "prefix": "script",
+        "body": [
+            "//usr/bin/env sh -c \"\\$(sed -n 's|^//> \\{0,1\\\\\\}||p' \"\\$0\")\" \"\\$0\" \"\\$@\"; exit",
+            "//> # runs the //> lines as sh: inside nix-shell when there is one, else",
+            "//> # with the tools already on PATH",
+            "//> set -e",
+            "//> if [ -z \"\\$SCRIPT_DEPS\" ] && command -v nix-shell >/dev/null; then",
+            "//>     exec nix-shell -p ${1:zig_0_17} --run \"SCRIPT_DEPS=1 sh '\\$0' \\$*\"",
+            "//> fi",
+            "//> c=\\${XDG_CACHE_HOME:-\\$HOME/.cache}/${2:name}",
+            "//> mkdir -p \"\\$c\"",
+            "//> export ZIG_LOCAL_CACHE_DIR=\"\\$c/zig\"",
+            "//> exec zig run -freference-trace=10 -j\"\\$(nproc)\" \"\\$0\" -- \"\\$@\"",
+            "const std = @import(\"std\");",
+            "",
+            "pub fn main() void {",
+            "    $0",
+            "}"
+        ],
+        "description": "zig script: sh runs it with zig run, deps from nix-shell -p"
+    },
+    "scriptc": {
+        "prefix": "scriptc",
+        "body": [
+            "//usr/bin/env sh -c \"\\$(sed -n 's|^//> \\{0,1\\\\\\}||p' \"\\$0\")\" \"\\$0\" \"\\$@\"; exit",
+            "//> # runs the //> lines as sh: inside nix-shell when there is one, else",
+            "//> # with the tools already on PATH",
+            "//> set -e",
+            "//> if [ -z \"\\$SCRIPT_DEPS\" ] && command -v nix-shell >/dev/null; then",
+            "//>     exec nix-shell -p ${1:zig_0_17 pkg-config glfw libGL} --run \"SCRIPT_DEPS=1 sh '\\$0' \\$*\"",
+            "//> fi",
+            "//> c=\\${XDG_CACHE_HOME:-\\$HOME/.cache}/${2:name}",
+            "//> mkdir -p \"\\$c\"",
+            "//> export ZIG_LOCAL_CACHE_DIR=\"\\$c/zig\"",
+            "//> # zig 0.17 has no @cImport, the c headers become zig modules here",
+            "//> h=${3:\\$(pkg-config --variable=includedir glfw3)/GLFW/glfw3.h}",
+            "//> zig translate-c -lc \\$(pkg-config --cflags ${4:glfw3 gl}) \"\\$h\" > \"\\$c/c.zig\"",
+            "//> exec zig run -freference-trace=10 -j\"\\$(nproc)\" -lc \\$(pkg-config --libs ${4}) --dep c -Mroot=\"\\$0\" -Mc=\"\\$c/c.zig\" -- \"\\$@\"",
+            "const std = @import(\"std\");",
+            "const c = @import(\"c\");",
+            "",
+            "pub fn main() void {",
+            "    $0",
+            "}"
+        ],
+        "description": "zig script with c headers through translate-c, libs from pkg-config"
     }
 }

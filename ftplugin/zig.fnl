@@ -370,7 +370,6 @@
 ;; quickfix list. kept are the error and note lines, a failed test or panic
 ;; with its stack trace minus the frames in zig's std. the build tree, source
 ;; excerpts and reference trace go
-(set vim.bo.makeprg "zig build $*")
 (set vim.bo.errorformat (table.concat ["%f:%l:%c: %trror: %m"
                                        "%f:%l:%c: %tote: %m"
                                        "%+Gerror: '%.%#' failed:"
@@ -380,15 +379,49 @@
                                        "%-G%.%#"]
                                       ","))
 
-(set vim.b.build_cmd "zig build")
-(set vim.b.run_cmd "zig build run -freference-trace=10 -j$(nproc)")
-
 (set vim.b.test_cmd "zig build test")
 (set vim.b.test_filter :-Dtest-filter=)
 
 ;; the build.zig zig build would use, the one up from the cwd
 (fn build_file []
   (. (vim.fs.find :build.zig {:upward true :path (vim.fn.getcwd)}) 1))
+
+;; a zig script starts with //usr/bin/env sh -c ... and builds itself when
+;; sh runs it, the `script` snippet makes one
+(fn script? [buf]
+  (let [first (. (vim.api.nvim_buf_get_lines buf 0 1 false) 1)]
+    (and first (vim.startswith first "//usr/bin/env ") true)))
+
+;; a script runs as itself, its compile errors and panics come back from the
+;; terminal into quickfix. with no build.zig, :make, <leader>mb and
+;; <leader>mr work on the file alone. looked up again when the cwd changes,
+;; the buffer comes back or it is written
+(fn set_build_cmds [buf]
+  (let [file (vim.fn.shellescape (vim.api.nvim_buf_get_name buf) 1)]
+    (if (script? buf)
+        (do
+          (tset vim.bo buf :makeprg (.. "sh " file))
+          (tset vim.b buf :build_cmd nil)
+          (tset vim.b buf :run_cmd (.. "sh " file)))
+        (build_file)
+        (do
+          (tset vim.bo buf :makeprg "zig build $*")
+          (tset vim.b buf :build_cmd "zig build")
+          (tset vim.b buf :run_cmd
+                "zig build run -freference-trace=10 -j$(nproc)"))
+        (do
+          (tset vim.bo buf :makeprg (.. "zig build-exe -fno-emit-bin " file))
+          (tset vim.b buf :build_cmd (.. "zig build-exe -fno-emit-bin " file))
+          (tset vim.b buf :run_cmd (.. "zig run -freference-trace=10 " file))))))
+
+(set_build_cmds (vim.api.nvim_get_current_buf))
+
+;; one for all zig buffers, made again (and cleared) by each new one
+(vim.api.nvim_create_autocmd [:BufEnter :BufWritePost :DirChanged]
+                             {:group (vim.api.nvim_create_augroup :zig_build_cmds
+                                                                  {:clear true})
+                              :callback #(when (= vim.bo.filetype :zig)
+                                           (set_build_cmds (vim.api.nvim_get_current_buf)))})
 
 ;; test "name" {} or test decl {}
 (fn test_name []

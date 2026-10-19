@@ -509,15 +509,44 @@ local function _69_(args)
   end
 end
 vim.api.nvim_create_autocmd("BufWritePre", {group = group, buffer = 0, callback = _69_})
-vim.bo.makeprg = "zig build $*"
 vim.bo.errorformat = table.concat({"%f:%l:%c: %trror: %m", "%f:%l:%c: %tote: %m", "%+Gerror: '%.%#' failed:", "%+Gthread %.%# panic: %.%#", "%-G%\\s%#%.%#/lib/zig/%.%#", "%\\s%#%f:%l:%c: 0x%*[0-9a-f] in %m", "%-G%.%#"}, ",")
-vim.b.build_cmd = "zig build"
-vim.b.run_cmd = "zig build run -freference-trace=10 -j$(nproc)"
 vim.b.test_cmd = "zig build test"
 vim.b.test_filter = "-Dtest-filter="
 local function build_file()
   return vim.fs.find("build.zig", {upward = true, path = vim.fn.getcwd()})[1]
 end
+local function script_3f(buf)
+  local first = vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1]
+  return (first and vim.startswith(first, "//usr/bin/env ") and true)
+end
+local function set_build_cmds(buf)
+  local file = vim.fn.shellescape(vim.api.nvim_buf_get_name(buf), 1)
+  if script_3f(buf) then
+    vim.bo[buf]["makeprg"] = ("sh " .. file)
+    vim.b[buf]["build_cmd"] = nil
+    vim.b[buf]["run_cmd"] = ("sh " .. file)
+    return nil
+  elseif build_file() then
+    vim.bo[buf]["makeprg"] = "zig build $*"
+    vim.b[buf]["build_cmd"] = "zig build"
+    vim.b[buf]["run_cmd"] = "zig build run -freference-trace=10 -j$(nproc)"
+    return nil
+  else
+    vim.bo[buf]["makeprg"] = ("zig build-exe -fno-emit-bin " .. file)
+    vim.b[buf]["build_cmd"] = ("zig build-exe -fno-emit-bin " .. file)
+    vim.b[buf]["run_cmd"] = ("zig run -freference-trace=10 " .. file)
+    return nil
+  end
+end
+set_build_cmds(vim.api.nvim_get_current_buf())
+local function _73_()
+  if (vim.bo.filetype == "zig") then
+    return set_build_cmds(vim.api.nvim_get_current_buf())
+  else
+    return nil
+  end
+end
+vim.api.nvim_create_autocmd({"BufEnter", "BufWritePost", "DirChanged"}, {group = vim.api.nvim_create_augroup("zig_build_cmds", {clear = true}), callback = _73_})
 local function test_name()
   local node = current_node()
   local test
@@ -527,10 +556,10 @@ local function test_name()
     test = find_ancestor_by_type(node, "test_declaration")
   end
   local name = (test and test:named_child(0))
-  local case_73_ = (name and name:type())
-  if (case_73_ == "identifier") then
+  local case_76_ = (name and name:type())
+  if (case_76_ == "identifier") then
     return text_of(name)
-  elseif (case_73_ == "string") then
+  elseif (case_76_ == "string") then
     local content = child_of_type(name, "string_content")
     return (content and text_of(content))
   else
@@ -546,13 +575,13 @@ local function zig_test_at()
   if (in_build and (filters or not name)) then
     return {name = name}
   else
-    local _75_
+    local _78_
     if name then
-      _75_ = (" --test-filter " .. vim.fn.shellescape(name, 1))
+      _78_ = (" --test-filter " .. vim.fn.shellescape(name, 1))
     else
-      _75_ = ""
+      _78_ = ""
     end
-    return {term = ("zig test " .. vim.fn.shellescape(file, 1) .. _75_)}
+    return {term = ("zig test " .. vim.fn.shellescape(file, 1) .. _78_)}
   end
 end
 if (_G.Utils and _G.Utils.test_at) then
@@ -560,7 +589,7 @@ if (_G.Utils and _G.Utils.test_at) then
 else
 end
 local function zig_pick_step()
-  local function _79_(out)
+  local function _82_(out)
     if (0 ~= out.code) then
       return vim.notify(out.stderr, vim.log.levels.ERROR)
     else
@@ -578,7 +607,7 @@ local function zig_pick_step()
         end
         steps = tbl_26_
       end
-      local function _81_(step)
+      local function _84_(step)
         if step then
           vim.g.run_cmd = ("zig build " .. step)
           return _G.Utils.run()
@@ -586,9 +615,9 @@ local function zig_pick_step()
           return nil
         end
       end
-      return vim.ui.select(steps, {prompt = "zig build step"}, _81_)
+      return vim.ui.select(steps, {prompt = "zig build step"}, _84_)
     end
   end
-  return vim.system({"zig", "build", "-l"}, {text = true}, vim.schedule_wrap(_79_))
+  return vim.system({"zig", "build", "-l"}, {text = true}, vim.schedule_wrap(_82_))
 end
 return vim.keymap.set("n", "<leader>ms", zig_pick_step, {buffer = 0, desc = "zig build step into run_cmd"})
