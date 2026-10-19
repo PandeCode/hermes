@@ -144,6 +144,18 @@
       (shl :Comment (.. " " (. (vim.fn.wordcount) :words) :w))
       ""))
 
+;; set by ftplugin/typst.fnl while <leader>mr runs typst watch, zathura is
+;; dim until it opens
+(fn typst []
+  (let [errors vim.b.typst_errors]
+    (if vim.b.typst_watch
+        (.. (if (> errors 0)
+                (shl :DiagnosticError (.. "typst " errors))
+                (shl :DiagnosticOk :typst))
+            " "
+            (shl (if vim.b.typst_viewer :DiagnosticOk :Comment) :zathura))
+        "")))
+
 (fn nix-shell []
   (let [env (os.getenv :IN_NIX_SHELL)]
     (if env (.. (get-icon :os :nixos) (shl :Comment env)) "")))
@@ -174,6 +186,8 @@
       (get-attached-clients)
       "%="
       (searchcount)
+      " "
+      (typst)
       " "
       (fun)
       " "

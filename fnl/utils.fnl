@@ -140,7 +140,7 @@ When (= ?start ?end), returns an empty iterator
 ;; lines kept as text (a panic message, a failed test's name) come back from
 ;; the errorformat as valid entries with no file. marked as text, ]q goes from
 ;; one location to the next without stopping on them
-(fn set_qf [title lines efm]
+(fn Utils.set_qf [title lines efm]
   (vim.fn.setqflist [] " " {: title : lines : efm})
   (vim.fn.setqflist [] :r {:items (icollect [_ e (ipairs (vim.fn.getqflist))]
                                     (do
@@ -161,8 +161,9 @@ When (= ?start ?end), returns an empty iterator
                       (vim.schedule_wrap (fn [out]
                                            (local output
                                                   (.. out.stdout out.stderr))
-                                           (set_qf cmd (vim.split output "\n")
-                                                   efm)
+                                           (Utils.set_qf cmd
+                                                         (vim.split output "\n")
+                                                         efm)
                                            (if (= out.code 0)
                                                (do
                                                  (vim.cmd.cclose)
@@ -178,7 +179,7 @@ When (= ?start ?end), returns an empty iterator
 ;; errorformat knows go to the quickfix list
 (fn trace_to_qf [term title efm]
   (when (vim.api.nvim_buf_is_valid term)
-    (set_qf title (vim.api.nvim_buf_get_lines term 0 -1 false) efm)
+    (Utils.set_qf title (vim.api.nvim_buf_get_lines term 0 -1 false) efm)
     (when (accumulate [any false _ e (ipairs (vim.fn.getqflist))]
             (or any (= e.valid 1)))
       (vim.cmd "botright copen"))))

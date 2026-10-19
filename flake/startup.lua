@@ -7,6 +7,7 @@ local samples = {
 	["a.lua"] = { "local a = 1", "return a" },
 	["a.c"] = { "enum Color { Red, Green };", "int main(void) { return 0; }" },
 	["a.py"] = { "def add(a):", "    return a" },
+	["a.typ"] = { "= Title", "#let x = 1" },
 	["a.txt"] = { "plain text" },
 }
 
