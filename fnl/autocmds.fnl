@@ -167,12 +167,15 @@
                                           nil)})
 
 ;; a pdf with a typst source next to it (typst watch writes main.pdf beside
-;; main.typ) opens the source instead, the pdf buffer goes
+;; main.typ) opens the source instead, the pdf buffer goes. a pdf without one
+;; opens in zathura, detached, and neovim quits
 (vim.api.nvim_create_autocmd [:BufReadPre :BufNewFile]
                              {:pattern "*.pdf"
                               :callback (fn [args]
-                                          (let [typ (.. (vim.fn.fnamemodify args.file
-                                                                            ":p:r")
+                                          (let [pdf (vim.fn.fnamemodify args.file
+                                                                         ":p")
+                                                typ (.. (vim.fn.fnamemodify pdf
+                                                                            ":r")
                                                         ".typ")]
                                             (when (= 1 (vim.fn.filereadable typ))
                                               (vim.schedule (fn []
@@ -180,4 +183,11 @@
                                                               (when (vim.api.nvim_buf_is_valid args.buf)
                                                                 (vim.api.nvim_buf_delete args.buf
                                                                                          {:force true})))))
+                                            (when (and (= 0 (vim.fn.filereadable typ))
+                                                       (= 1 (vim.fn.filereadable pdf)))
+                                              (vim.schedule (fn []
+                                                              (vim.fn.jobstart [:zathura
+                                                                                pdf]
+                                                                               {:detach true})
+                                                              (vim.cmd "qa!"))))
                                             nil))})
