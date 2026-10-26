@@ -17,6 +17,7 @@
 (each [k v (pairs {;; visual
                    ; :inccommand  "nosplit"
                    :inccommand :split
+                   :exrc true
                    :breakindent true
                    :number true
                    :relativenumber true
