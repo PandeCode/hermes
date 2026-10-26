@@ -81,12 +81,31 @@ end
 local function insert_text(row, col, text)
   return vim.api.nvim_buf_set_text(0, row, col, row, col, vim.split(text, "\n"))
 end
-local function has_param(params, name)
-  local found = false
-  for child in params:iter_children() do
-    found = (found or ((child:type() == "parameter") and (text_of(field(child, "name")) == name)))
+local function param_index(params, name)
+  local found = nil
+  for i = 0, (params:named_child_count() - 1) do
+    if found then break end
+    local p = params:named_child(i)
+    if ((p:type() == "parameter") and (text_of(field(p, "name")) == name)) then
+      found = i
+    else
+    end
   end
   return found
+end
+local function list_item_range(node)
+  local nxt = node:next_named_sibling()
+  local prev = node:prev_named_sibling()
+  local sr, sc, er, ec = node:range()
+  if nxt then
+    local nr, nc = nxt:start()
+    return {sr, sc, nr, nc}
+  elseif prev then
+    local pr, pc = prev:end_()
+    return {pr, pc, er, ec}
+  else
+    return {sr, sc, er, ec}
+  end
 end
 local function uses(node, name)
   local found = false
@@ -114,11 +133,8 @@ local function call_of(ref)
     return nil
   end
 end
-local function update_callers(fn_node, name)
+local function edit_callers(fn_node, edit, what)
   local name_node = field(fn_node, "name")
-  local params = child_of_type(fn_node, "parameters")
-  local self_3f = has_self(params)
-  local count = params:named_child_count()
   local row, col = name_node:start()
   local edits = {}
   for _, client in ipairs(vim.lsp.get_clients({bufnr = 0, name = "zls"})) do
@@ -127,21 +143,21 @@ local function update_callers(fn_node, name)
     local req = {textDocument = vim.lsp.util.make_text_document_params(0), position = {line = row, character = vim.str_utfindex(line, enc, col, false)}, context = {includeDeclaration = false}}
     local uri = vim.uri_from_bufnr(0)
     local ask
-    local function _12_()
+    local function _14_()
       local res = client:request_sync("textDocument/references", req, 2000, 0)
       return ((res and res.result) or {})
     end
-    ask = _12_
+    ask = _14_
     local first = ask()
     local refs
-    local and_13_ = vim.startswith(text_of(fn_node), "pub ")
-    if and_13_ then
-      local function _14_(_241)
+    local and_15_ = vim.startswith(text_of(fn_node), "pub ")
+    if and_15_ then
+      local function _16_(_241)
         return (_241.uri == uri)
       end
-      and_13_ = vim.iter(first):all(_14_)
+      and_15_ = vim.iter(first):all(_16_)
     end
-    if and_13_ then
+    if and_15_ then
       vim.wait(300)
       refs = ask()
     else
@@ -158,30 +174,13 @@ local function update_callers(fn_node, name)
         parser:parse()
         local ref = parser:named_node_for_range({r, c, r, c})
         local call, member_3f = call_of(ref)
-        if call then
-          local args = field(call, "arguments")
-          local n = args:named_child_count()
-          local after_self = (self_3f and member_3f and (n == count) and (n > 0))
-          local er, ec
-          if after_self then
-            er, ec = args:named_child(0):end_()
-          else
-            local ar, ac = args:start()
-            er, ec = ar, (ac + 1)
-          end
-          local text0
-          if after_self then
-            text0 = (", " .. name)
-          elseif (n == 0) then
-            text0 = name
-          else
-            text0 = (name .. ", ")
-          end
+        local change = (call and edit(call, member_3f))
+        if change then
           if not edits[buf] then
             edits[buf] = {}
           else
           end
-          table.insert(edits[buf], {er, ec, text0})
+          table.insert(edits[buf], change)
         else
         end
       else
@@ -195,11 +194,13 @@ local function update_callers(fn_node, name)
     end
     table.sort(list, _21_)
     for _, _22_ in ipairs(list) do
-      local er = _22_[1]
-      local ec = _22_[2]
-      local text = _22_[3]
+      local sr = _22_[1]
+      local sc = _22_[2]
+      local er = _22_[3]
+      local ec = _22_[4]
+      local text = _22_[5]
       calls = (calls + 1)
-      vim.api.nvim_buf_set_text(buf, er, ec, er, ec, {text})
+      vim.api.nvim_buf_set_text(buf, sr, sc, er, ec, vim.split(text, "\n"))
     end
   end
   if (calls > 0) then
@@ -209,74 +210,165 @@ local function update_callers(fn_node, name)
     else
       _23_ = "s"
     end
-    vim.notify(("added " .. name .. " to " .. calls .. " call" .. _23_))
+    vim.notify((what .. " " .. calls .. " call" .. _23_))
   else
   end
   return {row, col}
 end
-local function zig_add_param(name, type)
+local function add_arg(name, self_3f, count)
+  local function _26_(call, member_3f)
+    local args = field(call, "arguments")
+    local n = args:named_child_count()
+    local after_self = (self_3f and member_3f and (n == count) and (n > 0))
+    local er, ec
+    if after_self then
+      er, ec = args:named_child(0):end_()
+    else
+      local ar, ac = args:start()
+      er, ec = ar, (ac + 1)
+    end
+    local function _28_()
+      if after_self then
+        return (", " .. name)
+      elseif (n == 0) then
+        return name
+      else
+        return (name .. ", ")
+      end
+    end
+    return {er, ec, er, ec, _28_()}
+  end
+  return _26_
+end
+local function remove_arg(index, self_3f, count)
+  local function _29_(call, member_3f)
+    local args = field(call, "arguments")
+    local n = args:named_child_count()
+    local i
+    if (self_3f and member_3f and (n < count)) then
+      i = (index - 1)
+    else
+      i = index
+    end
+    local arg = ((i >= 0) and (i < n) and args:named_child(i))
+    if arg then
+      local _let_31_ = list_item_range(arg)
+      local sr = _let_31_[1]
+      local sc = _let_31_[2]
+      local er = _let_31_[3]
+      local ec = _let_31_[4]
+      return {sr, sc, er, ec, ""}
+    else
+      return nil
+    end
+  end
+  return _29_
+end
+local function refind_fn(row, col)
+  local parser = vim.treesitter.get_parser(0, "zig")
+  parser:parse()
+  return find_ancestor_by_type(parser:named_node_for_range({row, col, row, col}), "function_declaration")
+end
+local function add_param(found, name, type)
+  local params = child_of_type(found, "parameters")
+  local _let_33_ = edit_callers(found, add_arg(name, has_self(params), params:named_child_count()), ("added " .. name .. " to"))
+  local row = _let_33_[1]
+  local col = _let_33_[2]
+  local fn_node = refind_fn(row, col)
+  local params0 = child_of_type(fn_node, "parameters")
+  local body = field(fn_node, "body")
+  local _, _0, end_row = body:range()
+  local brow, bcol = body:start()
+  local prow, pcol = params0:start()
+  local indent = line_indent(fn_node:start())
+  local one_line = (brow == end_row)
+  local param = (name .. ": " .. type)
+  if not uses(body, name) then
+    local _34_
+    if one_line then
+      _34_ = ("\n" .. indent)
+    else
+      _34_ = ""
+    end
+    insert_text(brow, (bcol + 1), ("\n" .. indent .. "    _ = " .. name .. ";" .. _34_))
+  else
+  end
+  local first = has_self(params0)
+  if first then
+    local srow, scol = first:end_()
+    return insert_text(srow, scol, (", " .. param))
+  else
+    local function _37_()
+      if (0 == params0:named_child_count()) then
+        return param
+      else
+        return (param .. ", ")
+      end
+    end
+    return insert_text(prow, (pcol + 1), _37_())
+  end
+end
+local function remove_param(found, name, index)
+  local params = child_of_type(found, "parameters")
+  local _let_39_ = edit_callers(found, remove_arg(index, has_self(params), params:named_child_count()), ("took " .. name .. " out of"))
+  local row = _let_39_[1]
+  local col = _let_39_[2]
+  local fn_node = refind_fn(row, col)
+  local body = field(fn_node, "body")
+  local brow, _ = body:start()
+  local _0, _1, erow = body:range()
+  for r = erow, brow, -1 do
+    if vim.api.nvim_buf_get_lines(0, r, (r + 1), false)[1]:match(("^%s*_ = " .. name .. ";%s*$")) then
+      vim.api.nvim_buf_set_lines(0, r, (r + 1), false, {})
+    else
+    end
+  end
+  do
+    local _let_41_ = list_item_range(child_of_type(fn_node, "parameters"):named_child(index))
+    local sr = _let_41_[1]
+    local sc = _let_41_[2]
+    local er = _let_41_[3]
+    local ec = _let_41_[4]
+    vim.api.nvim_buf_set_text(0, sr, sc, er, ec, {""})
+  end
+  local body0 = field(refind_fn(row, col), "body")
+  if text_of(body0):match("^{%s*}$") then
+    replace_node(body0, "{}")
+  else
+  end
+  if uses(body0, name) then
+    return vim.notify((name .. " is still used in the function"), vim.log.levels.WARN)
+  else
+    return nil
+  end
+end
+local function zig_toggle_param(name, type)
   local found = current_fn()
   local params = (found and child_of_type(found, "parameters"))
+  local index = (params and param_index(params, name))
   if not params then
     return nil
-  elseif has_param(params, name) then
-    return vim.notify((name .. " is already a parameter"))
+  elseif index then
+    return remove_param(found, name, index)
   else
-    local _let_26_ = update_callers(found, name)
-    local row = _let_26_[1]
-    local col = _let_26_[2]
-    local parser = vim.treesitter.get_parser(0, "zig")
-    local _ = parser:parse()
-    local fn_node = find_ancestor_by_type(parser:named_node_for_range({row, col, row, col}), "function_declaration")
-    local params0 = child_of_type(fn_node, "parameters")
-    local body = field(fn_node, "body")
-    local _0, _1, end_row = body:range()
-    local brow, bcol = body:start()
-    local prow, pcol = params0:start()
-    local indent = line_indent(fn_node:start())
-    local one_line = (brow == end_row)
-    local param = (name .. ": " .. type)
-    if not uses(body, name) then
-      local _27_
-      if one_line then
-        _27_ = ("\n" .. indent)
-      else
-        _27_ = ""
-      end
-      insert_text(brow, (bcol + 1), ("\n" .. indent .. "    _ = " .. name .. ";" .. _27_))
-    else
-    end
-    local first = has_self(params0)
-    if first then
-      local srow, scol = first:end_()
-      return insert_text(srow, scol, (", " .. param))
-    else
-      local function _30_()
-        if (0 == params0:named_child_count()) then
-          return param
-        else
-          return (param .. ", ")
-        end
-      end
-      return insert_text(prow, (pcol + 1), _30_())
-    end
+    return add_param(found, name, type)
   end
 end
 local function returned_errors(body)
   local names = {}
   local function walk(node, in_return)
     for child in node:iter_children() do
-      local case_33_ = child:type()
-      if (case_33_ == "function_declaration") then
+      local case_45_ = child:type()
+      if (case_45_ == "function_declaration") then
       else
-        local and_34_ = (case_33_ == "error_type")
-        if and_34_ then
-          and_34_ = in_return
+        local and_46_ = (case_45_ == "error_type")
+        if and_46_ then
+          and_46_ = in_return
         end
-        if and_34_ then
+        if and_46_ then
           table.insert(names, text_of(child:named_child(0)))
-        elseif (nil ~= case_33_) then
-          local t = case_33_
+        elseif (nil ~= case_45_) then
+          local t = case_45_
           walk(child, (in_return or (t == "return_expression")))
         else
         end
@@ -344,15 +436,15 @@ end
 local function find_set_decl(fn_node, name)
   local found = nil
   for child in fn_node:parent():iter_children() do
-    local or_42_ = found
-    if not or_42_ then
+    local or_54_ = found
+    if not or_54_ then
       if ((child:type() == "variable_declaration") and (text_of(child:named_child(0)) == name) and (child:named_child(1):type() == "error_set_declaration")) then
-        or_42_ = child:named_child(1)
+        or_54_ = child:named_child(1)
       else
-        or_42_ = nil
+        or_54_ = nil
       end
     end
-    found = or_42_
+    found = or_54_
   end
   return found
 end
@@ -373,15 +465,15 @@ local function zig_gen_errs()
     local inline_set = (err and (err:type() == "error_set_declaration") and err)
     local found = returned_errors(field(fn_node, "body"))
     local members
-    local _44_
+    local _56_
     if decl_set then
-      _44_ = set_members(decl_set)
+      _56_ = set_members(decl_set)
     elseif inline_set then
-      _44_ = set_members(inline_set)
+      _56_ = set_members(inline_set)
     else
-      _44_ = {}
+      _56_ = {}
     end
-    members = merge(_44_, found)
+    members = merge(_56_, found)
     local set_text
     if (1 == #members) then
       set_text = ("error{" .. members[1] .. "}")
@@ -400,13 +492,13 @@ local function zig_gen_errs()
       return vim.notify(("returns " .. text_of(err) .. ", left alone"))
     else
       if not err then
-        local _48_
+        local _60_
         if (ret:type() == "error_union_type") then
-          _48_ = text_of(field(ret, "ok"))
+          _60_ = text_of(field(ret, "ok"))
         else
-          _48_ = text_of(ret)
+          _60_ = text_of(ret)
         end
-        replace_node(ret, (name .. "!" .. _48_))
+        replace_node(ret, (name .. "!" .. _60_))
       elseif inline_set then
         replace_node(inline_set, name)
       else
@@ -421,59 +513,154 @@ local function zig_gen_errs()
     return nil
   end
 end
-local function zig_toggle(flag, label)
-  vim.g[flag] = not vim.g[flag]
-  local _54_
-  if vim.g[flag] then
-    _54_ = "on"
-  else
-    _54_ = "off"
-  end
-  return vim.notify((label .. " on save: " .. _54_))
-end
-local null_ls = require("null-ls")
-local function in_fn_3f(params)
-  local parser = vim.treesitter.get_parser(params.bufnr, "zig", {error = false})
-  if parser then
-    parser:parse()
-    local node = parser:named_node_for_range({(params.row - 1), params.col, (params.row - 1), params.col})
-    return (node and ((node:type() == "function_declaration") or find_ancestor_by_type(node, "function_declaration")))
+local function generated_set(fn_node)
+  local name = (text_of(field(fn_node, "name")) .. "_errors")
+  local ret = field(fn_node, "type")
+  local err = ((ret:type() == "error_union_type") and field(ret, "error"))
+  local errset = (err and (text_of(err) == name) and find_set_decl(fn_node, name))
+  if errset then
+    return errset, ret
   else
     return nil
   end
 end
-local function zig_actions(params)
-  local toggles
-  local _57_
-  if vim.g.zig_fix_all then
-    _57_ = ": On"
+local function zig_remove_errs()
+  local fn_node = current_fn()
+  if fn_node then
+    local errset, ret = generated_set(fn_node)
+    if not errset then
+      return vim.notify("no generated error set on this function")
+    else
+      local sr, _, er, _0 = errset:parent():range()
+      replace_node(ret, ("!" .. text_of(field(ret, "ok"))))
+      return vim.api.nvim_buf_set_lines(0, sr, (er + 1), false, {})
+    end
   else
-    _57_ = ": Off"
+    return nil
   end
-  local function _59_()
+end
+local function call_at(node)
+  if not node then
+    return nil
+  elseif ((node:type() == "try_expression") and (node:named_child(0):type() == "call_expression")) then
+    return node:named_child(0)
+  elseif (node:type() == "call_expression") then
+    return node
+  else
+    return find_ancestor_by_type(node, "call_expression")
+  end
+end
+local function tried_3f(call)
+  local parent = call:parent()
+  return (parent and (parent:type() == "try_expression") and parent)
+end
+local function zig_toggle_try()
+  local call = call_at(current_node())
+  local try = (call and tried_3f(call))
+  if not call then
+    return vim.notify("not in a call")
+  elseif try then
+    local tr, tc = try:start()
+    local cr, cc = call:start()
+    return vim.api.nvim_buf_set_text(0, tr, tc, cr, cc, {""})
+  else
+    local cr, cc = call:start()
+    return insert_text(cr, cc, "try ")
+  end
+end
+local function zig_toggle(flag, label)
+  vim.g[flag] = not vim.g[flag]
+  local _71_
+  if vim.g[flag] then
+    _71_ = "on"
+  else
+    _71_ = "off"
+  end
+  return vim.notify((label .. " on save: " .. _71_))
+end
+local null_ls = require("null-ls")
+local function node_at(params)
+  local parser = vim.treesitter.get_parser(params.bufnr, "zig", {error = false})
+  local r, c = (params.row - 1), params.col
+  if parser then
+    parser:parse()
+    return parser:named_node_for_range({r, c, r, c})
+  else
+    return nil
+  end
+end
+local function fn_at(node)
+  if (node and (node:type() == "function_declaration")) then
+    return node
+  else
+    return find_ancestor_by_type(node, "function_declaration")
+  end
+end
+local param_actions = {{"Io", "io", "std.Io"}, {"Allocator", "gpa", "std.mem.Allocator"}, {"Ctx", "ctx", "Context"}}
+local function fn_actions(fn_node, node)
+  local params = child_of_type(fn_node, "parameters")
+  local call = call_at(node)
+  local actions
+  if generated_set(fn_node) then
+    actions = {{title = "Update_Errors", action = zig_gen_errs}, {title = "Remove_Errors", action = zig_remove_errs}}
+  else
+    actions = {{title = "Add_Errors", action = zig_gen_errs}}
+  end
+  if call then
+    local _76_
+    if tried_3f(call) then
+      _76_ = "Remove_Try"
+    else
+      _76_ = "Add_Try"
+    end
+    table.insert(actions, {title = _76_, action = zig_toggle_try})
+  else
+  end
+  for _, _79_ in ipairs(param_actions) do
+    local label = _79_[1]
+    local name = _79_[2]
+    local type = _79_[3]
+    local _80_
+    if param_index(params, name) then
+      _80_ = "Remove_"
+    else
+      _80_ = "Add_"
+    end
+    local function _82_()
+      return zig_toggle_param(name, type)
+    end
+    table.insert(actions, {title = (_80_ .. label), action = _82_})
+  end
+  return actions
+end
+local function zig_actions(params)
+  local node = node_at(params)
+  local fn_node = fn_at(node)
+  local toggles
+  local _83_
+  if vim.g.zig_fix_all then
+    _83_ = ": On"
+  else
+    _83_ = ": Off"
+  end
+  local function _85_()
     return zig_toggle("zig_fix_all", "fix all")
   end
-  local _60_
+  local _86_
   if vim.g.zig_organise_imports then
-    _60_ = ": On"
+    _86_ = ": On"
   else
-    _60_ = ": Off"
+    _86_ = ": Off"
   end
-  local function _62_()
+  local function _88_()
     return zig_toggle("zig_organise_imports", "organise imports")
   end
-  toggles = {{title = ("Toggle_FixAll" .. _57_), action = _59_}, {title = ("Toggle_OrganiseImports" .. _60_), action = _62_}}
-  if in_fn_3f(params) then
-    local function _63_()
-      return zig_add_param("io", "std.Io")
-    end
-    local function _64_()
-      return zig_add_param("gpa", "std.mem.Allocator")
-    end
-    local function _65_()
-      return zig_add_param("ctx", "Context")
-    end
-    return {{title = "Errors", action = zig_gen_errs}, {title = "Add_Io", action = _63_}, {title = "Add_Allocator", action = _64_}, {title = "Add_Ctx", action = _65_}, unpack(toggles)}
+  toggles = {{title = ("Toggle_FixAll" .. _83_), action = _85_}, {title = ("Toggle_OrganiseImports" .. _86_), action = _88_}}
+  if (fn_node and field(fn_node, "body")) then
+    local tmp_9_ = fn_actions(fn_node, node)
+    table.insert(tmp_9_, toggles[1])
+    table.insert(tmp_9_, toggles[2])
+    return tmp_9_
   else
     return toggles
   end
@@ -497,7 +684,7 @@ local function apply_source_action(buf, kind)
   end
   return nil
 end
-local function _69_(args)
+local function _92_(args)
   if vim.g.zig_organise_imports then
     apply_source_action(args.buf, "source.organizeImports")
   else
@@ -508,7 +695,7 @@ local function _69_(args)
     return nil
   end
 end
-vim.api.nvim_create_autocmd("BufWritePre", {group = group, buffer = 0, callback = _69_})
+vim.api.nvim_create_autocmd("BufWritePre", {group = group, buffer = 0, callback = _92_})
 vim.bo.errorformat = table.concat({"%f:%l:%c: %trror: %m", "%f:%l:%c: %tote: %m", "%+Gerror: '%.%#' failed:", "%+Gthread %.%# panic: %.%#", "%-G%\\s%#%.%#/lib/zig/%.%#", "%\\s%#%f:%l:%c: 0x%*[0-9a-f] in %m", "%-G%.%#"}, ",")
 vim.b.test_cmd = "zig build test"
 vim.b.test_filter = "-Dtest-filter="
@@ -539,14 +726,14 @@ local function set_build_cmds(buf)
   end
 end
 set_build_cmds(vim.api.nvim_get_current_buf())
-local function _73_()
+local function _96_()
   if (vim.bo.filetype == "zig") then
     return set_build_cmds(vim.api.nvim_get_current_buf())
   else
     return nil
   end
 end
-vim.api.nvim_create_autocmd({"BufEnter", "BufWritePost", "DirChanged"}, {group = vim.api.nvim_create_augroup("zig_build_cmds", {clear = true}), callback = _73_})
+vim.api.nvim_create_autocmd({"BufEnter", "BufWritePost", "DirChanged"}, {group = vim.api.nvim_create_augroup("zig_build_cmds", {clear = true}), callback = _96_})
 local function test_name()
   local node = current_node()
   local test
@@ -556,10 +743,10 @@ local function test_name()
     test = find_ancestor_by_type(node, "test_declaration")
   end
   local name = (test and test:named_child(0))
-  local case_76_ = (name and name:type())
-  if (case_76_ == "identifier") then
+  local case_99_ = (name and name:type())
+  if (case_99_ == "identifier") then
     return text_of(name)
-  elseif (case_76_ == "string") then
+  elseif (case_99_ == "string") then
     local content = child_of_type(name, "string_content")
     return (content and text_of(content))
   else
@@ -575,13 +762,13 @@ local function zig_test_at()
   if (in_build and (filters or not name)) then
     return {name = name}
   else
-    local _78_
+    local _101_
     if name then
-      _78_ = (" --test-filter " .. vim.fn.shellescape(name, 1))
+      _101_ = (" --test-filter " .. vim.fn.shellescape(name, 1))
     else
-      _78_ = ""
+      _101_ = ""
     end
-    return {term = ("zig test " .. vim.fn.shellescape(file, 1) .. _78_)}
+    return {term = ("zig test " .. vim.fn.shellescape(file, 1) .. _101_)}
   end
 end
 if (_G.Utils and _G.Utils.test_at) then
@@ -589,7 +776,7 @@ if (_G.Utils and _G.Utils.test_at) then
 else
 end
 local function zig_pick_step()
-  local function _82_(out)
+  local function _105_(out)
     if (0 ~= out.code) then
       return vim.notify(out.stderr, vim.log.levels.ERROR)
     else
@@ -607,7 +794,7 @@ local function zig_pick_step()
         end
         steps = tbl_26_
       end
-      local function _84_(step)
+      local function _107_(step)
         if step then
           vim.g.run_cmd = ("zig build " .. step)
           return _G.Utils.run()
@@ -615,9 +802,9 @@ local function zig_pick_step()
           return nil
         end
       end
-      return vim.ui.select(steps, {prompt = "zig build step"}, _84_)
+      return vim.ui.select(steps, {prompt = "zig build step"}, _107_)
     end
   end
-  return vim.system({"zig", "build", "-l"}, {text = true}, vim.schedule_wrap(_82_))
+  return vim.system({"zig", "build", "-l"}, {text = true}, vim.schedule_wrap(_105_))
 end
 return vim.keymap.set("n", "<leader>ms", zig_pick_step, {buffer = 0, desc = "zig build step into run_cmd"})

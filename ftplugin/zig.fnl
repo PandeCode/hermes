@@ -60,10 +60,22 @@
 (fn insert_text [row col text]
   (vim.api.nvim_buf_set_text 0 row col row col (vim.split text "\n")))
 
-(fn has_param [params name]
-  (accumulate [found false child (params:iter_children)]
-    (or found (and (= (child:type) :parameter)
-                   (= (text_of (field child :name)) name)))))
+(fn param_index [params name]
+  (var found nil)
+  (for [i 0 (- (params:named_child_count) 1) &until found]
+    (let [p (params:named_child i)]
+      (when (and (= (p:type) :parameter) (= (text_of (field p :name)) name))
+        (set found i))))
+  found)
+
+;; the range that takes an item and one comma next to it out of a list
+(fn list_item_range [node]
+  (let [nxt (node:next_named_sibling)
+        prev (node:prev_named_sibling)
+        (sr sc er ec) (node:range)]
+    (if nxt (let [(nr nc) (nxt:start)] [sr sc nr nc])
+        prev (let [(pr pc) (prev:end_)] [pr pc er ec])
+        [sr sc er ec])))
 
 ;; fn func() void {
 ; // if i im here
@@ -94,13 +106,11 @@
                (= (. (call:field :function) 1) callee))
       (values call (not= callee ref)))))
 
-;; puts `name` in every call zls knows of, so they still compile. in a
-;; method obj.f(..) gets it first, T.f(obj, ..) after obj
-(fn update_callers [fn_node name]
+;; runs `edit` on every call to the function zls knows of, in every file.
+;; edit gets the call and whether it was obj.f(..), and returns the range to
+;; replace and the text for it, or nil
+(fn edit_callers [fn_node edit what]
   (let [name_node (field fn_node :name)
-        params (child_of_type fn_node :parameters)
-        self? (has_self params)
-        count (params:named_child_count)
         (row col) (name_node:start)
         edits {}]
     (each [_ client (ipairs (vim.lsp.get_clients {:bufnr 0 :name :zls}))]
@@ -133,19 +143,11 @@
             (when parser
               (parser:parse)
               (let [ref (parser:named_node_for_range [r c r c])
-                    (call member?) (call_of ref)]
-                (when call
-                  (let [args (field call :arguments)
-                        n (args:named_child_count)
-                        after_self (and self? member? (= n count) (> n 0))
-                        (er ec) (if after_self (: (args:named_child 0) :end_)
-                                    (let [(ar ac) (args:start)]
-                                      (values ar (+ ac 1))))
-                        text (if after_self (.. ", " name)
-                                 (= n 0) name
-                                 (.. name ", "))]
-                    (when (not (. edits buf)) (tset edits buf []))
-                    (table.insert (. edits buf) [er ec text])))))))))
+                    (call member?) (call_of ref)
+                    change (and call (edit call member?))]
+                (when change
+                  (when (not (. edits buf)) (tset edits buf []))
+                  (table.insert (. edits buf) change))))))))
     ;; from the end of each buffer, so earlier positions still hold
     (var calls 0)
     (each [buf list (pairs edits)]
@@ -153,52 +155,117 @@
                   (fn [a b]
                     (or (> (. a 1) (. b 1))
                         (and (= (. a 1) (. b 1)) (> (. a 2) (. b 2))))))
-      (each [_ [er ec text] (ipairs list)]
+      (each [_ [sr sc er ec text] (ipairs list)]
         (set calls (+ calls 1))
-        (vim.api.nvim_buf_set_text buf er ec er ec [text])))
+        (vim.api.nvim_buf_set_text buf sr sc er ec (vim.split text "\n"))))
     (when (> calls 0)
-      (vim.notify (.. "added " name " to " calls " call"
-                      (if (= calls 1) "" :s))))
+      (vim.notify (.. what " " calls " call" (if (= calls 1) "" :s))))
     [row col]))
 
-(fn zig_add_param [name type]
+;; puts `name` in a call so it still compiles. in a method obj.f(..) gets it
+;; first, T.f(obj, ..) after obj
+(fn add_arg [name self? count]
+  (fn [call member?]
+    (let [args (field call :arguments)
+          n (args:named_child_count)
+          after_self (and self? member? (= n count) (> n 0))
+          (er ec) (if after_self (: (args:named_child 0) :end_)
+                      (let [(ar ac) (args:start)]
+                        (values ar (+ ac 1))))]
+      [er
+       ec
+       er
+       ec
+       (if after_self (.. ", " name)
+           (= n 0) name
+           (.. name ", "))])))
+
+;; takes the argument for parameter `index` out of a call. obj.f(..) has no
+;; argument for self, so one less
+(fn remove_arg [index self? count]
+  (fn [call member?]
+    (let [args (field call :arguments)
+          n (args:named_child_count)
+          i (if (and self? member? (< n count)) (- index 1) index)
+          arg (and (>= i 0) (< i n) (args:named_child i))]
+      (when arg
+        (let [[sr sc er ec] (list_item_range arg)]
+          [sr sc er ec ""])))))
+
+;; the function again after edits, by the position of its name, which no
+;; call edit moves
+(fn refind_fn [row col]
+  (let [parser (vim.treesitter.get_parser 0 :zig)]
+    (parser:parse)
+    (find_ancestor_by_type (parser:named_node_for_range [row col row col])
+                           :function_declaration)))
+
+(fn add_param [found name type]
+  (let [params (child_of_type found :parameters)
+        [row col] (edit_callers found
+                                (add_arg name (has_self params)
+                                         (params:named_child_count))
+                                (.. "added " name " to"))
+        fn_node (refind_fn row col)
+        params (child_of_type fn_node :parameters)
+        body (field fn_node :body)
+        (_ _ end_row) (body:range)
+        (brow bcol) (body:start)
+        (prow pcol) (params:start)
+        indent (line_indent (fn_node:start))
+        one_line (= brow end_row)
+        param (.. name ": " type)]
+    ;; the body comes after the params, edit it first so the params
+    ;; position still holds. a recursive call already uses the name,
+    ;; and zig rejects a discard of a used parameter
+    (when (not (uses body name))
+      (insert_text brow (+ bcol 1)
+                   (.. "\n" indent "    _ = " name ";"
+                       (if one_line (.. "\n" indent) ""))))
+    ;; after self in methods, so obj.method() calls stay valid
+    (let [first (has_self params)]
+      (if first
+          (let [(srow scol) (first:end_)]
+            (insert_text srow scol (.. ", " param)))
+          (insert_text prow (+ pcol 1)
+                       (if (= 0 (params:named_child_count)) param
+                           (.. param ", ")))))))
+
+;; the other way: out of the calls, the discard add_param put in, and the
+;; parameter list
+(fn remove_param [found name index]
+  (let [params (child_of_type found :parameters)
+        [row col] (edit_callers found
+                                (remove_arg index (has_self params)
+                                            (params:named_child_count))
+                                (.. "took " name " out of"))
+        fn_node (refind_fn row col)
+        body (field fn_node :body)
+        (brow _) (body:start)
+        (_ _ erow) (body:range)]
+    ;; from the bottom, so the rows above, the params among them, still hold
+    (for [r erow brow -1]
+      (when (: (. (vim.api.nvim_buf_get_lines 0 r (+ r 1) false) 1) :match
+               (.. "^%s*_ = " name ";%s*$"))
+        (vim.api.nvim_buf_set_lines 0 r (+ r 1) false [])))
+    (let [[sr sc er ec] (list_item_range (: (child_of_type fn_node :parameters)
+                                            :named_child index))]
+      (vim.api.nvim_buf_set_text 0 sr sc er ec [""]))
+    ;; a body that was {} before add_param split it goes back to {}
+    (let [body (field (refind_fn row col) :body)]
+      (when (: (text_of body) :match "^{%s*}$")
+        (replace_node body "{}"))
+      (when (uses body name)
+        (vim.notify (.. name " is still used in the function")
+                    vim.log.levels.WARN)))))
+
+(fn zig_toggle_param [name type]
   (let [found (current_fn)
-        params (and found (child_of_type found :parameters))]
-    (if (not params) nil (has_param params name)
-        (vim.notify (.. name " is already a parameter"))
-        ;; the calls change first, then the function is found again by its
-        ;; name, which no call edit moves
-        (let [[row col] (update_callers found name)
-              parser (vim.treesitter.get_parser 0 :zig)
-              _ (parser:parse)
-              fn_node (find_ancestor_by_type (parser:named_node_for_range [row
-                                                                           col
-                                                                           row
-                                                                           col])
-                                             :function_declaration)
-              params (child_of_type fn_node :parameters)
-              body (field fn_node :body)
-              (_ _ end_row) (body:range)
-              (brow bcol) (body:start)
-              (prow pcol) (params:start)
-              indent (line_indent (fn_node:start))
-              one_line (= brow end_row)
-              param (.. name ": " type)]
-          ;; the body comes after the params, edit it first so the params
-          ;; position still holds. a recursive call already uses the name,
-          ;; and zig rejects a discard of a used parameter
-          (when (not (uses body name))
-            (insert_text brow (+ bcol 1)
-                         (.. "\n" indent "    _ = " name ";"
-                             (if one_line (.. "\n" indent) ""))))
-          ;; after self in methods, so obj.method() calls stay valid
-          (let [first (has_self params)]
-            (if first
-                (let [(srow scol) (first:end_)]
-                  (insert_text srow scol (.. ", " param)))
-                (insert_text prow (+ pcol 1)
-                             (if (= 0 (params:named_child_count)) param
-                                 (.. param ", ")))))))))
+        params (and found (child_of_type found :parameters))
+        index (and params (param_index params name))]
+    (if (not params) nil
+        index (remove_param found name index)
+        (add_param found name type))))
 
 ;; zig error set generation
 ; fn f() !void {
@@ -296,39 +363,104 @@
                   (insert_set_decl fn_node
                                    (.. pub "const " name " = " set_text ";")))))))))
 
+;; the generated `f_errors!T` and its `const f_errors = error{..};`, nil
+;; for any other return type
+(fn generated_set [fn_node]
+  (let [name (.. (text_of (field fn_node :name)) :_errors)
+        ret (field fn_node :type)
+        err (and (= (ret:type) :error_union_type) (field ret :error))
+        errset (and err (= (text_of err) name) (find_set_decl fn_node name))]
+    (when errset
+      (values errset ret))))
+
+;; back to an inferred `!T`, the set goes
+(fn zig_remove_errs []
+  (let [fn_node (current_fn)]
+    (when fn_node
+      (let [(errset ret) (generated_set fn_node)]
+        (if (not errset)
+            (vim.notify "no generated error set on this function")
+            (let [(sr _ er _) (: (errset:parent) :range)]
+              ;; the return type is below the set, change it first
+              (replace_node ret (.. "!" (text_of (field ret :ok))))
+              (vim.api.nvim_buf_set_lines 0 sr (+ er 1) false [])))))))
+
+;; the call under the cursor, f(..) or x.f(..). on `try` it is the one after
+(fn call_at [node]
+  (if (not node) nil
+      (and (= (node:type) :try_expression)
+           (= (: (node:named_child 0) :type) :call_expression)) (node:named_child 0)
+      (= (node:type) :call_expression) node
+      (find_ancestor_by_type node :call_expression)))
+
+(fn tried? [call]
+  (let [parent (call:parent)]
+    (and parent (= (parent:type) :try_expression) parent)))
+
+(fn zig_toggle_try []
+  (let [call (call_at (current_node))
+        try (and call (tried? call))]
+    (if (not call) (vim.notify "not in a call") try
+        (let [(tr tc) (try:start)
+              (cr cc) (call:start)]
+          (vim.api.nvim_buf_set_text 0 tr tc cr cc [""]))
+        (let [(cr cc) (call:start)]
+          (insert_text cr cc "try ")))))
+
 (fn zig_toggle [flag label]
   (tset vim.g flag (not (. vim.g flag)))
   (vim.notify (.. label " on save: " (if (. vim.g flag) :on :off))))
 
 (local null_ls (require :null-ls))
 
-;; the function actions only show up with the cursor in a function
-(fn in_fn? [params]
-  (let [parser (vim.treesitter.get_parser params.bufnr :zig {:error false})]
+;; the function actions only show up with the cursor in a function, and
+;; each says what it does there: Add_Io or Remove_Io and so on
+(fn node_at [params]
+  (let [parser (vim.treesitter.get_parser params.bufnr :zig {:error false})
+        (r c) (values (- params.row 1) params.col)]
     (when parser
       (parser:parse)
-      (let [node (parser:named_node_for_range [(- params.row 1)
-                                               params.col
-                                               (- params.row 1)
-                                               params.col])]
-        (and node
-             (or (= (node:type) :function_declaration)
-                 (find_ancestor_by_type node :function_declaration)))))))
+      (parser:named_node_for_range [r c r c]))))
+
+(fn fn_at [node]
+  (if (and node (= (node:type) :function_declaration)) node
+      (find_ancestor_by_type node :function_declaration)))
+
+(local param_actions [[:Io :io :std.Io]
+                      [:Allocator :gpa :std.mem.Allocator]
+                      [:Ctx :ctx :Context]])
+
+(fn fn_actions [fn_node node]
+  (let [params (child_of_type fn_node :parameters)
+        call (call_at node)
+        actions (if (generated_set fn_node)
+                    [{:title :Update_Errors :action zig_gen_errs}
+                     {:title :Remove_Errors :action zig_remove_errs}]
+                    [{:title :Add_Errors :action zig_gen_errs}])]
+    (when call
+      (table.insert actions
+                    {:title (if (tried? call) :Remove_Try :Add_Try)
+                     :action zig_toggle_try}))
+    (each [_ [label name type] (ipairs param_actions)]
+      (table.insert actions
+                    {:title (.. (if (param_index params name) :Remove_ :Add_)
+                                label)
+                     :action #(zig_toggle_param name type)}))
+    actions))
 
 (fn zig_actions [params]
-  (let [toggles [{:title (.. :Toggle_FixAll
+  (let [node (node_at params)
+        fn_node (fn_at node)
+        toggles [{:title (.. :Toggle_FixAll
                              (if vim.g.zig_fix_all ": On" ": Off"))
                   :action #(zig_toggle :zig_fix_all "fix all")}
                  {:title (.. :Toggle_OrganiseImports
                              (if vim.g.zig_organise_imports ": On" ": Off"))
                   :action #(zig_toggle :zig_organise_imports "organise imports")}]]
-    (if (in_fn? params)
-        [{:title :Errors :action zig_gen_errs}
-         {:title :Add_Io :action #(zig_add_param :io :std.Io)}
-         {:title :Add_Allocator
-          :action #(zig_add_param :gpa :std.mem.Allocator)}
-         {:title :Add_Ctx :action #(zig_add_param :ctx :Context)}
-         (unpack toggles)]
+    (if (and fn_node (field fn_node :body))
+        (doto (fn_actions fn_node node)
+          (table.insert (. toggles 1))
+          (table.insert (. toggles 2)))
         toggles)))
 
 ;; this file runs for every zig buffer, the source is global
