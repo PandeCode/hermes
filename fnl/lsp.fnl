@@ -160,7 +160,7 @@
                 {:settings {:MATLAB {:indexWorkspace true
                                      :installPath (vim.fn.expand "~/apps/matlab/installation/")
                                      :matlabConnectionTiming :onStart
-                                     :telemetry true}}})
+                                     :telemetry false}}})
 
 (vim.lsp.config :nixd
                 {:settings {:nixd {:nixpkgs {:expr (or vim.g.nix_nixd_nixpkgs
