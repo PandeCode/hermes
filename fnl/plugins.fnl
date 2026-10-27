@@ -319,7 +319,6 @@
           ;; its debuggables need nvim-dap on the runtimepath
           {1 :rustaceanvim :ft :rust :before #(lz.trigger_load :nvim-dap)}
           {1 :vim-sleuth :event [:BufReadPost :BufNewFile]}
-          {1 :vim-wakatime :event :DeferredUIEnter}
           {1 :vim-visual-multi :event :DeferredUIEnter}
           {1 :vim-wordmotion :event :DeferredUIEnter}
           {1 :refactoring.nvim :cmd :Refactor}

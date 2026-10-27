@@ -65,7 +65,6 @@ let
 
     neogen
 
-    vim-wakatime
     vim-visual-multi
     vim-wordmotion
     vim-sleuth
