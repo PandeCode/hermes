@@ -133,6 +133,9 @@
 
 (local miniclue (require :mini.clue))
 (rsetup :mini.clue {:triggers [{:mode [:n :x] :keys :<leader>}
+                               {:mode [:n :x] :keys :<localleader>}
+                               {:mode :n :keys "]"}
+                               {:mode :n :keys "["}
                                {:mode [:n :x] :keys :g}
                                {:mode [:n :x] :keys :z}
                                {:mode [:n :x] :keys :<c-w>}
