@@ -677,6 +677,7 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
   vim.api.nvim_create_autocmd("FileType", {callback = _90_})
   vim.api.nvim_create_autocmd("BufEnter", {callback = parinfer_apply})
   local lz = require("lz.n")
+  vim.filetype.add({extension = {agda = "agda", lagda = "agda"}, pattern = {[".*%.lagda%.%w+"] = "agda"}})
   local function _91_()
     return lz.trigger_load("nvim-dap")
   end
@@ -686,7 +687,7 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
   local function _93_()
     return require("neogen").setup((nil or {}))
   end
-  return lz.load({{"zig.vim", ft = "zig"}, {"vlime", ft = "lisp"}, {"rustaceanvim", ft = "rust", before = _91_}, {"vim-sleuth", event = {"BufReadPost", "BufNewFile"}}, {"vim-visual-multi", event = "DeferredUIEnter"}, {"vim-wordmotion", event = "DeferredUIEnter"}, {"refactoring.nvim", cmd = "Refactor"}, {"neogen", cmd = "Neogen", keys = {{"<leader>nf", _92_}}, after = _93_}})
+  return lz.load({{"zig.vim", ft = "zig"}, {"cornelis", ft = "agda"}, {"vlime", ft = "lisp"}, {"rustaceanvim", ft = "rust", before = _91_}, {"vim-sleuth", event = {"BufReadPost", "BufNewFile"}}, {"vim-visual-multi", event = "DeferredUIEnter"}, {"vim-wordmotion", event = "DeferredUIEnter"}, {"refactoring.nvim", cmd = "Refactor"}, {"neogen", cmd = "Neogen", keys = {{"<leader>nf", _92_}}, after = _93_}})
 end
 require("fnl.plugins")
 package.preload["fnl.theme"] = package.preload["fnl.theme"] or function(...)
@@ -1330,7 +1331,7 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
   n("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")
   n("gd", vim.lsp.buf.definition, "[G]oto [D]efinition")
   n("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
-  for _, k in ipairs({"asm_lsp", "ast_grep", "bashls", "cir_lsp_server", "clojure_lsp", "fennel_ls", "janet_lsp", "glsl_analyzer", "neocmake", "nixd", "html", "cssls", "fish_lsp", "omnisharp", "tinymist", "ocamllsp", "nushell", "denols", "jsonls", "pyrefly", "racket_langserver", "wasm_language_tools", "wgsl_analyzer", "zls", "matlab_ls", "gopls"}) do
+  for _, k in ipairs({"agda_ls", "asm_lsp", "ast_grep", "bashls", "cir_lsp_server", "clojure_lsp", "fennel_ls", "janet_lsp", "glsl_analyzer", "neocmake", "nixd", "html", "cssls", "fish_lsp", "omnisharp", "tinymist", "ocamllsp", "nushell", "denols", "jsonls", "pyrefly", "racket_langserver", "wasm_language_tools", "wgsl_analyzer", "zls", "matlab_ls", "gopls"}) do
     vim.lsp.enable(k)
   end
   vim.lsp.config("matlab_ls", {settings = {MATLAB = {indexWorkspace = true, installPath = vim.fn.expand("~/apps/matlab/installation/"), matlabConnectionTiming = "onStart", telemetry = false}}})

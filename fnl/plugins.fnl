@@ -311,10 +311,17 @@
 
 (local lz (require :lz.n))
 
+;; neovim does not know agda files, and cornelis' ftdetect sits under opt
+;; until its ft load below. literate agda (.lagda.md, .lagda.tex...) is agda
+;; too, so cornelis loads for it
+(vim.filetype.add {:extension {:agda :agda :lagda :agda}
+                   :pattern {".*%.lagda%.%w+" :agda}})
+
 ;; the opt plugins from nix/editor.nix. DeferredUIEnter is right after the
 ;; first screen is drawn, ft loads replay the FileType event for the buffer
 ;; fnlfmt: skip
 (lz.load [{1 :zig.vim :ft :zig}
+          {1 :cornelis :ft :agda}
           {1 :vlime :ft :lisp}
           ;; its debuggables need nvim-dap on the runtimepath
           {1 :rustaceanvim :ft :rust :before #(lz.trigger_load :nvim-dap)}

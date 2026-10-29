@@ -57,6 +57,9 @@ let
   lazyPlugins = with pkgs.vimPlugins; [
     zig-vim
 
+    # agda-mode, its binary comes from nixbuilds
+    cornelis
+
     nvim-dap
 
     nvim-dap-view

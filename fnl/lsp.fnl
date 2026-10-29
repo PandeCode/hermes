@@ -127,6 +127,7 @@
 
 ;; each starts when a buffer of its filetype opens
 (each [_ k (ipairs [;:emmylua_ls
+                    :agda_ls
                     :asm_lsp
                     :ast_grep
                     :bashls
