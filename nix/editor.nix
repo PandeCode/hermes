@@ -3,7 +3,6 @@
 {
   pkgs,
   neovim,
-  vlime-src,
   # nixpkgs' source as a string, interpolating pkgs.path would copy it again
   nixpkgs-src,
   src,
@@ -11,13 +10,6 @@
 
 let
   inherit (pkgs) lib;
-
-  # pname is the opt directory name that lz.n packadds
-  vlime = pkgs.vimUtils.buildVimPlugin {
-    pname = "vlime";
-    version = vlime-src.shortRev;
-    src = vlime-src;
-  };
 
   eagerPlugins = with pkgs.vimPlugins; [
     lz-n
@@ -76,7 +68,7 @@ let
 
     firenvim
 
-    vlime
+    conjure
     refactoring-nvim
   ];
 

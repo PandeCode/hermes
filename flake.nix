@@ -41,13 +41,5 @@
       repo = "neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # common lisp plugin, not in nixpkgs
-    vlime = {
-      type = "github";
-      owner = "vlime";
-      repo = "vlime";
-      flake = false;
-    };
   };
 }

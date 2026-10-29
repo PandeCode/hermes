@@ -317,12 +317,53 @@
 (vim.filetype.add {:extension {:agda :agda :lagda :agda}
                    :pattern {".*%.lagda%.%w+" :agda}})
 
+;; conjure evaluates the form under the cursor in a live repl: lisp through
+;; swank (:Swank starts one), fennel and lua inside neovim, janet and racket
+;; through theirs. K and gd stay with the language servers
+(local conjure-filetypes [:fennel :janet :lisp :lua :racket :scheme])
+(tset vim.g "conjure#filetypes" conjure-filetypes)
+(tset vim.g "conjure#mapping#doc_word" false)
+(tset vim.g "conjure#mapping#def_word" false)
+
+;; sbcl with swank on conjure's port, conjure connects on the next eval. it
+;; is neovim's job, quitting neovim stops it
+(var swank-job nil)
+
+(fn Utils.swank_running []
+  (and swank-job (= -1 (. (vim.fn.jobwait [swank-job] 0) 1))))
+
+(fn swank-start []
+  (when (not (Utils.swank_running))
+    (let [port (or (. vim.g
+                      "conjure#client#common_lisp#swank#connection#default_port")
+                   :4005)
+          job (vim.fn.jobstart [:sbcl
+                                :--noinform
+                                :--eval
+                                "(require :asdf)"
+                                :--eval
+                                "(asdf:load-system :swank)"
+                                :--eval
+                                (.. "(swank:create-server :port " port
+                                    " :dont-close t)")]
+                               {:on_exit (fn [_ code]
+                                           (set swank-job nil)
+                                           (when (not= code 0)
+                                             (vim.schedule #(vim.notify (.. "swank exited with "
+                                                                            code)
+                                                                        vim.log.levels.WARN))))})]
+      (if (> job 0)
+          (set swank-job job)
+          (vim.notify "sbcl did not start" vim.log.levels.ERROR)))))
+
+(vim.api.nvim_create_user_command :Swank swank-start {})
+
 ;; the opt plugins from nix/editor.nix. DeferredUIEnter is right after the
 ;; first screen is drawn, ft loads replay the FileType event for the buffer
 ;; fnlfmt: skip
 (lz.load [{1 :zig.vim :ft :zig}
           {1 :cornelis :ft :agda}
-          {1 :vlime :ft :lisp}
+          {1 :conjure :ft conjure-filetypes}
           ;; its debuggables need nvim-dap on the runtimepath
           {1 :rustaceanvim :ft :rust :before #(lz.trigger_load :nvim-dap)}
           {1 :vim-sleuth :event [:BufReadPost :BufNewFile]}

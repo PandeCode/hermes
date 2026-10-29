@@ -162,11 +162,11 @@
         "zig-overlay": "zig-overlay"
       },
       "locked": {
-        "lastModified": 1793236952,
-        "narHash": "sha256-8Ogn8GM6xXsfYkM1aw6GGI+LHLn+dypZ3O8zZjevkp0=",
+        "lastModified": 1793237743,
+        "narHash": "sha256-F/FVc2sNbJ+McqJa1+j1tVUenrbo74hLJ483SIl092k=",
         "owner": "PandeCode",
         "repo": "nixbuilds",
-        "rev": "06525874ad833882b66c9c70398c6136b05a0cb8",
+        "rev": "a4f7ca151eefa9ad05d60235bd8a8989fc362eef",
         "type": "github"
       },
       "original": {
@@ -253,8 +253,7 @@
           "nixbuilds",
           "nixpkgs"
         ],
-        "nixutils": "nixutils_2",
-        "vlime": "vlime"
+        "nixutils": "nixutils_2"
       }
     },
     "sddm-foundry-theme": {
@@ -331,22 +330,6 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
-        "type": "github"
-      }
-    },
-    "vlime": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1747582404,
-        "narHash": "sha256-tCqN80lgj11ggzGmuGF077oqL5ByjUp6jVmRUTrIWJA=",
-        "owner": "vlime",
-        "repo": "vlime",
-        "rev": "e276e9a6f37d2699a3caa63be19314f5a19a1481",
-        "type": "github"
-      },
-      "original": {
-        "owner": "vlime",
-        "repo": "vlime",
         "type": "github"
       }
     },

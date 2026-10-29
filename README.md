@@ -69,8 +69,6 @@ Add to your `flake.nix`:
 - Custom LSP handler for bash: `man $cmd || $cmd -h || $cmd --help`
 - Learn new treesitter API
 - Explore FFI usage
-- Eval line/block of lua/fennel
-- vlime
 
 #### make stock vim better
 

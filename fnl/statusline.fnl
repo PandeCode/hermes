@@ -1,26 +1,5 @@
 (global Statusline {})
 
-(fn sbcl-pid []
-  (let [ps (io.popen "pidof sbcl")
-        pids (ps:read)]
-    (ps:close)
-    (if pids
-        (do
-          (var found false)
-          (each [_ pid (ipairs (vim.fn.split pids " ")) &until found]
-            (let [(ok? args) (pcall vim.fn.readfile (.. :/proc/ pid :/cmdline))]
-              (when (and ok?
-                         (vim.endswith (or (. args 1) "") "start-vlime.lisp\n"))
-                (set found pid))))
-          found)
-        false)))
-
-;; the statusline redraws on every cursor move, so pidof only runs on these
-(var sbcl-running? false)
-(vim.api.nvim_create_autocmd [:BufEnter :FocusGained :CursorHold]
-                             {:callback #(when (= vim.bo.filetype :lisp)
-                                           (set sbcl-running? (sbcl-pid)))})
-
 ; file, branch and client names are text, a % in them would be statusline code
 (fn esc [s]
   (pick-values 1 (s:gsub "%%" "%%%%")))
@@ -68,8 +47,8 @@
                 (each [ft_name ft_active (pairs source.filetypes)]
                   (when (and (= ft_name buf_ft) ft_active)
                     (add-name source.name)))))))
-        (when (and (= :lisp buf_ft) sbcl-running?)
-          (table.insert buf_client_names :sbcl))
+        (when (and (= :lisp buf_ft) (Utils.swank_running))
+          (table.insert buf_client_names :swank))
         (.. "[" (esc (table.concat buf_client_names ", ")) "]"))))
 
 ;; fnlfmt: skip
