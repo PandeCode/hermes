@@ -246,8 +246,6 @@ int main() {
 	{ "lua/plugins/*.lua", [[return {
 
 }]], { 2, 2 } },
-	{ ".direnv", [[use nix #use flake]], { 4, 2 } },
-
 	{
 		"jsconfig.json",
 		[[{
@@ -383,5 +381,5 @@ zig-out
 }
 
 for _, template in ipairs(templates) do
-	createTemplate(template[1], template[2], template[3])
+	createTemplate(template[1], template[2], template[3], template[4])
 end

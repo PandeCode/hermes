@@ -1,6 +1,7 @@
 ;; vim.secure keeps the trust database: it asks before the first run and again
-;; whenever the file changes
-(local sourced {})
+;; whenever the file changes. a file runs again once the cwd has left its
+;; project and come back, a :cd inside the project does not run it twice
+(var sourced {})
 
 (fn parent_dirs [path]
   (local dirs [path])
@@ -15,9 +16,10 @@
           (vim.notify "no Fennel runtime available" vim.log.levels.ERROR))
       ((assert (load contents (.. "@" path))))))
 
-(fn source-one [path]
-  (when (and (not (. sourced path)) (= (vim.fn.filereadable path) 1))
-    (tset sourced path true)
+(fn source-one [path before]
+  (when (= (vim.fn.filereadable path) 1)
+    (tset sourced path true))
+  (when (and (. sourced path) (not (. before path)))
     (let [contents (vim.secure.read path)]
       (when contents
         (vim.notify (.. "Sourcing custom config from: " path))
@@ -27,9 +29,11 @@
                         vim.log.levels.ERROR)))))))
 
 (fn source_custom_config []
-  (each [_ dir (ipairs (parent_dirs (vim.fn.getcwd)))]
-    (source-one (.. dir :/.nvimrc.lua))
-    (source-one (.. dir :/.nvimrc.fnl))))
+  (let [before sourced]
+    (set sourced {})
+    (each [_ dir (ipairs (parent_dirs (vim.fn.getcwd)))]
+      (source-one (.. dir :/.nvimrc.lua) before)
+      (source-one (.. dir :/.nvimrc.fnl) before))))
 
 (vim.api.nvim_create_autocmd :DirChanged
                              {:pattern "*"

@@ -94,8 +94,9 @@
   (vim.keymap.set :n (.. :<leader> i) #(Tabline.goto i)
                   {:desc (.. "Go to buffer " i)}))
 
-;; set by <leader>tt, so buffer changes don't bring the tabline back
-(var hidden false)
+;; set by <leader>tt, so buffer changes don't bring the tabline back. firenvim
+;; starts with it hidden
+(var hidden (= vim.g.started_by_firenvim true))
 
 (fn tabline-update []
   (let [bufs (listed-bufs)]

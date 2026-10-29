@@ -77,7 +77,7 @@
                                :indent {:enabled true}
                                :input {:enabled true}
                                :picker {:enabled true}
-                               :notifier {:enabled true}
+                               :notifier {:enabled false}
                                :quickfile {:enabled true}
                                :scope {:enabled true}
                                :scroll {:enabled true}
@@ -102,8 +102,9 @@
                     [:<leader>fli (sk :lsp_implementations) :lsp_implementations]
                     [:<leader>flr (sk :lsp_references) :lsp_references]
                     [:<leader>fls (sk :lsp_symbols) :lsp_symbols]
-                    [:<leader>nh Snacks.notifier.hide "Notifier Hide"]
-                    [:<leader>ns Snacks.notifier.show_history "Notifier Show"]])]
+                    ;; noice owns vim.notify
+                    [:<leader>nh #(vim.cmd "Noice dismiss") "Notifier Hide"]
+                    [:<leader>ns #(vim.cmd "Noice snacks") "Notifier Show"]])]
   (vim.keymap.set :n (. v 1) (. v 2) {:desc (. v 3)}))
 
 (rsetup :noice {:lsp {; override markdown rendering so that **cmp** and other plugins use **Treesitter**
@@ -139,8 +140,9 @@
                                {:mode [:n :x] :keys :g}
                                {:mode [:n :x] :keys :z}
                                {:mode [:n :x] :keys :<c-w>}
-                               {:mode [:n :x] :keys "'"}
-                               {:mode [:n :x] :keys "`"}
+                               ;; visual ' and ` wrap the selection (keymaps.fnl)
+                               {:mode :n :keys "'"}
+                               {:mode :n :keys "`"}
                                {:mode [:n :x] :keys "\""}]
                     :clues [(miniclue.gen_clues.marks)
                             (miniclue.gen_clues.registers)
@@ -245,8 +247,10 @@
 (vim.api.nvim_create_autocmd [:BufWritePre]
                              {:pattern "*"
                               :callback (fn []
-                                          (MiniTrailspace.trim)
-                                          (MiniTrailspace.trim_last_lines))})
+                                          ;; :w file from help or checkhealth
+                                          (when vim.bo.modifiable
+                                            (MiniTrailspace.trim)
+                                            (MiniTrailspace.trim_last_lines)))})
 
 ;; the directory init.lua was loaded from: the nix store copy, or a checkout
 (local hermes-dir

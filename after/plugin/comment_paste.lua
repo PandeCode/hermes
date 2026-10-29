@@ -22,7 +22,13 @@ function _G.duplicate_and_comment_lines()
     vim.api.nvim_win_set_cursor(0, { end_line + 1, cursor[2] })
 end
 
-vim.keymap.set({ 'n', 'x' }, 'yc', function()
+vim.keymap.set('n', 'yc', function()
+    vim.opt.operatorfunc = 'v:lua.duplicate_and_comment_lines'
+    return 'g@'
+end, { expr = true, desc = 'Duplicate selection and comment out the first instance' })
+
+-- a visual yc would make every visual y wait for timeoutlen
+vim.keymap.set('x', 'gyc', function()
     vim.opt.operatorfunc = 'v:lua.duplicate_and_comment_lines'
     return 'g@'
 end, { expr = true, desc = 'Duplicate selection and comment out the first instance' })

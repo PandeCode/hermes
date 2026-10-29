@@ -30,7 +30,8 @@
 ; (vim.keymap.del :i :<c-k>)
 ;
 
-(vim.api.nvim_create_user_command :Fnl
-                                  (fn [opts]
-                                    (vim.print (Fennel.eval opts.args)))
-                                  {:nargs "+"})
+(when Fennel
+  (vim.api.nvim_create_user_command :Fnl
+                                    (fn [opts]
+                                      (vim.print (Fennel.eval opts.args)))
+                                    {:nargs "+"}))

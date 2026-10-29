@@ -104,9 +104,6 @@
 ;; grr, a bare gr would make the builtin grn/gra/gri/grt/grx wait
 (n :grr #(snacks.picker.lsp_references) "[G]oto [R]eferences")
 (n :gI #(snacks.picker.lsp_implementations) "[G]oto [I]mplementation")
-;; TODO fix
-(n :<leader>lds #(snacks.picker.lsp_symbols) "[D]ocument [S]ymbols")
-
 (n :<leader>ws #(snacks.picker.lsp_workspace_symbols) "[W]orkspace [S]ymbols")
 
 (n :<leader>ei

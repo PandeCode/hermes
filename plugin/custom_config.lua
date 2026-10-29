@@ -17,9 +17,12 @@ local function run(path, contents)
     return assert(load(contents, ("@" .. path)))()
   end
 end
-local function source_one(path)
-  if (not sourced[path] and (vim.fn.filereadable(path) == 1)) then
+local function source_one(path, before)
+  if (vim.fn.filereadable(path) == 1) then
     sourced[path] = true
+  else
+  end
+  if (sourced[path] and not before[path]) then
     local contents = vim.secure.read(path)
     if contents then
       vim.notify(("Sourcing custom config from: " .. path))
@@ -37,9 +40,11 @@ local function source_one(path)
   end
 end
 local function source_custom_config()
+  local before = sourced
+  sourced = {}
   for _, dir in ipairs(parent_dirs(vim.fn.getcwd())) do
-    source_one((dir .. "/.nvimrc.lua"))
-    source_one((dir .. "/.nvimrc.fnl"))
+    source_one((dir .. "/.nvimrc.lua"), before)
+    source_one((dir .. "/.nvimrc.fnl"), before)
   end
   return nil
 end

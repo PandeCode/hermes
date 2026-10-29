@@ -18,8 +18,6 @@ local function run_command_on_text(cmd, mode)
 		selected_text = vim.api.nvim_get_current_line()
 	end
 
-	vim.print(selected_text)
-
 	local output = vim.fn.systemlist(cmd, selected_text)
 	if vim.v.shell_error ~= 0 then
 		vim.notify("Command failed with exit code: " .. vim.v.shell_error, vim.log.levels.ERROR)

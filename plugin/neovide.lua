@@ -1,3 +1,7 @@
+if not vim.g.neovide then
+	return
+end
+
 local cursor_vfx = { "railgun", "torpedo", "pixiedust", "sonicboom", "ripple", "wireframe" }
 
 vim.g.neovide_cursor_vfx_mode = cursor_vfx[math.random(1, #cursor_vfx)]
@@ -25,8 +29,11 @@ vim.g.neovide_confirm_quit = false -- true
 
 vim.g.neovide_floating_corner_radius = 0.5
 
-vim.g.neovide_title_background_color =
-	string.format("%x", vim.api.nvim_get_hl(0, { id = vim.api.nvim_get_hl_id_by_name("Normal") }).bg)
+-- transparent themes leave Normal without a bg
+local normal_bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg
+if normal_bg then
+	vim.g.neovide_title_background_color = string.format("%x", normal_bg)
+end
 
 vim.keymap.set("n", "<C-+>", function()
 	vim.g.neovide_scale_factor = vim.g.neovide_scale_factor + 0.1

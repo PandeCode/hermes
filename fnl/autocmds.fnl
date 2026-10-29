@@ -166,9 +166,14 @@
                                             (vim.fn.delete args.match))
                                           nil)})
 
+;; opened mid session (oil, a picker) other buffers are still open, some unsaved
+(fn only-pdf? [pdf-buf]
+  (accumulate [only true _ b (ipairs (vim.fn.getbufinfo {:buflisted 1}))]
+    (and only (or (= b.bufnr pdf-buf) (and (= b.name "") (= b.changed 0))))))
+
 ;; a pdf with a typst source next to it (typst watch writes main.pdf beside
 ;; main.typ) opens the source instead, the pdf buffer goes. a pdf without one
-;; opens in zathura, detached, and neovim quits
+;; opens in zathura, detached, and neovim quits when the pdf was all it had open
 (vim.api.nvim_create_autocmd [:BufReadPre :BufNewFile]
                              {:pattern "*.pdf"
                               :callback (fn [args]
@@ -189,5 +194,8 @@
                                                               (vim.fn.jobstart [:zathura
                                                                                 pdf]
                                                                                {:detach true})
-                                                              (vim.cmd "qa!"))))
+                                                              (if (only-pdf? args.buf)
+                                                                  (vim.cmd "qa!")
+                                                                  (vim.api.nvim_buf_delete args.buf
+                                                                                           {:force true})))))
                                             nil))})

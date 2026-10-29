@@ -8,7 +8,12 @@ local function gen_enum_funcs(enum_name, bufnr)
 	end
 	local cpp = ft == "cpp"
 
-	local root = vim.treesitter.get_parser(bufnr, ft):parse()[1]:root()
+	local parser = vim.treesitter.get_parser(bufnr, ft, { error = false })
+	if not parser then
+		vim.notify("No " .. ft .. " parser", vim.log.levels.ERROR)
+		return
+	end
+	local root = parser:parse()[1]:root()
 	local enum_data = vim.treesitter.query.parse(ft, [[
 	(enum_specifier
 		name: (type_identifier) @name (#eq? @name "]] .. enum_name .. [[")
@@ -28,7 +33,8 @@ local function gen_enum_funcs(enum_name, bufnr)
 		if name == "items" then
 			table.insert(items, vim.treesitter.get_node_text(node, bufnr))
 		elseif name == "enum" then
-			start_from = ({ node:range() })[3] + 2
+			-- below the enum and the line after it, an enum at the end of the file has no such line
+			start_from = math.min(({ node:range() })[3] + 2, vim.api.nvim_buf_line_count(bufnr))
 		end
 	end
 
@@ -43,7 +49,7 @@ local function gen_enum_funcs(enum_name, bufnr)
 		return cpp and enum_name .. "::" .. item or item
 	end
 
-	local valid = enum_name .. "::{" .. table.concat(items, ", ") .. "}"
+	local valid = (cpp and enum_name .. "::" or "") .. "{" .. table.concat(items, ", ") .. "}"
 	local err = cpp and 'throw std::invalid_argument("Must be valid type ' .. valid .. '");'
 		or 'fprintf(stderr, "Must be valid type ' .. valid .. '\\n"); abort();'
 
