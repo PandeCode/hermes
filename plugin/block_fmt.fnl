@@ -21,8 +21,7 @@
     (vim.api.nvim_feedkeys (vim.keycode :<esc>) :nx false)
     (when stop
       (vim.api.nvim_buf_set_lines 0 bottom bottom false [(.. indent stop)]))
-    (vim.api.nvim_buf_set_lines 0 (- top 1) (- top 1) false
-                                [(.. indent start)])))
+    (vim.api.nvim_buf_set_lines 0 (- top 1) (- top 1) false [(.. indent start)])))
 
 (macro wrap-format-stop-bind [filetypes start stop bind]
   `(let [fts# (if (= (type ,filetypes) :table) ,filetypes [,filetypes])]

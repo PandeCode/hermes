@@ -50,7 +50,8 @@
                            :if "@function.inner"
                            :ac "@class.outer"
                            :ic "@class.inner"})]
-  (vim.keymap.set [:x :o] key #(ts-select.select_textobject capture :textobjects)))
+  (vim.keymap.set [:x :o] key
+                  #(ts-select.select_textobject capture :textobjects)))
 
 (each [key [move capture] (pairs {"]m" [:goto_next_start "@function.outer"]
                                   "]]" [:goto_next_start "@class.outer"]
@@ -253,15 +254,14 @@
                                             (MiniTrailspace.trim_last_lines)))})
 
 ;; the directory init.lua was loaded from: the nix store copy, or a checkout
-(local hermes-dir
-       (vim.fs.dirname (: (. (debug.getinfo 1 :S) :source) :sub 2)))
+(local hermes-dir (vim.fs.dirname (: (. (debug.getinfo 1 :S) :source) :sub 2)))
 
 (rsetup :blink.cmp
         {:fuzzy {:implementation :prefer_rust}
          :keymap {:<C-k> {}}
          :signature {:enabled true :window {:show_documentation true}}
          :sources {:providers {:snippets {:opts {:search_paths [(.. hermes-dir
-                                                                       :/snippets)]}}}}
+                                                                    :/snippets)]}}}}
          :completion {:menu {:draw {:treesitter [:lsp]
                                     :columns [[:kind_icon]
                                               {1 :label
@@ -367,6 +367,7 @@
 
 ;; the opt plugins from nix/editor.nix. DeferredUIEnter is right after the
 ;; first screen is drawn, ft loads replay the FileType event for the buffer
+
 ;; fnlfmt: skip
 (lz.load [{1 :zig.vim :ft :zig}
           {1 :cornelis :ft :agda}

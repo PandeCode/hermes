@@ -100,7 +100,9 @@
 
 (fn tabline-update []
   (let [bufs (listed-bufs)]
-    (set vim.o.showtabline (if (and (not hidden) (> (length bufs) 1)) 2 0))))
+    (set vim.o.showtabline (if (and (not hidden) (> (length bufs) 1))
+                               2
+                               0))))
 
 (vim.api.nvim_create_autocmd [:BufAdd :BufDelete :BufEnter]
                              {:callback #(tabline-update)})

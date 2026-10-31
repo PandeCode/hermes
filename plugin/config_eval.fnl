@@ -1,12 +1,14 @@
 (fn eval [c]
   (case vim.bo.ft
     ;; try it as an expression first, like the lua repl
-    :lua (let [expr (loadstring (.. "return " c))
-               (chunk err) (loadstring c)]
-           ((assert (or expr chunk) err)))
-    :vim (. (vim.api.nvim_exec2 c {:output true}) :output)
-    :fennel (if Fennel (Fennel.eval c)
-                (vim.notify "no Fennel" vim.log.levels.WARN))))
+    :lua
+    (let [expr (loadstring (.. "return " c))
+          (chunk err) (loadstring c)]
+      ((assert (or expr chunk) err)))
+    :vim
+    (. (vim.api.nvim_exec2 c {:output true}) :output)
+    :fennel
+    (if Fennel (Fennel.eval c) (vim.notify "no Fennel" vim.log.levels.WARN))))
 
 (fn eval_file []
   (case vim.bo.ft

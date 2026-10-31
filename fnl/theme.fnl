@@ -52,15 +52,12 @@
   (vim.uv.fs_event_start fse stylix-dir {}
                          (vim.schedule_wrap (fn [err filename]
                                               (when (and (not err)
-                                                         (= filename
-                                                            :style.lua))
+                                                         (= filename :style.lua))
                                                 (apply_theme (get_base16))
                                                 (vim.notify "Switched Themes"
                                                             vim.log.levels.INFO)))))
-  (vim.notify (.. "Now watching " stylix-dir
-                  "/style.lua for external changes")
+  (vim.notify (.. "Now watching " stylix-dir "/style.lua for external changes")
               vim.log.levels.INFO))
-
 
 (fn set_hl [gp opt] (vim.api.nvim_set_hl 0 gp opt))
 

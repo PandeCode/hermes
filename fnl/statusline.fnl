@@ -34,10 +34,12 @@
       (do
         (local buf_ft vim.bo.filetype)
         (local buf_client_names [])
+
         (fn add-name [name]
           (when (and (not (vim.endswith name :_no_show))
                      (not (vim.tbl_contains buf_client_names name)))
             (table.insert buf_client_names name)))
+
         (each [_ client (pairs buf_clients)]
           (add-name client.name))
         (let [(ok? null_ls) (pcall require :null-ls)]
@@ -115,7 +117,10 @@
                      (pcall vim.fn.searchcount {:maxcount 999 :timeout 20}))]
     (if (and ok? sc.total (> sc.total 0))
         (.. "%#Comment#[" sc.current "/"
-            (case sc.incomplete 1 "?" 2 (.. ">" sc.maxcount) _ sc.total) "]%*")
+            (case sc.incomplete
+              1 "?"
+              2 (.. ">" sc.maxcount)
+              _ sc.total) "]%*")
         "")))
 
 (fn wordcount []
@@ -130,8 +135,7 @@
     (if vim.b.typst_watch
         (.. (if (> errors 0)
                 (shl :DiagnosticError (.. "typst " errors))
-                (shl :DiagnosticOk :typst))
-            " "
+                (shl :DiagnosticOk :typst)) " "
             (shl (if vim.b.typst_viewer :DiagnosticOk :Comment) :zathura)
             (if vim.b.typst_mode (shl :DiagnosticInfo " auto") ""))
         "")))
@@ -149,7 +153,7 @@
     (.. "%#Comment#" (if (= dir ".") "" (.. (esc dir) "/")) "%*"
         (sshl hl (.. icon " " (esc name))) " "
         (if vim.bo.modified (shl :WarningMsg "●") "")
-        (if vim.bo.readonly (shl :DiagnosticError "🔒")                                     ""))))
+        (if vim.bo.readonly (shl :DiagnosticError "🔒") ""))))
 
 ;; fnlfmt: skip
 (fn Statusline.active []

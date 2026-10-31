@@ -99,12 +99,10 @@
                        :chmodx :Chmodx
                        :rmf :Rmf
                        :fnl :Fnl})]
-  (vim.keymap.set :ca from
-                  #(if (and (= (vim.fn.getcmdtype) ":")
-                            (= (vim.fn.getcmdline) from))
-                       to
-                       from)
-                  {:expr true}))
+  (vim.keymap.set :ca from #(if (and (= (vim.fn.getcmdtype) ":")
+                                     (= (vim.fn.getcmdline) from))
+                                to
+                                from) {:expr true}))
 
 ;; https://www.reddit.com/r/neovim/comments/1jpbc7s/disable_virtual_text_if_there_is_diagnostic_in/
 
@@ -132,8 +130,7 @@
                                                            lines.current_line
                                                            (not (vim.tbl_isempty (vim.diagnostic.get 0
                                                                                                      {: lnum}))))]
-                                            (if (and hide?
-                                                     (= og_virt_text nil))
+                                            (if (and hide? (= og_virt_text nil))
                                                 (do
                                                   (set og_virt_text
                                                        (. (vim.diagnostic.config)
@@ -175,27 +172,30 @@
 ;; main.typ) opens the source instead, the pdf buffer goes. a pdf without one
 ;; opens in zathura, detached, and neovim quits when the pdf was all it had open
 (vim.api.nvim_create_autocmd [:BufReadPre :BufNewFile]
-                             {:pattern "*.pdf"
+                             {:pattern :*.pdf
                               :callback (fn [args]
                                           (let [pdf (vim.fn.fnamemodify args.file
-                                                                         ":p")
+                                                                        ":p")
                                                 typ (.. (vim.fn.fnamemodify pdf
                                                                             ":r")
-                                                        ".typ")]
-                                            (when (= 1 (vim.fn.filereadable typ))
+                                                        :.typ)]
+                                            (when (= 1
+                                                     (vim.fn.filereadable typ))
                                               (vim.schedule (fn []
                                                               (vim.cmd.edit typ)
                                                               (when (vim.api.nvim_buf_is_valid args.buf)
                                                                 (vim.api.nvim_buf_delete args.buf
                                                                                          {:force true})))))
-                                            (when (and (= 0 (vim.fn.filereadable typ))
-                                                       (= 1 (vim.fn.filereadable pdf)))
+                                            (when (and (= 0
+                                                          (vim.fn.filereadable typ))
+                                                       (= 1
+                                                          (vim.fn.filereadable pdf)))
                                               (vim.schedule (fn []
                                                               (vim.fn.jobstart [:zathura
                                                                                 pdf]
                                                                                {:detach true})
                                                               (if (only-pdf? args.buf)
-                                                                  (vim.cmd "qa!")
+                                                                  (vim.cmd :qa!)
                                                                   (vim.api.nvim_buf_delete args.buf
                                                                                            {:force true})))))
                                             nil))})

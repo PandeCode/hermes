@@ -27,16 +27,16 @@
 ;; debug key or command
 (fn setup []
   (local dap (require :dap))
-
-  ((. (require :nvim-dap-virtual-text) :setup))
-
-  ; (local frontend (require :dapui))
+  ((. (require :nvim-dap-virtual-text) :setup)) ; (local frontend (require :dapui))
   (local frontend (require :dap-view))
   (frontend.setup {:winbar {:controls {:enabled true}}})
 
   (fn dap.listeners.before.attach.dapui_config [] (frontend.open))
+
   (fn dap.listeners.before.launch.dapui_config [] (frontend.open))
+
   (fn dap.listeners.before.event_terminated.dapui_config [] (frontend.close))
+
   (fn dap.listeners.before.event_exited.dapui_config [] (frontend.close))
 
   ;; only the web and full profiles ship the firefox adapter
@@ -46,7 +46,6 @@
            {:type :executable
             :command :node
             :args [(.. firefox-debug :/dist/adapter.bundle.js)]})))
-
   (set dap.configurations.typescript
        [{:name "Debug Firefox"
          :type :firefox
@@ -62,28 +61,22 @@
          :url "http://localhost:8080"
          :webRoot "${workspaceFolder}"
          :firefoxExecutable (or (os.getenv :BROWSER) :firefox)}])
-
   (set dap.configurations.javascript dap.configurations.typescript)
   (set dap.configurations.javascriptreact dap.configurations.typescript)
   (set dap.configurations.typescriptreact dap.configurations.typescript)
-
   (set dap.adapters.gdb {:type :executable
                          :command :gdb
                          :args [:--interpreter=dap
                                 :--eval-command
                                 "set print pretty on"]})
-
   (set dap.adapters.rust-gdb
        {:type :executable
         :command :rust-gdb
         :args [:--interpreter=dap :--eval-command "set print pretty on"]})
-
   (set dap.configurations.c (mk :gdb))
   (set dap.configurations.cpp dap.configurations.c)
   (set dap.configurations.zig dap.configurations.c)
-
   (set dap.configurations.rust (mk :rust-gdb))
-
   ;; K is dap-view hover while a session runs; every K it replaced, global
   ;; and buffer-local, comes back with mapset when the session ends. sessions
   ;; counts open ones, a child session sends its own initialized and
@@ -115,31 +108,25 @@
               (vim.fn.mapset keymap)
               ;; mapset puts buffer maps on the current buffer
               (when (vim.api.nvim_buf_is_valid keymap.buffer)
-                (vim.api.nvim_buf_call keymap.buffer
-                                       #(vim.fn.mapset keymap)))))
+                (vim.api.nvim_buf_call keymap.buffer #(vim.fn.mapset keymap)))))
         (set keymap_restore []))))
 
   (vim.keymap.set :n :<leader>db dap.toggle_breakpoint
                   {:desc "Dap toggle_breakpoint"})
-
   (vim.keymap.set :n :<leader>dc dap.continue {:desc "Dap continue"})
   (vim.keymap.set :n :<leader>do dap.step_over {:desc "Dap step_over"})
   (vim.keymap.set :n :<leader>di dap.step_into {:desc "Dap step_into"})
   (vim.keymap.set :n :<leader>dt dap.terminate {:desc "Dap terminate"})
   (vim.keymap.set :n :<leader>dr dap.repl.open {:desc "Dap repl.open"})
-
   (vim.keymap.set :n :<M-c> dap.continue {:desc "Dap continue."})
   (vim.keymap.set :n :<M-o> dap.step_over {:desc "Dap step_over."})
   (vim.keymap.set :n :<M-i> dap.step_into {:desc "Dap step_into."})
   (vim.keymap.set :n :<M-t> dap.terminate {:desc "Dap terminate."})
   (vim.keymap.set :n :<M-r> dap.repl.open {:desc "Dap repl.open."})
-
   (vim.keymap.set :n :<leader>dui frontend.open {:desc "Dap ui open"})
   (vim.keymap.set :n :<leader>dux frontend.close {:desc "Dap ui close"})
-  (vim.keymap.set :n :<leader>det
-                  (. (require :nvim-dap-virtual-text) :toggle)
+  (vim.keymap.set :n :<leader>det (. (require :nvim-dap-virtual-text) :toggle)
                   {:desc "Dap virt text toggle"})
-
   (each [name sign (pairs {:DapBreakpoint {:text ""
                                            :texthl :DiagnosticError
                                            :linehl ""
