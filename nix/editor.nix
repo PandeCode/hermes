@@ -38,8 +38,6 @@ let
 
     oil-nvim
 
-    cord-nvim
-
     vim-abolish # tpope is the og goat
     vim-eunuch
   ];

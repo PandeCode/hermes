@@ -61,7 +61,6 @@
                           null_ls.builtins.diagnostics.statix
                           null_ls.builtins.diagnostics.deadnix
                           null_ls.builtins.diagnostics.fish
-                          null_ls.builtins.hover.dictionary
                           null_ls.builtins.hover.printenv
                           null_ls.builtins.completion.spell
                           null_ls.builtins.code_actions.statix]})
@@ -74,13 +73,14 @@
   (local opts (or _opts {}))
   (local bufnr (or opts.bufnr 0))
   (local get_available (. (require :null-ls.sources) :get_available))
-  (local formatters
-         (get_available (. vim.bo bufnr :filetype) null_ls.methods.FORMATTING))
+  (local formatters (get_available (. vim.bo bufnr :filetype)
+                                   null_ls.methods.FORMATTING))
   (local null_ls_formats? (not= nil (. formatters 1)))
   (vim.lsp.buf.format {: bufnr
                        :async (or opts.async false)
                        :timeout_ms (or opts.timeout_ms 1000)
-                       :filter #(or (not null_ls_formats?) (= $.name :null-ls))}))
+                       :filter #(or (not null_ls_formats?)
+                                    (= $.name :null-ls))}))
 
 (vim.api.nvim_create_autocmd :BufWritePre
                              {:pattern "*"
