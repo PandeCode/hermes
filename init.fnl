@@ -26,6 +26,7 @@
 
 (include :fnl.lsp)
 (include :fnl.dap)
+(include :fnl.mcu)
 
 ; (vim.keymap.del :i :<c-k>)
 ;

@@ -1504,11 +1504,468 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
   return require("lz.n").load({"nvim-dap", keys = {"<leader>db", "<leader>dc", "<leader>do", "<leader>di", "<leader>dt", "<leader>dr", "<M-c>", "<M-o>", "<M-i>", "<M-t>", "<M-r>", "<leader>dui", "<leader>dux", "<leader>det"}, cmd = {"DapContinue", "DapNew", "DapToggleBreakpoint"}, before = _225_, after = setup})
 end
 require("fnl.dap")
+package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
+  Mcu = {}
+  local defaults = {server = "pyocd gdbserver", ready = "listening on port", port = 3333, gdb = "gdb", reset = {"monitor reset halt"}, run_to = "main", rtt = {port = 19021, channel = 0}, filetypes = {"c", "cpp", "asm", "zig"}}
+  local config = nil
+  local server = nil
+  local log = nil
+  local function notify(msg, level)
+    return vim.notify(("mcu: " .. msg), level)
+  end
+  local function elf()
+    local function _226_()
+      if (type(config.elf) == "function") then
+        return config.elf()
+      else
+        return config.elf
+      end
+    end
+    return vim.fs.joinpath(config.root, _226_())
+  end
+  local function server_output(_, data)
+    vim.api.nvim_buf_set_lines(log, -1, -1, false, data)
+    if (server and not server.ready) then
+      server.tail = (server.tail .. table.concat(data, "\n"))
+      if string.find(server.tail, config.ready, 1, true) then
+        server.ready = true
+        for _0, f in ipairs(server.waiting) do
+          f()
+        end
+      else
+      end
+      server.tail = (server.tail:match("[^\n]*$") or "")
+      return nil
+    else
+      return nil
+    end
+  end
+  local function server_exit(_, code)
+    if (server and not server.stopping and (code ~= 0)) then
+      notify(("gdb server exited with " .. code .. ", see :McuServer"), vim.log.levels.ERROR)
+    else
+    end
+    server = nil
+    return nil
+  end
+  local function server_start(on_ready)
+    if not (log and vim.api.nvim_buf_is_valid(log)) then
+      log = vim.api.nvim_create_buf(false, true)
+      vim.api.nvim_buf_set_name(log, "mcu://gdbserver")
+    else
+    end
+    if not server then
+      server = {tail = "", waiting = {on_ready}, ready = false}
+      server.job = vim.fn.jobstart(config.server, {cwd = config.root, on_stdout = server_output, on_stderr = server_output, on_exit = server_exit})
+      return nil
+    elseif server.ready then
+      return on_ready()
+    else
+      return table.insert(server.waiting, on_ready)
+    end
+  end
+  local function server_toggle(opts)
+    if (server and opts.bang) then
+      server.stopping = true
+      return vim.fn.jobstop(server.job)
+    else
+      local function _232_()
+        return notify("gdb server up")
+      end
+      server_start(_232_)
+      return vim.cmd(("botright sbuffer " .. log))
+    end
+  end
+  local function repl(session, cmd)
+    local err, res = session:request("evaluate", {expression = cmd, context = "repl"})
+    local dap_repl = require("dap.repl")
+    dap_repl.append(("> " .. cmd))
+    if err then
+      dap_repl.append(err.message)
+      return nil
+    else
+      if (res.result ~= "") then
+        dap_repl.append(vim.trim(res.result))
+      else
+      end
+      return res.result
+    end
+  end
+  local function on_attach(session)
+    if session.config.mcu_load then
+      if repl(session, "load") then
+        for _, cmd in ipairs(config.reset) do
+          repl(session, cmd)
+        end
+        repl(session, "maintenance flush register-cache")
+        if config.run_to then
+          repl(session, ("tbreak " .. config.run_to))
+          return session:request("continue", {threadId = 1})
+        else
+          return nil
+        end
+      else
+        return nil
+      end
+    else
+      return nil
+    end
+  end
+  local function mcu_session_3f(session)
+    return (session and (session.config.type == "mcu"))
+  end
+  local function configurations()
+    return {{name = "Flash and debug", type = "mcu", request = "attach", target = ("localhost:" .. config.port), program = elf, mcu_load = true}, {name = "Attach to the running board", type = "mcu", request = "attach", target = ("localhost:" .. config.port), program = elf, mcu_load = false}}
+  end
+  local periph = {buf = nil, list = nil, open = {}, text = {}}
+  local function monitor(session, cmd)
+    local err, res = session:request("evaluate", {expression = ("monitor " .. cmd), context = "repl"})
+    if err then
+      return ("error: " .. err.message)
+    else
+      return res.result
+    end
+  end
+  local function periph_lines()
+    local lines = {}
+    local rows = {}
+    local function add(text, row)
+      table.insert(lines, text)
+      return table.insert(rows, row)
+    end
+    local function sign(key)
+      if periph.open[key] then
+        return "- "
+      else
+        return "+ "
+      end
+    end
+    add((sign("fault") .. "Faults"), {key = "fault"})
+    if periph.open.fault then
+      for _, l in ipairs(vim.split((periph.text.fault or ""), "\n", {trimempty = true})) do
+        add(("  " .. l), {})
+      end
+    else
+    end
+    for _, p in ipairs((periph.list or {})) do
+      add((sign(p.name) .. p.name), {key = p.name})
+      if periph.open[p.name] then
+        for _0, l in ipairs(vim.split((periph.text[p.name] or ""), "\n", {trimempty = true})) do
+          local reg = l:match("^%S+%.(%S+) @")
+          local key = (reg and (p.name .. "." .. reg))
+          local function _242_()
+            if key then
+              return {key = key}
+            else
+              return {}
+            end
+          end
+          add(("    " .. l), _242_())
+          if (key and periph.open[key]) then
+            for _1, f in ipairs(vim.split((periph.text[key] or ""), "\n", {trimempty = true})) do
+              if f:match("^%s") then
+                add(("      " .. vim.trim(f)), {})
+              else
+              end
+            end
+          else
+          end
+        end
+      else
+      end
+    end
+    return lines, rows
+  end
+  local function periph_render()
+    if (periph.buf and vim.api.nvim_buf_is_valid(periph.buf)) then
+      local lines, rows = periph_lines()
+      periph.rows = rows
+      vim.bo[periph.buf]["modifiable"] = true
+      vim.api.nvim_buf_set_lines(periph.buf, 0, -1, false, lines)
+      vim.bo[periph.buf]["modifiable"] = false
+      return nil
+    else
+      return nil
+    end
+  end
+  local function periph_read(session, key)
+    local function _247_()
+      if (key == "fault") then
+        return "show fault"
+      elseif key:find(".", 1, true) then
+        return ("rr -p -f " .. key)
+      else
+        return ("rr -p " .. key)
+      end
+    end
+    periph.text[key] = monitor(session, _247_())
+    return nil
+  end
+  local function periph_list(session)
+    local out = monitor(session, "show peripherals")
+    do
+      local tbl_26_ = {}
+      local i_27_ = 0
+      for line in out:gmatch("[^\n]+") do
+        local val_28_
+        do
+          local name = line:match("^%s*0x%x+:%s+(%S+)")
+          if name then
+            val_28_ = {name = name}
+          else
+            val_28_ = nil
+          end
+        end
+        if (nil ~= val_28_) then
+          i_27_ = (i_27_ + 1)
+          tbl_26_[i_27_] = val_28_
+        else
+        end
+      end
+      periph.list = tbl_26_
+    end
+    return nil
+  end
+  local function periph_refresh()
+    local session = require("dap").session()
+    if (mcu_session_3f(session) and session.stopped_thread_id) then
+      local function _250_()
+        if not periph.list then
+          periph_list(session)
+        else
+        end
+        for key, _ in pairs(periph.open) do
+          periph_read(session, key)
+        end
+        return periph_render()
+      end
+      return coroutine.wrap(_250_)()
+    else
+      return nil
+    end
+  end
+  local function periph_toggle()
+    local row = periph.rows[vim.fn.line(".")]
+    local key = (row and row.key)
+    if key then
+      local _253_
+      if periph.open[key] then
+        _253_ = nil
+      else
+        _253_ = true
+      end
+      periph.open[key] = _253_
+      if periph.open[key] then
+        return periph_refresh()
+      else
+        return periph_render()
+      end
+    else
+      return nil
+    end
+  end
+  local function periph_buffer()
+    local buf = vim.api.nvim_create_buf(false, true)
+    periph.buf = buf
+    vim.api.nvim_buf_set_name(buf, "mcu://peripherals")
+    vim.bo[buf]["filetype"] = "mcu-peripherals"
+    vim.keymap.set("n", "<CR>", periph_toggle, {buffer = buf, desc = "Open or close"})
+    vim.keymap.set("n", "r", periph_refresh, {buffer = buf, desc = "Read again"})
+    periph_render()
+    return buf
+  end
+  local rtt = {buf = nil, chan = nil, tcp = nil, up = false}
+  local function rtt_write(text)
+    if rtt.chan then
+      return vim.api.nvim_chan_send(rtt.chan, (text:gsub("\r?\n", "\r\n")))
+    else
+      return nil
+    end
+  end
+  local function rtt_connect()
+    local tcp = vim.uv.new_tcp()
+    rtt.tcp = tcp
+    local function _258_(err)
+      if err then
+        local function _259_()
+          return rtt_write(("rtt: " .. err .. "\n"))
+        end
+        return vim.schedule(_259_)
+      else
+        local function _260_(_, data)
+          if data then
+            local function _261_()
+              return rtt_write(data)
+            end
+            return vim.schedule(_261_)
+          else
+            return nil
+          end
+        end
+        return tcp:read_start(_260_)
+      end
+    end
+    return tcp:connect("127.0.0.1", config.rtt.port, _258_)
+  end
+  local function rtt_start(session)
+    rtt.up = "trying"
+    local err, addr = session:request("evaluate", {expression = "(unsigned long)&_SEGGER_RTT", context = "watch"})
+    local _, size
+    if addr then
+      _, size = session:request("evaluate", {expression = "sizeof(_SEGGER_RTT)", context = "watch"})
+    else
+      _, size = nil
+    end
+    if (err and err.message:find("No symbol", 1, true)) then
+      rtt_write("no _SEGGER_RTT in the elf\n")
+      rtt.up = "none"
+      return nil
+    elseif not size then
+      rtt.up = false
+      return nil
+    else
+      local out = (monitor(session, string.format("rtt setup %s %s SEGGER RTT", addr.result, size.result)) .. monitor(session, "rtt start"))
+      local found = out:find("Found RTT control block", 1, true)
+      if found then
+        monitor(session, string.format("rtt server start %d %d", config.rtt.port, config.rtt.channel))
+        rtt_connect()
+      else
+      end
+      if found then
+        rtt.up = true
+      else
+        rtt.up = false
+      end
+      return nil
+    end
+  end
+  local function rtt_close()
+    if rtt.tcp then
+      rtt.tcp:close()
+      rtt.tcp = nil
+    else
+    end
+    rtt.up = false
+    return nil
+  end
+  local function rtt_buffer()
+    local buf = vim.api.nvim_create_buf(false, true)
+    rtt.buf = buf
+    local function _269_(_, _0, _1, data)
+      if rtt.tcp then
+        return rtt.tcp:write(data)
+      else
+        return nil
+      end
+    end
+    rtt.chan = vim.api.nvim_open_term(buf, {on_input = _269_})
+    return buf
+  end
+  local function on_stopped(session)
+    periph_refresh()
+    if (rtt.buf and not rtt.up) then
+      local function _271_()
+        return rtt_start(session)
+      end
+      return coroutine.wrap(_271_)()
+    else
+      return nil
+    end
+  end
+  local function dap_setup()
+    local dap = require("dap")
+    local view = require("dap-view")
+    local sections = require("dap-view.setup").config.winbar.sections
+    dap.adapters.mcu = function(callback, cfg)
+      local adapter = {type = "executable", command = config.gdb, args = {"--interpreter=dap", "--eval-command", "set print pretty on"}}
+      local start
+      local function _273_()
+        local function _274_()
+          return callback(adapter)
+        end
+        return server_start(_274_)
+      end
+      start = _273_
+      if cfg.mcu_load then
+        return Utils.build(start, config.build)
+      else
+        return start()
+      end
+    end
+    for _, ft in ipairs(config.filetypes) do
+      dap.configurations[ft] = configurations()
+    end
+    view.register_view("peripherals", {label = "Peripherals", keymap = "P", buffer = periph_buffer, action = periph_refresh})
+    local function _276_()
+      local session = dap.session()
+      if mcu_session_3f(session) then
+        return on_stopped(session)
+      else
+        return nil
+      end
+    end
+    view.register_view("rtt", {label = "RTT", keymap = "O", buffer = rtt_buffer, action = _276_})
+    if not vim.tbl_contains(sections, "peripherals") then
+      view.setup({winbar = {sections = vim.list_extend(vim.deepcopy(sections), {"peripherals", "rtt"})}})
+    else
+    end
+    dap.listeners.after.event_stopped.mcu = function(session, body)
+      if mcu_session_3f(session) then
+        if (body.reason == "attach") then
+          local function _279_()
+            return on_attach(session)
+          end
+          return coroutine.wrap(_279_)()
+        else
+          return on_stopped(session)
+        end
+      else
+        return nil
+      end
+    end
+    dap.listeners.after.event_terminated.mcu = function(session)
+      if mcu_session_3f(session) then
+        rtt_close()
+        periph.list = nil
+        return nil
+      else
+        return nil
+      end
+    end
+    return dap.listeners.after.event_terminated.mcu
+  end
+  Mcu.setup = function(opts)
+    config = vim.tbl_extend("force", defaults, {root = vim.fn.getcwd()}, opts)
+    vim.g.build_cmd = config.build
+    vim.g.run_cmd = config.flash
+    vim.api.nvim_create_autocmd("User", {group = vim.api.nvim_create_augroup("mcu", {clear = true}), pattern = "DapSetup", callback = dap_setup})
+    if package.loaded.dap then
+      dap_setup()
+    else
+    end
+    vim.api.nvim_create_user_command("McuServer", server_toggle, {bang = true, desc = "Start the gdb server and show its log, ! stops it"})
+    if config.serial then
+      local function _284_()
+        return Utils.open_tmp_term(config.serial)
+      end
+      vim.api.nvim_create_user_command("McuSerial", _284_, {desc = "Serial console in a terminal"})
+      vim.keymap.set("n", "<leader>mu", ":McuSerial<CR>", {desc = "Mcu serial"})
+    else
+    end
+    local function _286_()
+      require("lz.n").trigger_load("nvim-dap")
+      return require("dap").run(configurations()[1])
+    end
+    return vim.keymap.set("n", "<leader>dm", _286_, {desc = "Dap mcu flash and debug"})
+  end
+  return Mcu.setup
+end
+require("fnl.mcu")
 if Fennel then
-  local function _226_(opts)
+  local function _287_(opts)
     return vim.print(Fennel.eval(opts.args))
   end
-  return vim.api.nvim_create_user_command("Fnl", _226_, {nargs = "+"})
+  return vim.api.nvim_create_user_command("Fnl", _287_, {nargs = "+"})
 else
   return nil
 end
