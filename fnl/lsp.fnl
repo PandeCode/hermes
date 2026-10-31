@@ -109,7 +109,10 @@
    #(vim.lsp.inlay_hint.enable (not (vim.lsp.inlay_hint.is_enabled)))
    "Toggle Inlay")
 
-(n :K noice.hover "Hover Documentation")
+;; khover shows a rendered diagram when there is one under the cursor
+(local khover (require :khover))
+(khover.setup {:hover noice.hover})
+(n :K khover.hover "Hover Documentation")
 ;; TODO fix
 ;; nmap("<C-k>", noice.signature, "Signature Documentation")
 ;; TODO fix

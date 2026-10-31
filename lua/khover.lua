@@ -10,6 +10,12 @@
 --     kind = 'typst',             -- or 'png' (a path) or 'markdown'
 --   })
 --
+-- filetype can also be a list, or '*' for every buffer. find(buf, row, col)
+-- can stand in for query when the text is not one node, and a provider
+-- without cmd shows its text as is. kind 'typst_doc' renders a whole typst
+-- document instead of an equation, and 'svg' takes an svg and renders it
+-- through typst too
+--
 -- images are drawn with vim.ui.img, which needs nvim 0.13 and a terminal
 -- with the kitty graphics protocol. inside tmux they go through as kitty
 -- unicode placeholders instead, see placeholders()
@@ -24,13 +30,17 @@ M.config = {
 	cell = { width = 10, height = 20 },
 	max_width = 80,
 	border = "rounded",
+	-- the hover K falls back to when an lsp client is attached, nil for
+	-- vim.lsp.buf.hover
+	hover = nil,
 }
 
 ---@class khover.Provider
----@field filetype string
----@field query string tree-sitter query with a @text capture
----@field cmd string[] gets the text on stdin, prints the result
----@field kind 'typst'|'png'|'markdown'
+---@field filetype string|string[]
+---@field query? string tree-sitter query with a @text capture
+---@field find? fun(buf: integer, row: integer, col: integer): string? the text at a 0-based position
+---@field cmd? string[]|fun(): string[] gets the text on stdin, prints the result
+---@field kind 'typst'|'typst_doc'|'svg'|'png'|'markdown'
 ---@field text? fun(s: string): string turns the captured text into the input
 ---@field cwd? string
 
@@ -47,16 +57,23 @@ end
 
 ---@param p khover.Provider
 function M.register(p)
-	providers[p.filetype] = providers[p.filetype] or {}
-	table.insert(providers[p.filetype], p)
+	local filetypes = type(p.filetype) == "table" and p.filetype or { p.filetype }
+	for _, ft in ipairs(filetypes) do
+		providers[ft] = providers[ft] or {}
+		table.insert(providers[ft], p)
+	end
+	if vim.tbl_contains(filetypes, "*") then
+		vim.keymap.set("n", "K", M.hover, { desc = "khover" })
+		return
+	end
 	vim.api.nvim_create_autocmd("FileType", {
-		pattern = p.filetype,
+		pattern = filetypes,
 		callback = function(ev)
 			map(ev.buf)
 		end,
 	})
 	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-		if vim.bo[buf].filetype == p.filetype then
+		if vim.tbl_contains(filetypes, vim.bo[buf].filetype) then
 			map(buf)
 		end
 	end
@@ -64,6 +81,10 @@ end
 
 -- the text of the provider's @text capture under the cursor
 local function capture(buf, p)
+	if p.find then
+		local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+		return p.find(buf, row - 1, col)
+	end
 	local ok, parser = pcall(vim.treesitter.get_parser, buf)
 	if not ok or not parser then
 		return nil
@@ -528,28 +549,50 @@ local function hex(n)
 	return string.format("#%06x", n)
 end
 
-local function typst(src)
+local function cache()
+	local dir = vim.fn.stdpath("cache") .. "/khover"
+	vim.fn.mkdir(dir, "p")
+	return dir
+end
+
+-- body is typst markup, compiled to a png named after the document so the
+-- same text is only rendered once
+local function typst(body)
 	local fg = vim.api.nvim_get_hl(0, { name = "Normal", link = false }).fg or 0xffffff
 	local doc = table.concat({
 		"#set page(width: auto, height: auto, margin: 4pt, fill: none)",
 		'#set text(size: 12pt, fill: rgb("' .. hex(fg) .. '"))',
-		"$ " .. src .. " $",
+		body,
 	}, "\n")
-	local dir = vim.fn.stdpath("cache") .. "/khover"
-	vim.fn.mkdir(dir, "p")
+	local dir = cache()
 	local png = dir .. "/" .. vim.fn.sha256(doc) .. ".png"
 	if vim.uv.fs_stat(png) then
 		return image(png)
 	end
-	local cmd = { M.config.typst, "compile", "--ppi", tostring(M.config.ppi), "-", png }
+	local cmd = { M.config.typst, "compile", "--root", dir, "--ppi", tostring(M.config.ppi), "-", png }
 	run(cmd, doc, nil, function()
 		image(png)
 	end)
 end
 
+-- typst draws svgs too, which saves another renderer and its fonts. the svg
+-- goes in a file, an argument could be too long for a big one
+local function svg(data)
+	local name = vim.fn.sha256(data) .. ".svg"
+	local path = cache() .. "/" .. name
+	if not vim.uv.fs_stat(path) then
+		vim.fn.writefile(vim.split(data, "\n"), path)
+	end
+	typst('#image("/' .. name .. '")')
+end
+
 local function show(p, out)
 	if p.kind == "typst" then
-		typst(vim.trim(out))
+		typst("$ " .. vim.trim(out) .. " $")
+	elseif p.kind == "typst_doc" then
+		typst(out)
+	elseif p.kind == "svg" then
+		svg(out)
 	elseif p.kind == "png" then
 		image(vim.trim(out))
 	else
@@ -560,20 +603,25 @@ end
 -- K: the first provider whose text is under the cursor, or the usual K
 function M.hover()
 	local buf = vim.api.nvim_get_current_buf()
-	for _, p in ipairs(providers[vim.bo[buf].filetype] or {}) do
+	local candidates = vim.list_extend(vim.list_slice(providers[vim.bo[buf].filetype] or {}), providers["*"] or {})
+	for _, p in ipairs(candidates) do
 		local text = capture(buf, p)
 		if text then
 			if p.text then
 				text = p.text(text)
 			end
-			run(p.cmd, text, p.cwd, function(out)
+			if not p.cmd then
+				return show(p, text)
+			end
+			local cmd = type(p.cmd) == "function" and p.cmd() or p.cmd
+			run(cmd, text, p.cwd, function(out)
 				show(p, out)
 			end)
 			return
 		end
 	end
 	if #vim.lsp.get_clients({ bufnr = buf, method = "textDocument/hover" }) > 0 then
-		vim.lsp.buf.hover()
+		(M.config.hover or vim.lsp.buf.hover)()
 	else
 		vim.cmd("normal! K")
 	end
