@@ -1,0 +1,92 @@
+{
+    "signal": {
+        "prefix": "signal",
+        "body": [
+            "{ signal: [",
+            "\t$0",
+            "] }"
+        ],
+        "description": "signal diagram"
+    },
+    "clk": {
+        "prefix": "clk",
+        "body": [
+            "{ name: \"${1:clk}\", wave: \"${2:p.......}\" },"
+        ],
+        "description": "clock lane, p and n for edges, . holds"
+    },
+    "wave": {
+        "prefix": "wave",
+        "body": [
+            "{ name: \"${1:sig}\", wave: \"${2:0.1..0..}\" },"
+        ],
+        "description": "lane, 0 1 x z levels, . holds"
+    },
+    "data": {
+        "prefix": "data",
+        "body": [
+            "{ name: \"${1:bus}\", wave: \"${2:x.34.5x.}\", data: [\"${3:a}\", \"${4:b}\", \"${5:c}\"] },"
+        ],
+        "description": "bus lane, 2 to 9 are boxes labelled from data"
+    },
+    "group": {
+        "prefix": "group",
+        "body": [
+            "[\"${1:name}\",",
+            "\t$0",
+            "],"
+        ],
+        "description": "named group of lanes"
+    },
+    "gap": {
+        "prefix": "gap",
+        "body": [
+            "|"
+        ],
+        "description": "gap in a wave"
+    },
+    "node": {
+        "prefix": "node",
+        "body": [
+            "{ name: \"${1:sig}\", wave: \"${2:01.0}\", node: \"${3:.a..}\" },"
+        ],
+        "description": "lane with named points for edges"
+    },
+    "edge": {
+        "prefix": "edge",
+        "body": [
+            "edge: [\"${1:a}${2|~>,->,-|>,<->,-~>|}${3:b} ${4:label}\"],"
+        ],
+        "description": "arrows between nodes"
+    },
+    "head": {
+        "prefix": "head",
+        "body": [
+            "head: { text: \"${1:title}\", tick: ${2:0} },"
+        ],
+        "description": "title and cycle numbers"
+    },
+    "foot": {
+        "prefix": "foot",
+        "body": [
+            "foot: { text: \"${1:caption}\" },"
+        ],
+        "description": "caption"
+    },
+    "hscale": {
+        "prefix": "hscale",
+        "body": [
+            "config: { hscale: ${1:2} },"
+        ],
+        "description": "wider cycles"
+    },
+    "reg": {
+        "prefix": "reg",
+        "body": [
+            "{ reg: [",
+            "\t{ bits: ${1:8}, name: \"${2:field}\" },$0",
+            "] }"
+        ],
+        "description": "register layout"
+    }
+}

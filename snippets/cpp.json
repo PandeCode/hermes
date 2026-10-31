@@ -1,0 +1,24 @@
+{
+    "graphviz fence": {
+        "prefix": "graphviz",
+        "body": [
+            "// ```graphviz",
+            "// digraph {",
+            "// \t${1:a} -> ${2:b}$0",
+            "// }",
+            "// ```"
+        ],
+        "description": "graphviz block, K shows it"
+    },
+    "wavedrom fence": {
+        "prefix": "wavedrom",
+        "body": [
+            "// ```wavedrom",
+            "// { signal: [",
+            "// \t{ name: \"${1:clk}\", wave: \"${2:p......}\" },$0",
+            "// ] }",
+            "// ```"
+        ],
+        "description": "wavedrom timing diagram, K shows it"
+    }
+}

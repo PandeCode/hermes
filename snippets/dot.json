@@ -1,0 +1,49 @@
+{
+    "digraph": {
+        "prefix": "digraph",
+        "body": [
+            "digraph ${1:G} {",
+            "\t$0",
+            "}"
+        ],
+        "description": "directed graph"
+    },
+    "rankdir": {
+        "prefix": "rankdir",
+        "body": [
+            "rankdir=${1|LR,TB,RL,BT|}"
+        ],
+        "description": "layout direction"
+    },
+    "node": {
+        "prefix": "node",
+        "body": [
+            "node [shape=${1|box,ellipse,circle,record,diamond,plaintext|}]"
+        ],
+        "description": "default node attributes"
+    },
+    "edge": {
+        "prefix": "edge",
+        "body": [
+            "${1:a} -> ${2:b} [label=\"${3}\"]"
+        ],
+        "description": "labelled edge"
+    },
+    "subgraph": {
+        "prefix": "subgraph",
+        "body": [
+            "subgraph cluster_${1:name} {",
+            "\tlabel=\"${2:$1}\"",
+            "\t$0",
+            "}"
+        ],
+        "description": "boxed cluster"
+    },
+    "record": {
+        "prefix": "record",
+        "body": [
+            "${1:name} [shape=record, label=\"{${2:a}|${3:b}}\"]"
+        ],
+        "description": "record node with fields"
+    }
+}

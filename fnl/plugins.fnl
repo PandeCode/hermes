@@ -256,12 +256,27 @@
 ;; the directory init.lua was loaded from: the nix store copy, or a checkout
 (local hermes-dir (vim.fs.dirname (: (. (debug.getinfo 1 :S) :source) :sub 2)))
 
+;; inside a graphviz, wavedrom or typst fence the snippets are its language's.
+;; language_for_range could land on the comment parser's tree instead
+(fn snippet-filetype []
+  (let [parser (vim.treesitter.get_parser 0 nil {:error false})
+        [row col] (vim.api.nvim_win_get_cursor 0)
+        range [(- row 1) col (- row 1) col]
+        fences {:dot :dot :json5 :wavedrom :typst :typst}]
+    (var ft vim.bo.filetype)
+    (when parser
+      (each [lang child (pairs (parser:children))]
+        (when (and (. fences lang) (child:contains range))
+          (set ft (. fences lang)))))
+    ft))
+
 (rsetup :blink.cmp
         {:fuzzy {:implementation :prefer_rust}
          :keymap {:<C-k> {}}
          :signature {:enabled true :window {:show_documentation true}}
          :sources {:providers {:snippets {:opts {:search_paths [(.. hermes-dir
-                                                                    :/snippets)]}}}}
+                                                                    :/snippets)]
+                                                 :get_filetype snippet-filetype}}}}
          :completion {:menu {:draw {:treesitter [:lsp]
                                     :columns [[:kind_icon]
                                               {1 :label

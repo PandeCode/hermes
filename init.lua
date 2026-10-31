@@ -650,29 +650,48 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
   end
   vim.api.nvim_create_autocmd({"BufWritePre"}, {pattern = "*", callback = _88_})
   local hermes_dir = vim.fs.dirname(debug.getinfo(1, "S").source:sub(2))
-  local function _90_(ctx)
+  local function snippet_filetype()
+    local parser = vim.treesitter.get_parser(0, nil, {error = false})
+    local _let_90_ = vim.api.nvim_win_get_cursor(0)
+    local row = _let_90_[1]
+    local col = _let_90_[2]
+    local range = {(row - 1), col, (row - 1), col}
+    local fences = {dot = "dot", json5 = "wavedrom", typst = "typst"}
+    local ft = vim.bo.filetype
+    if parser then
+      for lang, child in pairs(parser:children()) do
+        if (fences[lang] and child:contains(range)) then
+          ft = fences[lang]
+        else
+        end
+      end
+    else
+    end
+    return ft
+  end
+  local function _93_(ctx)
     local kind_icon, _, _0 = MiniIcons.get("lsp", ctx.kind)
     return kind_icon
   end
-  local function _91_(ctx)
+  local function _94_(ctx)
     local _, hl, _0 = MiniIcons.get("lsp", ctx.kind)
     return hl
   end
-  local function _92_(ctx)
+  local function _95_(ctx)
     local _, hl, _0 = MiniIcons.get("lsp", ctx.kind)
     return hl
   end
-  require("blink.cmp").setup(({fuzzy = {implementation = "prefer_rust"}, keymap = {["<C-k>"] = {}}, signature = {enabled = true, window = {show_documentation = true}}, sources = {providers = {snippets = {opts = {search_paths = {(hermes_dir .. "/snippets")}}}}}, completion = {menu = {draw = {treesitter = {"lsp"}, columns = {{"kind_icon"}, {"label", "label_description", gap = 1}, {"kind"}}, components = {kind_icon = {text = _90_, highlight = _91_}, kind = {highlight = _92_}}}}, documentation = {auto_show = true}}} or {}))
+  require("blink.cmp").setup(({fuzzy = {implementation = "prefer_rust"}, keymap = {["<C-k>"] = {}}, signature = {enabled = true, window = {show_documentation = true}}, sources = {providers = {snippets = {opts = {search_paths = {(hermes_dir .. "/snippets")}, get_filetype = snippet_filetype}}}}, completion = {menu = {draw = {treesitter = {"lsp"}, columns = {{"kind_icon"}, {"label", "label_description", gap = 1}, {"kind"}}, components = {kind_icon = {text = _93_, highlight = _94_}, kind = {highlight = _95_}}}}, documentation = {auto_show = true}}} or {}))
   local parinfer_filetypes = {"racket", "lisp", "wat", "wasm", "fennel"}
   local function parinfer_apply()
-    local function _93_()
+    local function _96_()
       if vim.b.parinfer_on then
         return "ParinferOn"
       else
         return "ParinferOff"
       end
     end
-    pcall(vim.cmd, _93_())
+    pcall(vim.cmd, _96_())
     vim.cmd.redrawstatus()
     return nil
   end
@@ -692,10 +711,10 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
   vim.keymap.set("n", "<leader>po", parinfer_on, {desc = "parinfer-on"})
   vim.keymap.set("n", "<leader>pf", parinfer_off, {desc = "parinfer-off"})
   vim.keymap.set("n", "<leader>pt", parinfer_toggle, {desc = "parinfer-toggle"})
-  local function _94_()
+  local function _97_()
     return parinfer_set(vim.tbl_contains(parinfer_filetypes, vim.bo.filetype))
   end
-  vim.api.nvim_create_autocmd("FileType", {callback = _94_})
+  vim.api.nvim_create_autocmd("FileType", {callback = _97_})
   vim.api.nvim_create_autocmd("BufEnter", {callback = parinfer_apply})
   local lz = require("lz.n")
   vim.filetype.add({extension = {agda = "agda", lagda = "agda"}, pattern = {[".*%.lagda%.%w+"] = "agda"}})
@@ -711,18 +730,18 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
     if not Utils.swank_running() then
       local port = (vim.g["conjure#client#common_lisp#swank#connection#default_port"] or "4005")
       local job
-      local function _95_(_, code)
+      local function _98_(_, code)
         swank_job = nil
         if (code ~= 0) then
-          local function _96_()
+          local function _99_()
             return vim.notify(("swank exited with " .. code), vim.log.levels.WARN)
           end
-          return vim.schedule(_96_)
+          return vim.schedule(_99_)
         else
           return nil
         end
       end
-      job = vim.fn.jobstart({"sbcl", "--noinform", "--eval", "(require :asdf)", "--eval", "(asdf:load-system :swank)", "--eval", ("(swank:create-server :port " .. port .. " :dont-close t)")}, {on_exit = _95_})
+      job = vim.fn.jobstart({"sbcl", "--noinform", "--eval", "(require :asdf)", "--eval", "(asdf:load-system :swank)", "--eval", ("(swank:create-server :port " .. port .. " :dont-close t)")}, {on_exit = _98_})
       if (job > 0) then
         swank_job = job
         return nil
@@ -734,16 +753,16 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
     end
   end
   vim.api.nvim_create_user_command("Swank", swank_start, {})
-  local function _100_()
+  local function _103_()
     return lz.trigger_load("nvim-dap")
   end
-  local function _101_()
+  local function _104_()
     return require("neogen").generate()
   end
-  local function _102_()
+  local function _105_()
     return require("neogen").setup((nil or {}))
   end
-  return lz.load({{"zig.vim", ft = "zig"}, {"cornelis", ft = "agda"}, {"conjure", ft = conjure_filetypes}, {"rustaceanvim", ft = "rust", before = _100_}, {"vim-sleuth", event = {"BufReadPost", "BufNewFile"}}, {"vim-visual-multi", event = "DeferredUIEnter"}, {"vim-wordmotion", event = "DeferredUIEnter"}, {"refactoring.nvim", cmd = "Refactor"}, {"neogen", cmd = "Neogen", keys = {{"<leader>nf", _101_}}, after = _102_}})
+  return lz.load({{"zig.vim", ft = "zig"}, {"cornelis", ft = "agda"}, {"conjure", ft = conjure_filetypes}, {"rustaceanvim", ft = "rust", before = _103_}, {"vim-sleuth", event = {"BufReadPost", "BufNewFile"}}, {"vim-visual-multi", event = "DeferredUIEnter"}, {"vim-wordmotion", event = "DeferredUIEnter"}, {"refactoring.nvim", cmd = "Refactor"}, {"neogen", cmd = "Neogen", keys = {{"<leader>nf", _104_}}, after = _105_}})
 end
 require("fnl.plugins")
 package.preload["fnl.theme"] = package.preload["fnl.theme"] or function(...)
@@ -784,7 +803,7 @@ package.preload["fnl.theme"] = package.preload["fnl.theme"] or function(...)
   apply_theme(get_base16())
   if vim.env.THEME_WATCH then
     local fse = vim.uv.new_fs_event()
-    local function _105_(err, filename)
+    local function _108_(err, filename)
       if (not err and (filename == "style.lua")) then
         apply_theme(get_base16())
         return vim.notify("Switched Themes", vim.log.levels.INFO)
@@ -792,7 +811,7 @@ package.preload["fnl.theme"] = package.preload["fnl.theme"] or function(...)
         return nil
       end
     end
-    vim.uv.fs_event_start(fse, stylix_dir, {}, vim.schedule_wrap(_105_))
+    vim.uv.fs_event_start(fse, stylix_dir, {}, vim.schedule_wrap(_108_))
     vim.notify(("Now watching " .. stylix_dir .. "/style.lua for external changes"), vim.log.levels.INFO)
   else
   end
@@ -878,54 +897,54 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
     for k, level in pairs(levels) do
       count[k] = vim.tbl_count(vim.diagnostic.get(0, {severity = level}))
     end
-    local _115_
+    local _118_
     if (count.errors ~= 0) then
-      _115_ = ("%#" .. "DiagnosticError" .. "#" .. tostring(("\239\129\151 " .. count.errors)) .. "%*")
+      _118_ = ("%#" .. "DiagnosticError" .. "#" .. tostring(("\239\129\151 " .. count.errors)) .. "%*")
     else
-      _115_ = ""
+      _118_ = ""
     end
-    local _117_
+    local _120_
     if (count.warnings ~= 0) then
-      _117_ = ("%#" .. "DiagnosticWarn" .. "#" .. tostring(("\239\129\177 " .. count.warnings)) .. "%*")
+      _120_ = ("%#" .. "DiagnosticWarn" .. "#" .. tostring(("\239\129\177 " .. count.warnings)) .. "%*")
     else
-      _117_ = ""
+      _120_ = ""
     end
-    local _119_
+    local _122_
     if (count.hints ~= 0) then
-      _119_ = ("%#" .. "DiagnosticHint" .. "#" .. tostring(("\239\129\154 " .. count.hints)) .. "%*")
+      _122_ = ("%#" .. "DiagnosticHint" .. "#" .. tostring(("\239\129\154 " .. count.hints)) .. "%*")
     else
-      _119_ = ""
+      _122_ = ""
     end
-    local _121_
+    local _124_
     if (count.info ~= 0) then
-      _121_ = ("%#" .. "DiagnosticInfo" .. "#" .. tostring(("\239\129\153 " .. count.info)) .. "%*")
+      _124_ = ("%#" .. "DiagnosticInfo" .. "#" .. tostring(("\239\129\153 " .. count.info)) .. "%*")
     else
-      _121_ = ""
+      _124_ = ""
     end
-    return (_115_ .. _117_ .. _119_ .. _121_ .. "%#Normal#")
+    return (_118_ .. _120_ .. _122_ .. _124_ .. "%#Normal#")
   end
   local function git()
     local d = vim.b.gitsigns_status_dict
     if d then
-      local _123_
+      local _126_
       if (d.added and (d.added > 0)) then
-        _123_ = ("%#" .. "GitSignsAdd" .. "#" .. tostring(("+ " .. d.added .. " ")) .. "%*")
+        _126_ = ("%#" .. "GitSignsAdd" .. "#" .. tostring(("+ " .. d.added .. " ")) .. "%*")
       else
-        _123_ = ""
+        _126_ = ""
       end
-      local _125_
+      local _128_
       if (d.changed and (d.changed > 0)) then
-        _125_ = ("%#" .. "GitSignsChange" .. "#" .. tostring(("~ " .. d.changed .. " ")) .. "%*")
+        _128_ = ("%#" .. "GitSignsChange" .. "#" .. tostring(("~ " .. d.changed .. " ")) .. "%*")
       else
-        _125_ = ""
+        _128_ = ""
       end
-      local _127_
+      local _130_
       if (d.removed and (d.removed > 0)) then
-        _127_ = ("%#" .. "GitSignsDelete" .. "#" .. tostring(("- " .. d.removed .. " ")) .. "%*")
+        _130_ = ("%#" .. "GitSignsDelete" .. "#" .. tostring(("- " .. d.removed .. " ")) .. "%*")
       else
-        _127_ = ""
+        _130_ = ""
       end
-      return (("%#" .. "GitSignsAdd" .. "#" .. tostring((" \238\156\165 " .. esc(d.head))) .. "%*") .. " " .. _123_ .. _125_ .. _127_)
+      return (("%#" .. "GitSignsAdd" .. "#" .. tostring((" \238\156\165 " .. esc(d.head))) .. "%*") .. " " .. _126_ .. _128_ .. _130_)
     else
       return ""
     end
@@ -954,10 +973,10 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
     local modes = {n = {"(\227\131\187_\227\131\187)", "base0D", "base00"}, i = {"(\227\129\163\226\128\162\204\128\207\137\226\128\162\204\129)\227\129\163", "base0B", "base00"}, v = {"(\225\151\146\225\151\168\225\151\149)", "base0E", "base00"}, V = {"(\225\151\146\225\151\168\225\151\149)\226\148\129", "base0E", "base00"}, ["\22"] = {"(\225\151\146\225\151\168\225\151\149)\226\150\136", "base0E", "base00"}, c = {"(\224\184\135 \226\128\162\204\128_\226\128\162\204\129)\224\184\135", "base0A", "base00"}, R = {"(\235\136\136_\235\136\136)", "base08", "base00"}}
     local m = vim.fn.mode()
     local p = MiniBase16.config.palette
-    local _let_133_ = (modes[m] or {"?", "base05", "base00"})
-    local text = _let_133_[1]
-    local fg = _let_133_[2]
-    local bg = _let_133_[3]
+    local _let_136_ = (modes[m] or {"?", "base05", "base00"})
+    local text = _let_136_[1]
+    local fg = _let_136_[2]
+    local bg = _let_136_[3]
     vim.api.nvim_set_hl(0, "StatusLineMode", {fg = p[fg], bg = p[bg], bold = true})
     return ("%#StatusLineMode#" .. text .. selection_size(m) .. "%*")
   end
@@ -977,19 +996,19 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
       ok_3f, sc = nil
     end
     if (ok_3f and sc.total and (sc.total > 0)) then
-      local _137_
+      local _140_
       do
-        local case_136_ = sc.incomplete
-        if (case_136_ == 1) then
-          _137_ = "?"
-        elseif (case_136_ == 2) then
-          _137_ = (">" .. sc.maxcount)
+        local case_139_ = sc.incomplete
+        if (case_139_ == 1) then
+          _140_ = "?"
+        elseif (case_139_ == 2) then
+          _140_ = (">" .. sc.maxcount)
         else
-          local _ = case_136_
-          _137_ = sc.total
+          local _ = case_139_
+          _140_ = sc.total
         end
       end
-      return ("%#Comment#[" .. sc.current .. "/" .. _137_ .. "]%*")
+      return ("%#Comment#[" .. sc.current .. "/" .. _140_ .. "]%*")
     else
       return ""
     end
@@ -1004,25 +1023,25 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
   local function typst()
     local errors = vim.b.typst_errors
     if vim.b.typst_watch then
-      local _144_
+      local _147_
       if (errors > 0) then
-        _144_ = ("%#" .. "DiagnosticError" .. "#" .. tostring(("typst " .. errors)) .. "%*")
+        _147_ = ("%#" .. "DiagnosticError" .. "#" .. tostring(("typst " .. errors)) .. "%*")
       else
-        _144_ = ("%#" .. "DiagnosticOk" .. "#" .. tostring("typst") .. "%*")
+        _147_ = ("%#" .. "DiagnosticOk" .. "#" .. tostring("typst") .. "%*")
       end
-      local _146_
+      local _149_
       if vim.b.typst_viewer then
-        _146_ = "DiagnosticOk"
+        _149_ = "DiagnosticOk"
       else
-        _146_ = "Comment"
+        _149_ = "Comment"
       end
-      local _148_
+      local _151_
       if vim.b.typst_mode then
-        _148_ = ("%#" .. "DiagnosticInfo" .. "#" .. tostring(" auto") .. "%*")
+        _151_ = ("%#" .. "DiagnosticInfo" .. "#" .. tostring(" auto") .. "%*")
       else
-        _148_ = ""
+        _151_ = ""
       end
-      return (_144_ .. " " .. ("%#" .. _146_ .. "#" .. tostring("zathura") .. "%*") .. _148_)
+      return (_147_ .. " " .. ("%#" .. _149_ .. "#" .. tostring("zathura") .. "%*") .. _151_)
     else
       return ""
     end
@@ -1030,19 +1049,19 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
   local function nix_shell()
     local env = os.getenv("IN_NIX_SHELL")
     if env then
-      local _151_
+      local _154_
       do
-        local pv_152_, pv_153_ = MiniIcons.get("os", "nixos")
-        local icon_2_auto,hl_3_auto = pv_152_, pv_153_
-        local _154_
+        local pv_155_, pv_156_ = MiniIcons.get("os", "nixos")
+        local icon_2_auto,hl_3_auto = pv_155_, pv_156_
+        local _157_
         if hl_3_auto then
-          _154_ = ("%#" .. hl_3_auto .. "#")
+          _157_ = ("%#" .. hl_3_auto .. "#")
         else
-          _154_ = ""
+          _157_ = ""
         end
-        _151_ = (_154_ .. (icon_2_auto or "") .. "%*")
+        _154_ = (_157_ .. (icon_2_auto or "") .. "%*")
       end
-      return (_151_ .. ("%#" .. "Comment" .. "#" .. tostring(env) .. "%*"))
+      return (_154_ .. ("%#" .. "Comment" .. "#" .. tostring(env) .. "%*"))
     else
       return ""
     end
@@ -1053,73 +1072,73 @@ package.preload["fnl.statusline"] = package.preload["fnl.statusline"] or functio
     local name = vim.fn.fnamemodify(buf, ":t")
     local dir = vim.fn.fnamemodify(rel, ":h")
     local icon, hl = MiniIcons.get("file", name)
-    local _157_
+    local _160_
     if (dir == ".") then
-      _157_ = ""
+      _160_ = ""
     else
-      _157_ = (esc(dir) .. "/")
+      _160_ = (esc(dir) .. "/")
     end
-    local _159_
+    local _162_
     if hl then
-      _159_ = ("%#" .. hl .. "#")
+      _162_ = ("%#" .. hl .. "#")
     else
-      _159_ = ""
+      _162_ = ""
     end
-    local _161_
+    local _164_
     if vim.bo.modified then
-      _161_ = ("%#" .. "WarningMsg" .. "#" .. tostring("\226\151\143") .. "%*")
+      _164_ = ("%#" .. "WarningMsg" .. "#" .. tostring("\226\151\143") .. "%*")
     else
-      _161_ = ""
+      _164_ = ""
     end
-    local _163_
+    local _166_
     if vim.bo.readonly then
-      _163_ = ("%#" .. "DiagnosticError" .. "#" .. tostring("\240\159\148\146") .. "%*")
+      _166_ = ("%#" .. "DiagnosticError" .. "#" .. tostring("\240\159\148\146") .. "%*")
     else
-      _163_ = ""
+      _166_ = ""
     end
-    return ("%#Comment#" .. _157_ .. "%*" .. (_159_ .. ((icon .. " " .. esc(name)) or "") .. "%*") .. " " .. _161_ .. _163_)
+    return ("%#Comment#" .. _160_ .. "%*" .. (_162_ .. ((icon .. " " .. esc(name)) or "") .. "%*") .. " " .. _164_ .. _166_)
   end
   Statusline.active = function()
-    local _165_
+    local _168_
     do
-      local pv_166_, pv_167_ = MiniIcons.get("file", vim.fn.expand("%"))
-      local icon_2_auto,hl_3_auto = pv_166_, pv_167_
-      local _168_
+      local pv_169_, pv_170_ = MiniIcons.get("file", vim.fn.expand("%"))
+      local icon_2_auto,hl_3_auto = pv_169_, pv_170_
+      local _171_
       if hl_3_auto then
-        _168_ = ("%#" .. hl_3_auto .. "#")
+        _171_ = ("%#" .. hl_3_auto .. "#")
       else
-        _168_ = ""
+        _171_ = ""
       end
-      _165_ = (_168_ .. (icon_2_auto or "") .. "%*")
+      _168_ = (_171_ .. (icon_2_auto or "") .. "%*")
     end
-    return (mode() .. " " .. recording() .. " " .. git() .. " " .. filename() .. " " .. lsp() .. "%=" .. get_attached_clients() .. "%=" .. searchcount() .. " " .. typst() .. " " .. fun() .. " " .. nix_shell() .. " " .. _165_ .. " " .. "%{&filetype != '' ? &filetype : 'text'} " .. " " .. wordcount() .. " " .. "[%P %l:%c]")
+    return (mode() .. " " .. recording() .. " " .. git() .. " " .. filename() .. " " .. lsp() .. "%=" .. get_attached_clients() .. "%=" .. searchcount() .. " " .. typst() .. " " .. fun() .. " " .. nix_shell() .. " " .. _168_ .. " " .. "%{&filetype != '' ? &filetype : 'text'} " .. " " .. wordcount() .. " " .. "[%P %l:%c]")
   end
   Statusline.inactive = function()
     return "%#Comment# %t%*"
   end
   local group = vim.api.nvim_create_augroup("Statusline", {clear = true})
-  local function _170_()
+  local function _173_()
     vim.opt_local.statusline = "%!v:lua.Statusline.active()"
     return nil
   end
-  vim.api.nvim_create_autocmd({"WinEnter", "BufEnter"}, {group = group, callback = _170_})
-  local function _171_()
+  vim.api.nvim_create_autocmd({"WinEnter", "BufEnter"}, {group = group, callback = _173_})
+  local function _174_()
     vim.opt_local.statusline = "%!v:lua.Statusline.inactive()"
     return nil
   end
-  vim.api.nvim_create_autocmd({"WinLeave", "BufLeave"}, {group = group, callback = _171_})
-  local function _172_()
+  vim.api.nvim_create_autocmd({"WinLeave", "BufLeave"}, {group = group, callback = _174_})
+  local function _175_()
     return vim.cmd.redrawstatus()
   end
-  return vim.defer_fn(_172_, 1000)
+  return vim.defer_fn(_175_, 1000)
 end
 require("fnl.statusline")
 package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
-  local function _173_()
+  local function _176_()
     vim.cmd.redrawtabline()
     return nil
   end
-  vim.api.nvim_create_autocmd({"TermRequest", "ModeChanged"}, {desc = "Refresh tabline", callback = _173_})
+  vim.api.nvim_create_autocmd({"TermRequest", "ModeChanged"}, {desc = "Refresh tabline", callback = _176_})
   Tabline = {}
   local function merge_icon_hl(src, dst)
     local fg = vim.api.nvim_get_hl(0, {name = src, link = false}).fg
@@ -1141,58 +1160,58 @@ package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
   set_highlights()
   vim.api.nvim_create_autocmd("ColorScheme", {callback = set_highlights})
   local function listed_bufs()
-    local function _175_(b)
+    local function _178_(b)
       return (vim.api.nvim_buf_is_valid(b) and (1 == vim.fn.buflisted(b)) and (vim.api.nvim_buf_get_name(b) ~= ""))
     end
-    return vim.tbl_filter(_175_, vim.api.nvim_list_bufs())
+    return vim.tbl_filter(_178_, vim.api.nvim_list_bufs())
   end
   local function buf_diag(buf)
     local e = #vim.diagnostic.get(buf, {severity = vim.diagnostic.severity.ERROR})
     local w = #vim.diagnostic.get(buf, {severity = vim.diagnostic.severity.WARN})
-    local _176_
+    local _179_
     if (e > 0) then
-      _176_ = ("%#" .. "DiagnosticSignError" .. "# " .. tostring(e) .. "%*")
+      _179_ = ("%#" .. "DiagnosticSignError" .. "# " .. tostring(e) .. "%*")
     else
-      _176_ = ""
+      _179_ = ""
     end
-    local _178_
+    local _181_
     if (w > 0) then
-      _178_ = ("%#" .. "DiagnosticSignWarn" .. "# " .. tostring(w) .. "%*")
+      _181_ = ("%#" .. "DiagnosticSignWarn" .. "# " .. tostring(w) .. "%*")
     else
-      _178_ = ""
+      _181_ = ""
     end
-    return (_176_ .. _178_)
+    return (_179_ .. _181_)
   end
   local function workspace_diag()
     local e = #vim.diagnostic.get(nil, {severity = vim.diagnostic.severity.ERROR})
     local w = #vim.diagnostic.get(nil, {severity = vim.diagnostic.severity.WARN})
     local h = #vim.diagnostic.get(nil, {severity = vim.diagnostic.severity.HINT})
     local i = #vim.diagnostic.get(nil, {severity = vim.diagnostic.severity.INFO})
-    local _180_
+    local _183_
     if (e > 0) then
-      _180_ = ("%#" .. "DiagnosticSignError" .. "# " .. tostring(e) .. "%*")
+      _183_ = ("%#" .. "DiagnosticSignError" .. "# " .. tostring(e) .. "%*")
     else
-      _180_ = ""
+      _183_ = ""
     end
-    local _182_
+    local _185_
     if (w > 0) then
-      _182_ = ("%#" .. "DiagnosticSignWarn" .. "# " .. tostring(w) .. "%*")
+      _185_ = ("%#" .. "DiagnosticSignWarn" .. "# " .. tostring(w) .. "%*")
     else
-      _182_ = ""
+      _185_ = ""
     end
-    local _184_
+    local _187_
     if (h > 0) then
-      _184_ = ("%#" .. "DiagnosticSignHint" .. "# " .. tostring(h) .. "%*")
+      _187_ = ("%#" .. "DiagnosticSignHint" .. "# " .. tostring(h) .. "%*")
     else
-      _184_ = ""
+      _187_ = ""
     end
-    local _186_
+    local _189_
     if (i > 0) then
-      _186_ = ("%#" .. "DiagnosticSignInfo" .. "# " .. tostring(i) .. "%*")
+      _189_ = ("%#" .. "DiagnosticSignInfo" .. "# " .. tostring(i) .. "%*")
     else
-      _186_ = ""
+      _189_ = ""
     end
-    return (_180_ .. _182_ .. _184_ .. _186_)
+    return (_183_ .. _185_ .. _187_ .. _189_)
   end
   Tabline["goto"] = function(n)
     local buf = listed_bufs()[n]
@@ -1226,36 +1245,36 @@ package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
       end
       local icon_group = merge_icon_hl(icon_hl, hl)
       local status
-      local _190_
+      local _193_
       if locked then
-        _190_ = " \243\176\140\190"
+        _193_ = " \243\176\140\190"
       else
-        _190_ = ""
+        _193_ = ""
       end
-      local _192_
+      local _195_
       if modified then
-        _192_ = " \226\151\143"
+        _195_ = " \226\151\143"
       else
-        _192_ = ""
+        _195_ = ""
       end
-      status = (_190_ .. _192_)
-      local _194_
+      status = (_193_ .. _195_)
+      local _197_
       if (i <= 9) then
-        _194_ = (i .. ":")
+        _197_ = (i .. ":")
       else
-        _194_ = ""
+        _197_ = ""
       end
-      result = (result .. "%#" .. hl .. "# " .. _194_ .. " " .. "%#" .. icon_group .. "#" .. icon .. "%*%#" .. hl .. "# " .. (name:gsub("%%", "%%%%")) .. status .. " " .. buf_diag(buf) .. " %*")
+      result = (result .. "%#" .. hl .. "# " .. _197_ .. " " .. "%#" .. icon_group .. "#" .. icon .. "%*%#" .. hl .. "# " .. (name:gsub("%%", "%%%%")) .. status .. " " .. buf_diag(buf) .. " %*")
     end
     return (result .. "%=%#TabLineFill# " .. workspace_diag() .. " ")
   end
   vim.o.tabline = "%!v:lua.Tabline.render()"
   vim.o.showtabline = 2
   for i = 1, 9 do
-    local function _196_()
+    local function _199_()
       return Tabline["goto"](i)
     end
-    vim.keymap.set("n", ("<leader>" .. i), _196_, {desc = ("Go to buffer " .. i)})
+    vim.keymap.set("n", ("<leader>" .. i), _199_, {desc = ("Go to buffer " .. i)})
   end
   local hidden = (vim.g.started_by_firenvim == true)
   local function tabline_update()
@@ -1267,15 +1286,15 @@ package.preload["fnl.tabline"] = package.preload["fnl.tabline"] or function(...)
     end
     return nil
   end
-  local function _198_()
+  local function _201_()
     return tabline_update()
   end
-  vim.api.nvim_create_autocmd({"BufAdd", "BufDelete", "BufEnter"}, {callback = _198_})
-  local function _199_()
+  vim.api.nvim_create_autocmd({"BufAdd", "BufDelete", "BufEnter"}, {callback = _201_})
+  local function _202_()
     hidden = not hidden
     return tabline_update()
   end
-  Tabline.toggle = _199_
+  Tabline.toggle = _202_
   return vim.keymap.set("n", "<leader>tt", Tabline.toggle, {desc = "Toggle tabline"})
 end
 require("fnl.tabline")
@@ -1283,7 +1302,7 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
   local null_ls = require("null-ls")
   local problems = {{pattern = "\226\128\139", name = "ZERO WIDTH SPACE", replacement = ""}, {pattern = "\194\160", name = "NON-BREAKING SPACE", replacement = " "}, {pattern = "\239\187\191", name = "BYTE ORDER MARK", replacement = ""}, {pattern = "\226\128\141", name = "ZERO WIDTH JOINER", replacement = ""}, {pattern = "\226\128\142", name = "RIGHT-TO-LEFT MARK", replacement = ""}, {pattern = "\226\128\143", name = "LEFT-TO-RIGHT MARK", replacement = ""}}
   local no_problems
-  local function _200_(params)
+  local function _203_(params)
     local diagnostics = {}
     for i, line in ipairs(params.content) do
       for _, problem in ipairs(problems) do
@@ -1296,7 +1315,7 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
     end
     return diagnostics
   end
-  no_problems = {method = null_ls.methods.DIAGNOSTICS, filetypes = {}, generator = {fn = _200_}}
+  no_problems = {method = null_ls.methods.DIAGNOSTICS, filetypes = {}, generator = {fn = _203_}}
   null_ls.setup({sources = {null_ls.builtins.formatting.fnlfmt, null_ls.builtins.formatting.stylua, null_ls.builtins.formatting.gofmt, null_ls.builtins.formatting.black, null_ls.builtins.formatting.isort, null_ls.builtins.formatting.nixfmt, null_ls.builtins.formatting.clang_format, null_ls.builtins.formatting.typstyle, null_ls.builtins.formatting.just, null_ls.builtins.formatting.gdformat, null_ls.builtins.formatting.dart_format, null_ls.builtins.formatting.prettierd, null_ls.builtins.formatting.cmake_format, null_ls.builtins.diagnostics.gdlint, null_ls.builtins.diagnostics.glslc.with({extra_args = {"--target-env=opengl"}}), null_ls.builtins.diagnostics.qmllint, null_ls.builtins.diagnostics.vale, null_ls.builtins.diagnostics.markdownlint, null_ls.builtins.diagnostics.checkmake, null_ls.builtins.diagnostics.cmake_lint, null_ls.builtins.diagnostics.statix, null_ls.builtins.diagnostics.deadnix, null_ls.builtins.diagnostics.fish, null_ls.builtins.hover.printenv, null_ls.builtins.completion.spell, null_ls.builtins.code_actions.statix}})
   null_ls.register(no_problems)
   local function lsp_format_with_fallback(_opts)
@@ -1305,23 +1324,23 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
     local get_available = require("null-ls.sources").get_available
     local formatters = get_available(vim.bo[bufnr].filetype, null_ls.methods.FORMATTING)
     local null_ls_formats_3f = (nil ~= formatters[1])
-    local function _202_(_241)
+    local function _205_(_241)
       return (not null_ls_formats_3f or (_241.name == "null-ls"))
     end
-    return vim.lsp.buf.format({bufnr = bufnr, async = (opts.async or false), timeout_ms = (opts.timeout_ms or 1000), filter = _202_})
+    return vim.lsp.buf.format({bufnr = bufnr, async = (opts.async or false), timeout_ms = (opts.timeout_ms or 1000), filter = _205_})
   end
-  local function _203_(args)
+  local function _206_(args)
     if not vim.b[args.buf].typst_autosaving then
       return lsp_format_with_fallback({timeout_ms = 500})
     else
       return nil
     end
   end
-  vim.api.nvim_create_autocmd("BufWritePre", {pattern = "*", callback = _203_})
-  local function _205_()
+  vim.api.nvim_create_autocmd("BufWritePre", {pattern = "*", callback = _206_})
+  local function _208_()
     return lsp_format_with_fallback()
   end
-  vim.keymap.set({"n", "v"}, "<leader>cf", _205_)
+  vim.keymap.set({"n", "v"}, "<leader>cf", _208_)
   vim.lsp.inlay_hint.enable()
   local noice = require("noice.lsp")
   local snacks = require("snacks")
@@ -1332,22 +1351,22 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
       return vim.keymap.set("n", k, f)
     end
   end
-  local function _207_()
+  local function _210_()
     return snacks.picker.lsp_references()
   end
-  n("grr", _207_, "[G]oto [R]eferences")
-  local function _208_()
+  n("grr", _210_, "[G]oto [R]eferences")
+  local function _211_()
     return snacks.picker.lsp_implementations()
   end
-  n("gI", _208_, "[G]oto [I]mplementation")
-  local function _209_()
+  n("gI", _211_, "[G]oto [I]mplementation")
+  local function _212_()
     return snacks.picker.lsp_workspace_symbols()
   end
-  n("<leader>ws", _209_, "[W]orkspace [S]ymbols")
-  local function _210_()
+  n("<leader>ws", _212_, "[W]orkspace [S]ymbols")
+  local function _213_()
     return vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
   end
-  n("<leader>ei", _210_, "Toggle Inlay")
+  n("<leader>ei", _213_, "Toggle Inlay")
   local khover = require("khover")
   khover.setup({hover = noice.hover})
   n("K", khover.hover, "Hover Documentation")
@@ -1398,29 +1417,29 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
     dap.adapters["rust-gdb"] = {type = "executable", command = "rust-gdb", args = {"--interpreter=dap", "--eval-command", "set print pretty on"}}
     do
       local pick_2_auto
-      local function _212_()
+      local function _215_()
         return vim.fn.input("Path to executable: ", (vim.fn.getcwd() .. "/"), "file")
       end
-      pick_2_auto = _212_
-      local function _213_()
+      pick_2_auto = _215_
+      local function _216_()
         local name_3_auto = vim.fn.input("Executable name (filter): ")
         return require("dap.utils").pick_process({filter = name_3_auto})
       end
-      dap.configurations.c = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _213_, program = pick_2_auto, request = "attach", type = "gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "gdb"}}
+      dap.configurations.c = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _216_, program = pick_2_auto, request = "attach", type = "gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "gdb"}}
     end
     dap.configurations.cpp = dap.configurations.c
     dap.configurations.zig = dap.configurations.c
     do
       local pick_2_auto
-      local function _214_()
+      local function _217_()
         return vim.fn.input("Path to executable: ", (vim.fn.getcwd() .. "/"), "file")
       end
-      pick_2_auto = _214_
-      local function _215_()
+      pick_2_auto = _217_
+      local function _218_()
         local name_3_auto = vim.fn.input("Executable name (filter): ")
         return require("dap.utils").pick_process({filter = name_3_auto})
       end
-      dap.configurations.rust = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _215_, program = pick_2_auto, request = "attach", type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "rust-gdb"}}
+      dap.configurations.rust = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _218_, program = pick_2_auto, request = "attach", type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "rust-gdb"}}
     end
     local keymap_restore = {}
     local sessions = 0
@@ -1443,10 +1462,10 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
             end
           end
         end
-        local function _218_()
+        local function _221_()
           return frontend.hover()
         end
-        return vim.keymap.set("n", "K", _218_, {silent = true})
+        return vim.keymap.set("n", "K", _221_, {silent = true})
       else
         return nil
       end
@@ -1461,10 +1480,10 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
               vim.fn.mapset(keymap)
             else
               if vim.api.nvim_buf_is_valid(keymap.buffer) then
-                local function _220_()
+                local function _223_()
                   return vim.fn.mapset(keymap)
                 end
-                vim.api.nvim_buf_call(keymap.buffer, _220_)
+                vim.api.nvim_buf_call(keymap.buffer, _223_)
               else
               end
             end
@@ -1497,13 +1516,13 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
     end
     return vim.api.nvim_exec_autocmds("User", {pattern = "DapSetup"})
   end
-  local function _225_()
+  local function _228_()
     for _, p in ipairs({"nvim-dap-view", "nvim-dap-virtual-text"}) do
       vim.cmd.packadd(p)
     end
     return nil
   end
-  return require("lz.n").load({"nvim-dap", keys = {"<leader>db", "<leader>dc", "<leader>do", "<leader>di", "<leader>dt", "<leader>dr", "<M-c>", "<M-o>", "<M-i>", "<M-t>", "<M-r>", "<leader>dui", "<leader>dux", "<leader>det"}, cmd = {"DapContinue", "DapNew", "DapToggleBreakpoint"}, before = _225_, after = setup})
+  return require("lz.n").load({"nvim-dap", keys = {"<leader>db", "<leader>dc", "<leader>do", "<leader>di", "<leader>dt", "<leader>dr", "<M-c>", "<M-o>", "<M-i>", "<M-t>", "<M-r>", "<leader>dui", "<leader>dux", "<leader>det"}, cmd = {"DapContinue", "DapNew", "DapToggleBreakpoint"}, before = _228_, after = setup})
 end
 require("fnl.dap")
 package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
@@ -1516,14 +1535,14 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
     return vim.notify(("mcu: " .. msg), level)
   end
   local function elf()
-    local function _226_()
+    local function _229_()
       if (type(config.elf) == "function") then
         return config.elf()
       else
         return config.elf
       end
     end
-    return vim.fs.joinpath(config.root, _226_())
+    return vim.fs.joinpath(config.root, _229_())
   end
   local function server_output(_, data)
     vim.api.nvim_buf_set_lines(log, -1, -1, false, data)
@@ -1571,10 +1590,10 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
       server.stopping = true
       return vim.fn.jobstop(server.job)
     else
-      local function _232_()
+      local function _235_()
         return notify("gdb server up")
       end
-      server_start(_232_)
+      server_start(_235_)
       return vim.cmd(("botright sbuffer " .. log))
     end
   end
@@ -1655,14 +1674,14 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
         for _0, l in ipairs(vim.split((periph.text[p.name] or ""), "\n", {trimempty = true})) do
           local reg = l:match("^%S+%.(%S+) @")
           local key = (reg and (p.name .. "." .. reg))
-          local function _242_()
+          local function _245_()
             if key then
               return {key = key}
             else
               return {}
             end
           end
-          add(("    " .. l), _242_())
+          add(("    " .. l), _245_())
           if (key and periph.open[key]) then
             for _1, f in ipairs(vim.split((periph.text[key] or ""), "\n", {trimempty = true})) do
               if f:match("^%s") then
@@ -1691,7 +1710,7 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
     end
   end
   local function periph_read(session, key)
-    local function _247_()
+    local function _250_()
       if (key == "fault") then
         return "show fault"
       elseif key:find(".", 1, true) then
@@ -1700,7 +1719,7 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
         return ("rr -p " .. key)
       end
     end
-    periph.text[key] = monitor(session, _247_())
+    periph.text[key] = monitor(session, _250_())
     return nil
   end
   local function periph_list(session)
@@ -1731,7 +1750,7 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
   local function periph_refresh()
     local session = require("dap").session()
     if (mcu_session_3f(session) and session.stopped_thread_id) then
-      local function _250_()
+      local function _253_()
         if not periph.list then
           periph_list(session)
         else
@@ -1741,7 +1760,7 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
         end
         return periph_render()
       end
-      return coroutine.wrap(_250_)()
+      return coroutine.wrap(_253_)()
     else
       return nil
     end
@@ -1750,13 +1769,13 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
     local row = periph.rows[vim.fn.line(".")]
     local key = (row and row.key)
     if key then
-      local _253_
+      local _256_
       if periph.open[key] then
-        _253_ = nil
+        _256_ = nil
       else
-        _253_ = true
+        _256_ = true
       end
-      periph.open[key] = _253_
+      periph.open[key] = _256_
       if periph.open[key] then
         return periph_refresh()
       else
@@ -1787,27 +1806,27 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
   local function rtt_connect()
     local tcp = vim.uv.new_tcp()
     rtt.tcp = tcp
-    local function _258_(err)
+    local function _261_(err)
       if err then
-        local function _259_()
+        local function _262_()
           return rtt_write(("rtt: " .. err .. "\n"))
         end
-        return vim.schedule(_259_)
+        return vim.schedule(_262_)
       else
-        local function _260_(_, data)
+        local function _263_(_, data)
           if data then
-            local function _261_()
+            local function _264_()
               return rtt_write(data)
             end
-            return vim.schedule(_261_)
+            return vim.schedule(_264_)
           else
             return nil
           end
         end
-        return tcp:read_start(_260_)
+        return tcp:read_start(_263_)
       end
     end
-    return tcp:connect("127.0.0.1", config.rtt.port, _258_)
+    return tcp:connect("127.0.0.1", config.rtt.port, _261_)
   end
   local function rtt_start(session)
     rtt.up = "trying"
@@ -1853,23 +1872,23 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
   local function rtt_buffer()
     local buf = vim.api.nvim_create_buf(false, true)
     rtt.buf = buf
-    local function _269_(_, _0, _1, data)
+    local function _272_(_, _0, _1, data)
       if rtt.tcp then
         return rtt.tcp:write(data)
       else
         return nil
       end
     end
-    rtt.chan = vim.api.nvim_open_term(buf, {on_input = _269_})
+    rtt.chan = vim.api.nvim_open_term(buf, {on_input = _272_})
     return buf
   end
   local function on_stopped(session)
     periph_refresh()
     if (rtt.buf and not rtt.up) then
-      local function _271_()
+      local function _274_()
         return rtt_start(session)
       end
-      return coroutine.wrap(_271_)()
+      return coroutine.wrap(_274_)()
     else
       return nil
     end
@@ -1881,13 +1900,13 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
     dap.adapters.mcu = function(callback, cfg)
       local adapter = {type = "executable", command = config.gdb, args = {"--interpreter=dap", "--eval-command", "set print pretty on"}}
       local start
-      local function _273_()
-        local function _274_()
+      local function _276_()
+        local function _277_()
           return callback(adapter)
         end
-        return server_start(_274_)
+        return server_start(_277_)
       end
-      start = _273_
+      start = _276_
       if cfg.mcu_load then
         return Utils.build(start, config.build)
       else
@@ -1898,7 +1917,7 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
       dap.configurations[ft] = configurations()
     end
     view.register_view("peripherals", {label = "Peripherals", keymap = "P", buffer = periph_buffer, action = periph_refresh})
-    local function _276_()
+    local function _279_()
       local session = dap.session()
       if mcu_session_3f(session) then
         return on_stopped(session)
@@ -1906,7 +1925,7 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
         return nil
       end
     end
-    view.register_view("rtt", {label = "RTT", keymap = "O", buffer = rtt_buffer, action = _276_})
+    view.register_view("rtt", {label = "RTT", keymap = "O", buffer = rtt_buffer, action = _279_})
     if not vim.tbl_contains(sections, "peripherals") then
       view.setup({winbar = {sections = vim.list_extend(vim.deepcopy(sections), {"peripherals", "rtt"})}})
     else
@@ -1914,10 +1933,10 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
     dap.listeners.after.event_stopped.mcu = function(session, body)
       if mcu_session_3f(session) then
         if (body.reason == "attach") then
-          local function _279_()
+          local function _282_()
             return on_attach(session)
           end
-          return coroutine.wrap(_279_)()
+          return coroutine.wrap(_282_)()
         else
           return on_stopped(session)
         end
@@ -1947,27 +1966,27 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
     end
     vim.api.nvim_create_user_command("McuServer", server_toggle, {bang = true, desc = "Start the gdb server and show its log, ! stops it"})
     if config.serial then
-      local function _284_()
+      local function _287_()
         return Utils.open_tmp_term(config.serial)
       end
-      vim.api.nvim_create_user_command("McuSerial", _284_, {desc = "Serial console in a terminal"})
+      vim.api.nvim_create_user_command("McuSerial", _287_, {desc = "Serial console in a terminal"})
       vim.keymap.set("n", "<leader>mu", ":McuSerial<CR>", {desc = "Mcu serial"})
     else
     end
-    local function _286_()
+    local function _289_()
       require("lz.n").trigger_load("nvim-dap")
       return require("dap").run(configurations()[1])
     end
-    return vim.keymap.set("n", "<leader>dm", _286_, {desc = "Dap mcu flash and debug"})
+    return vim.keymap.set("n", "<leader>dm", _289_, {desc = "Dap mcu flash and debug"})
   end
   return Mcu.setup
 end
 require("fnl.mcu")
 if Fennel then
-  local function _287_(opts)
+  local function _290_(opts)
     return vim.print(Fennel.eval(opts.args))
   end
-  return vim.api.nvim_create_user_command("Fnl", _287_, {nargs = "+"})
+  return vim.api.nvim_create_user_command("Fnl", _290_, {nargs = "+"})
 else
   return nil
 end
