@@ -34,6 +34,28 @@ let
     "fun"
     "full"
   ];
+
+  # the lua that make builds from the fennel, found the way the Makefile does
+  compiledLua =
+    let
+      inherit (nixpkgs) lib;
+      fennelIn =
+        dir:
+        lib.lists.optionals (builtins.pathExists ../${dir}) (
+          lib.lists.filter (lib.strings.hasSuffix ".fnl") (
+            map (lib.path.removePrefix ../.) (lib.filesystem.listFilesRecursive ../${dir})
+          )
+        );
+    in
+    map (file: lib.strings.removePrefix "./" (lib.strings.removeSuffix ".fnl" file) + ".lua") (
+      [ "init.fnl" ]
+      ++ lib.lists.concatMap fennelIn [
+        "plugin"
+        "ftplugin"
+        "after/plugin"
+        "after/ftplugin"
+      ]
+    );
 in
 
 {
@@ -65,7 +87,14 @@ in
 
   checks = forAllPkgs (pkgs: import ./checks.nix { inherit pkgs self; });
 
-  formatter = forAllPkgs (pkgs: pkgs.treefmt.withConfig nixutils.lib.treefmtModule);
+  formatter = forAllPkgs (
+    pkgs:
+    pkgs.treefmt.withConfig [
+      nixutils.lib.treefmtModule
+      # the lua that make builds from the fennel
+      { settings.excludes = compiledLua; }
+    ]
+  );
 
   devShells = forAllPkgs (pkgs: {
     default = pkgs.mkShellNoCC {

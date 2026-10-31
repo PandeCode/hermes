@@ -768,7 +768,8 @@ package.preload["fnl.theme"] = package.preload["fnl.theme"] or function(...)
   local function apply_theme(base16)
     require("mini.base16").setup({use_cterm = true, palette = base16})
     IsTransparent = false
-    vim.cmd(("hi LineNr guifg=" .. base16.base0E .. "\n" .. "hi LspInlayHint guifg=" .. base16.base04 .. "\n"))
+    vim.cmd(("hi LineNr guifg=" .. base16.base0E))
+    vim.cmd(("hi LspInlayHint guifg=" .. base16.base04))
     for group, color in pairs(base16) do
       local fg_color
       if is_dark(color) then

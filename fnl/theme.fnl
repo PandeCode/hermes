@@ -35,9 +35,8 @@
 (fn apply_theme [base16]
   ((. (require :mini.base16) :setup) {:use_cterm true :palette base16})
   (set IsTransparent false)
-  ;; fnlfmt: skip
-  (vim.cmd (.. "hi LineNr guifg=" base16.base0E "\n"
-               "hi LspInlayHint guifg=" base16.base04 "\n"))
+  (vim.cmd (.. "hi LineNr guifg=" base16.base0E))
+  (vim.cmd (.. "hi LspInlayHint guifg=" base16.base04))
   (each [group color (pairs base16)]
     (let [fg_color (if (is_dark color) "#ffffff" "#000000")]
       (vim.cmd (string.format "highlight GP_%s guifg=%s guibg=%s gui=NONE"
