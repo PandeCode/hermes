@@ -768,7 +768,8 @@ package.preload["fnl.theme"] = package.preload["fnl.theme"] or function(...)
   local function apply_theme(base16)
     require("mini.base16").setup({use_cterm = true, palette = base16})
     IsTransparent = false
-    vim.cmd(("hi LineNr guifg=" .. base16.base0E .. "\n" .. "hi LspInlayHint guifg=" .. base16.base04 .. "\n"))
+    vim.cmd(("hi LineNr guifg=" .. base16.base0E))
+    vim.cmd(("hi LspInlayHint guifg=" .. base16.base04))
     for group, color in pairs(base16) do
       local fg_color
       if is_dark(color) then
@@ -1492,7 +1493,7 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
     for name, sign in pairs({DapBreakpoint = {text = "\239\134\146", texthl = "DiagnosticError", linehl = "", numhl = ""}, DapBreakpointCondition = {text = "\239\129\153", texthl = "DiagnosticWarn", linehl = "", numhl = ""}, DapBreakpointRejected = {text = "\239\129\170", texthl = "DiagnosticError", linehl = "", numhl = ""}, DapLogPoint = {text = "\243\176\134\136", texthl = "DiagnosticInfo", linehl = "", numhl = ""}, DapStopped = {text = "\239\129\161", texthl = "DiagnosticWarn", linehl = "CursorLine", numhl = "DiagnosticWarn"}}) do
       vim.fn.sign_define(name, sign)
     end
-    return nil
+    return vim.api.nvim_exec_autocmds("User", {pattern = "DapSetup"})
   end
   local function _225_()
     for _, p in ipairs({"nvim-dap-view", "nvim-dap-virtual-text"}) do

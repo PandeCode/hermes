@@ -147,7 +147,10 @@
                                         :texthl :DiagnosticWarn
                                         :linehl :CursorLine
                                         :numhl :DiagnosticWarn}})]
-    (vim.fn.sign_define name sign)))
+    (vim.fn.sign_define name sign))
+  ;; nvim-dap loads late, a project's .nvim.lua adds its adapters and
+  ;; configurations on this instead of having them overwritten above
+  (vim.api.nvim_exec_autocmds :User {:pattern :DapSetup}))
 
 ;; fnlfmt: skip
 ((. (require :lz.n) :load)
