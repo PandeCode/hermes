@@ -70,6 +70,12 @@ let
     refactoring-nvim
   ];
 
+  diagramTools = with pkgs; [
+    graphviz
+    typst
+    wavedrom-rs
+  ];
+
   rustEnv = [
     "--set"
     "RUST_SRC_PATH"
@@ -118,6 +124,11 @@ let
         "PATH"
         ":"
         (lib.strings.makeBinPath pkgs.toolsets.profiles.${profile})
+        # what K renders diagrams with, last so a project's own typst wins
+        "--suffix"
+        "PATH"
+        ":"
+        (lib.strings.makeBinPath diagramTools)
       ]
       ++ profileEnv.${profile} or [ ];
 
