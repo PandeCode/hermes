@@ -27,8 +27,13 @@ local function createTemplate(pattern, text, pos, ignored)
 				body = body()
 			end
 
-			-- Check if the buffer is empty before inserting text
-			if body ~= "" and vim.fn.line("$") == 1 and vim.fn.getline(1) == "" then
+			if vim.fn.line("$") ~= 1 or vim.fn.getline(1) ~= "" then
+				return
+			end
+
+			if type(body) == "table" then
+				vim.snippet.expand(body.snippet)
+			elseif body ~= "" then
 				-- Insert the template text
 				vim.api.nvim_buf_set_lines(
 					0,
@@ -51,6 +56,39 @@ local function createTemplate(pattern, text, pos, ignored)
 			end
 		end,
 	})
+end
+
+-- the directory init.lua is in, which also has snippets/
+local hermes_dir = vim.fs.dirname(vim.fs.dirname(debug.getinfo(1, "S").source:sub(2)))
+
+local function escape(text)
+	return (text:gsub("[\\$}]", "\\%0"))
+end
+
+-- a snippet from snippets/<ft>.json, expanded with its tabstops.
+-- defaults(path) gives tabstop number -> default text, for the defaults that
+-- come from where the file is
+local function from_snippet(ft, name, defaults)
+	return function()
+		local file = hermes_dir .. "/snippets/" .. ft .. ".json"
+		local body = table.concat(vim.json.decode(table.concat(vim.fn.readfile(file), "\n"))[name].body, "\n")
+		for n, text in pairs(defaults and defaults(vim.fn.expand("%:p")) or {}) do
+			body = body:gsub("%${" .. n .. ":[^}]*}", function()
+				return "${" .. n .. ":" .. escape(text) .. "}"
+			end, 1)
+		end
+		-- vim.snippet leaves variables inside a placeholder empty, blink fills them
+		body = body:gsub("%$TM_FILENAME_BASE", function()
+			return escape(vim.fn.expand("%:t:r"))
+		end)
+		return { snippet = body }
+	end
+end
+
+-- modules/services/ntfy.nix is dotnix.services.ntfy
+local function module_option(path)
+	local rel = path:match(".*/modules/(.+)%.nix$") or vim.fn.fnamemodify(path, ":t:r")
+	return { [1] = rel:gsub("/default$", ""):gsub("/", ".") }
 end
 
 local function cwd_has_switch(sets)
@@ -173,48 +211,17 @@ trap exit_trap EXIT
 ]],
 		{ 2, 1 },
 	},
-	{ "default.nix", [[_ :{
-	imports = [
-
-	];
-}]], { 2, 1 } },
+	{ "default.nix", from_snippet("nix", "imports") },
+	{ "modules/**.nix", from_snippet("nix", "module", module_option) },
+	{ "shell.nix", from_snippet("nix", "shell") },
+	{ "flake.nix", from_snippet("nix", "flake") },
 	{
-		"modules/**.nix",
-		[[{
-  pkgs,
-  lib,
-  config,
-  ...
-}: let
-  cfg = config.{{basefilename}};
-in {
-  options.{{basefilename}}.enable = lib.mkEnableOption "enable {{basefilename}}";
-
-  config = lib.mkIf cfg.enable {
-
-  };
-}]],
-		{ 12, 1 },
+		"package.nix",
+		from_snippet("nix", "pkg", function(path)
+			return { [1] = vim.fs.basename(vim.fs.dirname(path)) }
+		end),
 	},
-	{
-		"shell.nix",
-		[[{
-# pkgs ? import <nixpkgs> { } :
-# pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-26.05.tar.gz") { } :
-let
-  nixbuilds = builtins.getFlake "github:PandeCode/nixbuilds";
-  system = builtins.currentSystem;
-  pkgs = nixbuilds.inputs.nixpkgs.legacyPackages.${system};
-in
-pkgs.mkShell {
-  packages = [
-    pkgs.zig_0_17
-    nixbuilds.packages.${system}.zls-master
-  ];
-}
-]],
-		{ 4, 2 },
-	},
+	{ "treefmt.toml", from_snippet("toml", "treefmt") },
 	{ "*.nix", [[{...}: {
 
 }]], { 2, 2 }, { "shell.nix", "flake.nix" } },
