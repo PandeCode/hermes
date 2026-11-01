@@ -1,12 +1,16 @@
 ;; cortex-m boards behind a gdb server, pyocd by default. nothing happens until
-;; a project's .nvim.lua calls Mcu.setup:
+;; a project's .nvimrc.fnl calls Mcu.setup:
 ;;
-;;   Mcu.setup({ elf = "blink/build/Debug/blink.elf", build = "just build",
-;;               flash = "just flash", serial = "just serial" })
+;;   (Mcu.setup {:root root :elf "blink/build/Debug/blink.elf"
+;;               :build "just build blink" :flash "just flash blink"
+;;               :serial "just serial" :actions [["Size" #(...)]]})
 ;;
+;; <leader>mm opens a menu of everything below plus the project's :actions,
 ;; <leader>mb builds, <leader>mr flashes, <leader>dm builds, loads and runs to
 ;; main under gdb's own dap, the dap-view winbar gets Peripherals (pyocd reads
-;; the svd from the pack) and RTT. gdb has to know arm, nixpkgs' gdb does
+;; the svd from the pack) and RTT. gdb has to know arm, nixpkgs' gdb does.
+;; commands run from :root (the cwd by default), so a project can be opened
+;; from any folder under it
 (global Mcu {})
 
 ;; without --persist pyocd quits when gdb disconnects, which frees the probe
@@ -326,11 +330,39 @@
         (rtt_close)
         (set periph.list nil)))))
 
+;; nvim-dap is lazy, lz.n loads it first
+(fn debug [n]
+  ((. (require :lz.n) :trigger_load) :nvim-dap)
+  ((. (require :dap) :run) (. (configurations) n)))
+
+;; the project's :actions first, then what the config allows. the prompt says
+;; which elf the entries work on
+(fn menu []
+  (let [entries (vim.list_extend (vim.deepcopy (or config.actions []))
+                                 [[:Build #(Utils.build nil config.build)]
+                                  [:Flash Utils.run]
+                                  ["Flash and debug" #(debug 1)]
+                                  ["Attach to the running board" #(debug 2)]])]
+    (when config.serial
+      (table.insert entries
+                    ["Serial console" #(Utils.open_tmp_term config.serial)]))
+    (table.insert entries ["Gdb server log" #(server_toggle {:bang false})])
+    (when server
+      (table.insert entries
+                    ["Stop the gdb server" #(server_toggle {:bang true})]))
+    (vim.ui.select entries {:prompt (.. "mcu "
+                                        (vim.fs.relpath config.root (elf)))
+                            :format_item #(. $1 1)}
+                   #(when $1 ((. $1 2))))))
+
+(set Mcu.menu menu)
+
 ;; calling it again switches the project to another program
 (fn Mcu.setup [opts]
   (set config (vim.tbl_extend :force defaults {:root (vim.fn.getcwd)} opts))
   (set vim.g.build_cmd config.build)
   (set vim.g.run_cmd config.flash)
+  (set vim.g.build_dir config.root)
   (vim.api.nvim_create_autocmd :User
                                {:group (vim.api.nvim_create_augroup :mcu
                                                                     {:clear true})
@@ -345,8 +377,5 @@
                                       #(Utils.open_tmp_term config.serial)
                                       {:desc "Serial console in a terminal"})
     (vim.keymap.set :n :<leader>mu ":McuSerial<CR>" {:desc "Mcu serial"}))
-  (vim.keymap.set :n :<leader>dm
-                  #(do
-                     ((. (require :lz.n) :trigger_load) :nvim-dap)
-                     ((. (require :dap) :run) (. (configurations) 1)))
-                  {:desc "Dap mcu flash and debug"}))
+  (vim.keymap.set :n :<leader>mm menu {:desc "Mcu actions"})
+  (vim.keymap.set :n :<leader>dm #(debug 1) {:desc "Dap mcu flash and debug"}))

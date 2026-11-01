@@ -133,17 +133,28 @@ When (= ?start ?end), returns an empty iterator
 ;; test under the cursor (or all of them) into the quickfix list. a filetype
 ;; sets vim.b.build_cmd, vim.b.run_cmd and vim.b.test_cmd, a .nvimrc.fnl
 ;; overrides them for the project with vim.g.*. errors are read with the
-;; buffer's errorformat
+;; buffer's errorformat. build_dir (vim.g/vim.b too) runs the build there
+;; and reads the paths in its errors from there, for a project whose root is
+;; above the cwd
 (fn cmd_for [name]
   (or (. vim.g name) (. vim.b name)))
 
 ;; lines kept as text (a panic message, a failed test's name) come back from
 ;; the errorformat as valid entries with no file. marked as text, ]q goes from
-;; one location to the next without stopping on them
-(fn Utils.set_qf [title lines efm]
-  (vim.fn.setqflist [] " " {: title : lines : efm})
-  (vim.fn.setqflist [] :r {:items (icollect [_ e (ipairs (vim.fn.getqflist))]
-                                    (do
+;; one location to the next without stopping on them. with dir, paths in the
+;; lines start there instead of at the cwd: a %D line in front sets it and is
+;; dropped again
+(fn Utils.set_qf [title lines efm dir?]
+  (vim.fn.setqflist [] " "
+                    (if dir?
+                        {: title
+                         :lines (vim.list_extend [(.. "Entering directory '"
+                                                      dir? "'")]
+                                                 lines)
+                         :efm (.. "%DEntering directory '%f'," efm)}
+                        {: title : lines : efm}))
+  (vim.fn.setqflist [] :r {:items (icollect [i e (ipairs (vim.fn.getqflist))]
+                                    (when (not (and dir? (= i 1)))
                                       (when (= e.bufnr 0) (set e.valid 0))
                                       e))}))
 
@@ -156,14 +167,16 @@ When (= ?start ?end), returns an empty iterator
           (vim.cmd "silent! wall")
           (vim.notify cmd)
           ;; paths in the output are relative to the cwd, so the build runs
-          ;; in neovim's like :make does
-          (vim.system [:sh :-c (vim.fn.expandcmd cmd)] {:text true}
+          ;; in neovim's like :make does, or in build_dir
+          (vim.system [:sh :-c (vim.fn.expandcmd cmd)]
+                      {:text true :cwd (cmd_for :build_dir)}
                       (vim.schedule_wrap (fn [out]
                                            (local output
                                                   (.. out.stdout out.stderr))
                                            (Utils.set_qf cmd
                                                          (vim.split output "\n")
-                                                         efm)
+                                                         efm
+                                                         (cmd_for :build_dir))
                                            (if (= out.code 0)
                                                (do
                                                  (vim.cmd.cclose)
@@ -179,7 +192,8 @@ When (= ?start ?end), returns an empty iterator
 ;; errorformat knows go to the quickfix list
 (fn trace_to_qf [term title efm]
   (when (vim.api.nvim_buf_is_valid term)
-    (Utils.set_qf title (vim.api.nvim_buf_get_lines term 0 -1 false) efm)
+    (Utils.set_qf title (vim.api.nvim_buf_get_lines term 0 -1 false) efm
+                  (cmd_for :build_dir))
     (when (accumulate [any false _ e (ipairs (vim.fn.getqflist))]
             (or any (= e.valid 1)))
       (vim.cmd "botright copen"))))
