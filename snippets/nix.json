@@ -5,5 +5,270 @@
         "body": [
             "sha256:0000000000000000000000000000000000000000000000000000"
         ]
+    },
+    "module": {
+        "prefix": "module",
+        "description": "nixos or home-manager module with an enable option",
+        "body": [
+            "# ${3:what it does}",
+            "{ config, lib, ... }:",
+            "",
+            "let",
+            "  cfg = config.dotnix.${1:$TM_FILENAME_BASE};",
+            "in",
+            "",
+            "{",
+            "  options.dotnix.$1.enable = lib.options.mkEnableOption \"${2:$TM_FILENAME_BASE}\";",
+            "",
+            "  config = lib.modules.mkIf cfg.enable {",
+            "    $0",
+            "  };",
+            "}"
+        ]
+    },
+    "opt": {
+        "prefix": "opt",
+        "description": "lib.options.mkOption",
+        "body": [
+            "${1:name} = lib.options.mkOption {",
+            "  type = lib.types.${2:str};",
+            "  default = ${3:\"\"};",
+            "  description = \"${4:What it is.}\";",
+            "};"
+        ]
+    },
+    "enable": {
+        "prefix": "enable",
+        "description": "lib.options.mkEnableOption",
+        "body": [
+            "enable = lib.options.mkEnableOption \"${1:what}\";"
+        ]
+    },
+    "mkif": {
+        "prefix": "mkif",
+        "description": "lib.modules.mkIf",
+        "body": [
+            "lib.modules.mkIf ${1:cfg.enable} {",
+            "  $0",
+            "}"
+        ]
+    },
+    "imports": {
+        "prefix": "imports",
+        "description": "imports kept sorted",
+        "body": [
+            "{",
+            "  imports = [",
+            "    # keep-sorted start",
+            "    ./$0",
+            "    # keep-sorted end",
+            "  ];",
+            "}"
+        ]
+    },
+    "flake": {
+        "prefix": "flake",
+        "description": "flake on the nixpkgs pin with a dev shell and treefmt",
+        "body": [
+            "{",
+            "  description = \"${1:what it is}\";",
+            "",
+            "  inputs.nixpkgs.url = \"https://channels.nixos.org/nixos-unstable/nixexprs.tar.zst\";",
+            "",
+            "  outputs =",
+            "    { self, nixpkgs }:",
+            "    let",
+            "      forAll =",
+            "        f:",
+            "        nixpkgs.lib.genAttrs [",
+            "          \"x86_64-linux\"",
+            "          \"aarch64-linux\"",
+            "        ] (system: f nixpkgs.legacyPackages.\\${system});",
+            "",
+            "      # the formatters treefmt.toml calls",
+            "      treefmt =",
+            "        pkgs:",
+            "        pkgs.treefmt.withConfig {",
+            "          configFile = ./treefmt.toml;",
+            "          runtimeInputs = [ pkgs.nixfmt ];",
+            "        };",
+            "    in",
+            "    {",
+            "      formatter = forAll treefmt;",
+            "",
+            "      checks = forAll (pkgs: {",
+            "        formatting = (treefmt pkgs).check self;",
+            "      });",
+            "",
+            "      devShells = forAll (pkgs: {",
+            "        default = pkgs.mkShell {",
+            "          packages = with pkgs; [",
+            "            $0",
+            "            (treefmt pkgs)",
+            "          ];",
+            "        };",
+            "      });",
+            "    };",
+            "}"
+        ]
+    },
+    "input": {
+        "prefix": "input",
+        "description": "flake input following nixpkgs",
+        "body": [
+            "# ${3:what it is for}",
+            "${1:name} = {",
+            "  type = \"github\";",
+            "  owner = \"${2:owner}\";",
+            "  repo = \"$1\";",
+            "  inputs.nixpkgs.follows = \"nixpkgs\";",
+            "};"
+        ]
+    },
+    "devshell": {
+        "prefix": "devshell",
+        "description": "devShells.default for forAll",
+        "body": [
+            "devShells = forAll (pkgs: {",
+            "  default = pkgs.mkShell {",
+            "    packages = with pkgs; [",
+            "      $0",
+            "    ];",
+            "  };",
+            "});"
+        ]
+    },
+    "shell": {
+        "prefix": "shell",
+        "description": "shell.nix on the nixpkgs pin of nixbuilds",
+        "body": [
+            "# the same nixpkgs as the system, through nixbuilds",
+            "let",
+            "  nixbuilds = builtins.getFlake \"github:PandeCode/nixbuilds\";",
+            "  pkgs = nixbuilds.inputs.nixpkgs.legacyPackages.\\${builtins.currentSystem};",
+            "in",
+            "pkgs.mkShell {",
+            "  packages = with pkgs; [",
+            "    $0",
+            "  ];",
+            "}"
+        ]
+    },
+    "pkg": {
+        "prefix": "pkg",
+        "description": "package.nix built with stdenv",
+        "body": [
+            "{",
+            "  lib,",
+            "  stdenv,",
+            "  fetchFromGitHub,",
+            "}:",
+            "",
+            "stdenv.mkDerivation (finalAttrs: {",
+            "  pname = \"${1:name}\";",
+            "  version = \"${2:0.1.0}\";",
+            "",
+            "  src = fetchFromGitHub {",
+            "    owner = \"${3:owner}\";",
+            "    repo = \"$1\";",
+            "    tag = \"v\\${finalAttrs.version}\";",
+            "    hash = lib.fakeHash;",
+            "  };",
+            "",
+            "  strictDeps = true;",
+            "",
+            "  nativeBuildInputs = [ $0 ];",
+            "",
+            "  meta = {",
+            "    description = \"${4:What it is}\";",
+            "    homepage = \"https://github.com/$3/$1\";",
+            "    license = lib.licenses.${5:mit};",
+            "    mainProgram = \"$1\";",
+            "    platforms = lib.platforms.${6:linux};",
+            "  };",
+            "})"
+        ]
+    },
+    "pkgrust": {
+        "prefix": "pkgrust",
+        "description": "package.nix for a rust crate",
+        "body": [
+            "{",
+            "  lib,",
+            "  rustPlatform,",
+            "  fetchFromGitHub,",
+            "}:",
+            "",
+            "rustPlatform.buildRustPackage (finalAttrs: {",
+            "  pname = \"${1:name}\";",
+            "  version = \"${2:0.1.0}\";",
+            "",
+            "  src = fetchFromGitHub {",
+            "    owner = \"${3:owner}\";",
+            "    repo = \"$1\";",
+            "    tag = \"v\\${finalAttrs.version}\";",
+            "    hash = lib.fakeHash;",
+            "  };",
+            "",
+            "  cargoHash = lib.fakeHash;",
+            "",
+            "  meta = {",
+            "    description = \"${4:What it is}\";",
+            "    homepage = \"https://github.com/$3/$1\";",
+            "    license = lib.licenses.${5:mit};",
+            "    mainProgram = \"$1\";",
+            "    platforms = lib.platforms.${6:linux};",
+            "  };",
+            "})"
+        ]
+    },
+    "pkgzig": {
+        "prefix": "pkgzig",
+        "description": "package.nix for a zig build",
+        "body": [
+            "{",
+            "  lib,",
+            "  stdenv,",
+            "  fetchFromGitHub,",
+            "  zig_0_17,",
+            "}:",
+            "",
+            "let",
+            "  zig = zig_0_17;",
+            "in",
+            "stdenv.mkDerivation (finalAttrs: {",
+            "  pname = \"${1:name}\";",
+            "  version = \"${2:0.1.0}\";",
+            "",
+            "  src = fetchFromGitHub {",
+            "    owner = \"${3:owner}\";",
+            "    repo = \"$1\";",
+            "    tag = \"v\\${finalAttrs.version}\";",
+            "    hash = lib.fakeHash;",
+            "  };",
+            "",
+            "  strictDeps = true;",
+            "",
+            "  # one hash for every package in build.zig.zon",
+            "  zigDeps = zig.fetchDeps {",
+            "    inherit (finalAttrs) src pname version;",
+            "    hash = lib.fakeHash;",
+            "  };",
+            "",
+            "  postConfigure = ''",
+            "    ln -s \\${finalAttrs.zigDeps} \"\\$ZIG_GLOBAL_CACHE_DIR/p\"",
+            "  '';",
+            "",
+            "  nativeBuildInputs = [ zig ];",
+            "",
+            "  meta = {",
+            "    description = \"${4:What it is}\";",
+            "    homepage = \"https://github.com/$3/$1\";",
+            "    license = lib.licenses.${5:mit};",
+            "    mainProgram = \"$1\";",
+            "    platforms = lib.platforms.${6:linux};",
+            "  };",
+            "})"
+        ]
     }
 }

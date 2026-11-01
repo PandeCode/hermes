@@ -1,0 +1,25 @@
+{
+    "treefmt": {
+        "prefix": "treefmt",
+        "description": "treefmt.toml formatting the nix files",
+        "body": [
+            "# the formatters come from the flake, run `treefmt` in `nix develop` or `nix fmt`",
+            "tree-root-file = \"flake.nix\"",
+            "",
+            "[formatter.nix]",
+            "command = \"nixfmt\"",
+            "includes = [\"*.nix\"]",
+            "$0"
+        ]
+    },
+    "formatter": {
+        "prefix": "formatter",
+        "description": "treefmt formatter",
+        "body": [
+            "[formatter.${1:name}]",
+            "command = \"${2:command}\"",
+            "options = [$3]",
+            "includes = [\"${4:*.ext}\"]"
+        ]
+    }
+}
