@@ -140,6 +140,7 @@
                     :html
                     :cssls
                     :fish_lsp
+                    :just
                     :omnisharp
                     :tinymist
                     :ocamllsp
