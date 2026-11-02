@@ -14,7 +14,8 @@
 -- can stand in for query when the text is not one node, and a provider
 -- without cmd shows its text as is. kind 'typst_doc' renders a whole typst
 -- document instead of an equation, and 'svg' takes an svg and renders it
--- through typst too
+-- through typst too. kind can also be a function that shows the text itself,
+-- and key puts a provider on a key of its own instead of K
 --
 -- images are drawn with vim.ui.img, which needs nvim 0.13 and a terminal
 -- with the kitty graphics protocol. inside tmux they go through as kitty
@@ -40,9 +41,10 @@ M.config = {
 ---@field query? string tree-sitter query with a @text capture
 ---@field find? fun(buf: integer, row: integer, col: integer): string? the text at a 0-based position
 ---@field cmd? string[]|fun(): string[] gets the text on stdin, prints the result
----@field kind 'typst'|'typst_doc'|'svg'|'png'|'markdown'
+---@field kind 'typst'|'typst_doc'|'svg'|'png'|'markdown'|fun(text: string)
 ---@field text? fun(s: string): string turns the captured text into the input
 ---@field cwd? string
+---@field key? string the key that shows it, K when not set
 
 ---@type table<string, khover.Provider[]>
 local providers = {}
@@ -51,30 +53,55 @@ function M.setup(opts)
 	M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 end
 
-local function map(buf)
-	vim.keymap.set("n", "K", M.hover, { buffer = buf, desc = "khover" })
+local function map(key, buf)
+	vim.keymap.set("n", key, function()
+		M.hover(key)
+	end, { buffer = buf, desc = "khover" })
 end
 
 ---@param p khover.Provider
 function M.register(p)
+	local key = p.key or "K"
 	local filetypes = type(p.filetype) == "table" and p.filetype or { p.filetype }
+	providers[key] = providers[key] or {}
 	for _, ft in ipairs(filetypes) do
-		providers[ft] = providers[ft] or {}
-		table.insert(providers[ft], p)
+		providers[key][ft] = providers[key][ft] or {}
+		table.insert(providers[key][ft], p)
 	end
 	if vim.tbl_contains(filetypes, "*") then
-		vim.keymap.set("n", "K", M.hover, { desc = "khover" })
+		map(key)
 		return
 	end
 	vim.api.nvim_create_autocmd("FileType", {
 		pattern = filetypes,
 		callback = function(ev)
-			map(ev.buf)
+			map(key, ev.buf)
 		end,
 	})
 	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
 		if vim.tbl_contains(filetypes, vim.bo[buf].filetype) then
-			map(buf)
+			map(key, buf)
+		end
+	end
+end
+
+-- for a find(): the text on row that one of patterns matches over col, and
+-- that accept takes when given. patterns are tried in order
+function M.match_at(buf, row, col, patterns, accept)
+	local line = vim.api.nvim_buf_get_lines(buf, row, row + 1, false)[1] or ""
+	local at = col + 1
+	for _, pattern in ipairs(patterns) do
+		local from = 1
+		while true do
+			local start, stop = line:find(pattern, from)
+			if not start or start > at then
+				break
+			end
+			local text = line:sub(start, stop)
+			if at <= stop and (not accept or accept(text)) then
+				return text
+			end
+			from = stop + 1
 		end
 	end
 end
@@ -587,7 +614,9 @@ local function svg(data)
 end
 
 local function show(p, out)
-	if p.kind == "typst" then
+	if type(p.kind) == "function" then
+		p.kind(out)
+	elseif p.kind == "typst" then
 		typst("$ " .. vim.trim(out) .. " $")
 	elseif p.kind == "typst_doc" then
 		typst(out)
@@ -600,10 +629,13 @@ local function show(p, out)
 	end
 end
 
--- K: the first provider whose text is under the cursor, or the usual K
-function M.hover()
+-- K (or the provider's key): the first provider whose text is under the
+-- cursor, or for K the usual K
+function M.hover(key)
+	key = key or "K"
 	local buf = vim.api.nvim_get_current_buf()
-	local candidates = vim.list_extend(vim.list_slice(providers[vim.bo[buf].filetype] or {}), providers["*"] or {})
+	local by_ft = providers[key] or {}
+	local candidates = vim.list_extend(vim.list_slice(by_ft[vim.bo[buf].filetype] or {}), by_ft["*"] or {})
 	for _, p in ipairs(candidates) do
 		local text = capture(buf, p)
 		if text then
@@ -620,10 +652,16 @@ function M.hover()
 			return
 		end
 	end
-	if #vim.lsp.get_clients({ bufnr = buf, method = "textDocument/hover" }) > 0 then
+	if key ~= "K" then
+		return
+	elseif #vim.lsp.get_clients({ bufnr = buf, method = "textDocument/hover" }) > 0 then
 		(M.config.hover or vim.lsp.buf.hover)()
-	else
-		vim.cmd("normal! K")
+	elseif vim.fn.expand("<cword>") ~= "" then
+		-- keywordprg failing (no man page) is a message, not a traceback
+		local ok, err = pcall(vim.cmd, "normal! K")
+		if not ok then
+			vim.notify((tostring(err):gsub("^.-Vim[^:]*:", "")), vim.log.levels.WARN)
+		end
 	end
 end
 
