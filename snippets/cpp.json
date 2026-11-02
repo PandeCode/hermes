@@ -20,5 +20,23 @@
             "// ```"
         ],
         "description": "wavedrom timing diagram, K shows it"
+    },
+    "svgbob fence": {
+        "prefix": "svgbob",
+        "body": [
+            "// ```svgbob",
+            "// ${1:a} ---> ${2:b}$0",
+            "// ```"
+        ],
+        "description": "svgbob ascii drawing, K shows it"
+    },
+    "d2 fence": {
+        "prefix": "d2",
+        "body": [
+            "// ```d2",
+            "// ${1:a} -> ${2:b}$0",
+            "// ```"
+        ],
+        "description": "d2 diagram, K shows it"
     }
 }

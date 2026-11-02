@@ -144,6 +144,21 @@ local function wavedrom()
     return {"wavedrom", "-s", path}
   end
 end
+local function svgbob()
+  local c = fg()
+  return {"svgbob", "--background", "transparent", "--stroke-color", c, "--fill-color", c}
+end
+local function d2()
+  local _18_
+  if (vim.o.background == "light") then
+    _18_ = "0"
+  else
+    _18_ = "200"
+  end
+  return {"d2", "--theme", _18_, "--pad", "8", "-", "-"}
+end
+khover.register({filetype = "*", find = find({"svgbob", "bob"}), cmd = svgbob, kind = "svg"})
+khover.register({filetype = "*", find = find({"d2"}), cmd = d2, kind = "svg"})
 khover.register({filetype = "*", find = find({"graphviz", "dot"}), cmd = dot, kind = "svg"})
 khover.register({filetype = "*", find = find({"wavedrom"}), cmd = wavedrom, kind = "svg"})
 return khover.register({filetype = "*", find = find({"typst"}), kind = "typst_doc"})

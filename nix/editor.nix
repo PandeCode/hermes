@@ -71,7 +71,9 @@ let
   ];
 
   diagramTools = with pkgs; [
+    d2
     graphviz
+    svgbob
     typst
     wavedrom-rs
   ];

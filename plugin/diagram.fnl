@@ -1,6 +1,6 @@
-;; graphviz, wavedrom and typst in ``` fences: in markdown, typst raw blocks
-;; and comments they get their language's highlighting, and K on one shows
-;; it rendered. dot, wavedrom (wavedrom-rs) and typst come with hermes
+;; graphviz, wavedrom, svgbob, d2 and typst in ``` fences: in markdown, typst
+;; raw blocks and comments they get their language's highlighting, and K on
+;; one shows it rendered. the renderers come with hermes
 ;;
 ;;   // ```wavedrom
 ;;   // { signal: [{ name: "clk", wave: "p...." }] }
@@ -151,6 +151,22 @@
           (vim.fn.mkdir (vim.fs.dirname path) :p)
           (vim.fn.writefile (vim.split skin "\n") path))
         [:wavedrom :-s path])))
+
+;; ascii art, as in a comment
+(fn svgbob []
+  (let [c (fg)]
+    [:svgbob :--background :transparent :--stroke-color c :--fill-color c]))
+
+;; d2 draws its own background, so its dark or light theme follows nvim's
+(fn d2 []
+  [:d2 :--theme (if (= vim.o.background :light) :0 :200) :--pad :8 "-" "-"])
+
+(khover.register {:filetype "*"
+                  :find (find [:svgbob :bob])
+                  :cmd svgbob
+                  :kind :svg})
+
+(khover.register {:filetype "*" :find (find [:d2]) :cmd d2 :kind :svg})
 
 (khover.register {:filetype "*"
                   :find (find [:graphviz :dot])
