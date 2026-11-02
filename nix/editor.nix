@@ -14,6 +14,7 @@ let
   eagerPlugins = with pkgs.vimPlugins; [
     lz-n
     mini-nvim
+    ccc-nvim
     snacks-nvim
 
     nvim-lspconfig
