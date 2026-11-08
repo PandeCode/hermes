@@ -181,3 +181,12 @@
                                   :warn_style true
                                   :highlight_global_var_declarations true
                                   :build_on_save_args [:-fincremental :-j4]}}})
+
+;; zls marks strings at a higher priority than treesitter, which hides the
+;; language injected into a `// c` multiline string. treesitter colors
+;; strings already, so the zls one goes
+(fn hide-zls-strings []
+  (vim.api.nvim_set_hl 0 "@lsp.type.string.zig" {}))
+
+(hide-zls-strings)
+(vim.api.nvim_create_autocmd :ColorScheme {:callback hide-zls-strings})
