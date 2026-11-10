@@ -76,10 +76,14 @@
   (local formatters
          (get_available (. vim.bo bufnr :filetype) null_ls.methods.FORMATTING))
   (local null_ls_formats? (not= nil (. formatters 1)))
-  (vim.lsp.buf.format {: bufnr
-                       :async (or opts.async false)
-                       :timeout_ms (or opts.timeout_ms 1000)
-                       :filter #(or (not null_ls_formats?) (= $.name :null-ls))}))
+  (local filter #(or (not null_ls_formats?) (= $.name :null-ls)))
+  ;; nothing to format with: skip instead of the "no matching language servers" warning
+  (local clients (vim.lsp.get_clients {: bufnr :method :textDocument/formatting}))
+  (when (: (vim.iter clients) :any filter)
+    (vim.lsp.buf.format {: bufnr
+                         :async (or opts.async false)
+                         :timeout_ms (or opts.timeout_ms 1000)
+                         : filter})))
 
 (vim.api.nvim_create_autocmd :BufWritePre
                              {:pattern "*"

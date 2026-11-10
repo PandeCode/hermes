@@ -1333,23 +1333,30 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
     local get_available = require("null-ls.sources").get_available
     local formatters = get_available(vim.bo[bufnr].filetype, null_ls.methods.FORMATTING)
     local null_ls_formats_3f = (nil ~= formatters[1])
+    local filter
     local function _207_(_241)
       return (not null_ls_formats_3f or (_241.name == "null-ls"))
     end
-    return vim.lsp.buf.format({bufnr = bufnr, async = (opts.async or false), timeout_ms = (opts.timeout_ms or 1000), filter = _207_})
+    filter = _207_
+    local clients = vim.lsp.get_clients({bufnr = bufnr, method = "textDocument/formatting"})
+    if vim.iter(clients):any(filter) then
+      return vim.lsp.buf.format({bufnr = bufnr, async = (opts.async or false), timeout_ms = (opts.timeout_ms or 1000), filter = filter})
+    else
+      return nil
+    end
   end
-  local function _208_(args)
+  local function _209_(args)
     if not vim.b[args.buf].typst_autosaving then
       return lsp_format_with_fallback({timeout_ms = 500})
     else
       return nil
     end
   end
-  vim.api.nvim_create_autocmd("BufWritePre", {pattern = "*", callback = _208_})
-  local function _210_()
+  vim.api.nvim_create_autocmd("BufWritePre", {pattern = "*", callback = _209_})
+  local function _211_()
     return lsp_format_with_fallback()
   end
-  vim.keymap.set({"n", "v"}, "<leader>cf", _210_)
+  vim.keymap.set({"n", "v"}, "<leader>cf", _211_)
   vim.lsp.inlay_hint.enable()
   local noice = require("noice.lsp")
   local snacks = require("snacks")
@@ -1360,22 +1367,22 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
       return vim.keymap.set("n", k, f)
     end
   end
-  local function _212_()
+  local function _213_()
     return snacks.picker.lsp_references()
   end
-  n("grr", _212_, "[G]oto [R]eferences")
-  local function _213_()
+  n("grr", _213_, "[G]oto [R]eferences")
+  local function _214_()
     return snacks.picker.lsp_implementations()
   end
-  n("gI", _213_, "[G]oto [I]mplementation")
-  local function _214_()
+  n("gI", _214_, "[G]oto [I]mplementation")
+  local function _215_()
     return snacks.picker.lsp_workspace_symbols()
   end
-  n("<leader>ws", _214_, "[W]orkspace [S]ymbols")
-  local function _215_()
+  n("<leader>ws", _215_, "[W]orkspace [S]ymbols")
+  local function _216_()
     return vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
   end
-  n("<leader>ei", _215_, "Toggle Inlay")
+  n("<leader>ei", _216_, "Toggle Inlay")
   local khover = require("khover")
   khover.setup({hover = noice.hover})
   n("K", khover.hover, "Hover Documentation")
@@ -1431,29 +1438,29 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
     dap.adapters["rust-gdb"] = {type = "executable", command = "rust-gdb", args = {"--interpreter=dap", "--eval-command", "set print pretty on"}}
     do
       local pick_2_auto
-      local function _217_()
+      local function _218_()
         return vim.fn.input("Path to executable: ", (vim.fn.getcwd() .. "/"), "file")
       end
-      pick_2_auto = _217_
-      local function _218_()
+      pick_2_auto = _218_
+      local function _219_()
         local name_3_auto = vim.fn.input("Executable name (filter): ")
         return require("dap.utils").pick_process({filter = name_3_auto})
       end
-      dap.configurations.c = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _218_, program = pick_2_auto, request = "attach", type = "gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "gdb"}}
+      dap.configurations.c = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _219_, program = pick_2_auto, request = "attach", type = "gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "gdb"}}
     end
     dap.configurations.cpp = dap.configurations.c
     dap.configurations.zig = dap.configurations.c
     do
       local pick_2_auto
-      local function _219_()
+      local function _220_()
         return vim.fn.input("Path to executable: ", (vim.fn.getcwd() .. "/"), "file")
       end
-      pick_2_auto = _219_
-      local function _220_()
+      pick_2_auto = _220_
+      local function _221_()
         local name_3_auto = vim.fn.input("Executable name (filter): ")
         return require("dap.utils").pick_process({filter = name_3_auto})
       end
-      dap.configurations.rust = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _220_, program = pick_2_auto, request = "attach", type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "rust-gdb"}}
+      dap.configurations.rust = {{args = {}, cwd = "${workspaceFolder}", name = "Launch", program = pick_2_auto, request = "launch", stopAtBeginningOfMainSubprogram = false, type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Select and attach to process", pid = _221_, program = pick_2_auto, request = "attach", type = "rust-gdb"}, {cwd = "${workspaceFolder}", name = "Attach to gdbserver :1234", program = pick_2_auto, request = "attach", target = "localhost:1234", type = "rust-gdb"}}
     end
     local keymap_restore = {}
     local sessions = 0
@@ -1476,10 +1483,10 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
             end
           end
         end
-        local function _223_()
+        local function _224_()
           return frontend.hover()
         end
-        return vim.keymap.set("n", "K", _223_, {silent = true})
+        return vim.keymap.set("n", "K", _224_, {silent = true})
       else
         return nil
       end
@@ -1494,10 +1501,10 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
               vim.fn.mapset(keymap)
             else
               if vim.api.nvim_buf_is_valid(keymap.buffer) then
-                local function _225_()
+                local function _226_()
                   return vim.fn.mapset(keymap)
                 end
-                vim.api.nvim_buf_call(keymap.buffer, _225_)
+                vim.api.nvim_buf_call(keymap.buffer, _226_)
               else
               end
             end
@@ -1530,13 +1537,13 @@ package.preload["fnl.dap"] = package.preload["fnl.dap"] or function(...)
     end
     return vim.api.nvim_exec_autocmds("User", {pattern = "DapSetup"})
   end
-  local function _230_()
+  local function _231_()
     for _, p in ipairs({"nvim-dap-view", "nvim-dap-virtual-text"}) do
       vim.cmd.packadd(p)
     end
     return nil
   end
-  return require("lz.n").load({"nvim-dap", keys = {"<leader>db", "<leader>dc", "<leader>do", "<leader>di", "<leader>dt", "<leader>dr", "<M-c>", "<M-o>", "<M-i>", "<M-t>", "<M-r>", "<leader>dui", "<leader>dux", "<leader>det"}, cmd = {"DapContinue", "DapNew", "DapToggleBreakpoint"}, before = _230_, after = setup})
+  return require("lz.n").load({"nvim-dap", keys = {"<leader>db", "<leader>dc", "<leader>do", "<leader>di", "<leader>dt", "<leader>dr", "<M-c>", "<M-o>", "<M-i>", "<M-t>", "<M-r>", "<leader>dui", "<leader>dux", "<leader>det"}, cmd = {"DapContinue", "DapNew", "DapToggleBreakpoint"}, before = _231_, after = setup})
 end
 require("fnl.dap")
 package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
@@ -1549,14 +1556,14 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
     return vim.notify(("mcu: " .. msg), level)
   end
   local function elf()
-    local function _231_()
+    local function _232_()
       if (type(config.elf) == "function") then
         return config.elf()
       else
         return config.elf
       end
     end
-    return vim.fs.joinpath(config.root, _231_())
+    return vim.fs.joinpath(config.root, _232_())
   end
   local function server_output(_, data)
     vim.api.nvim_buf_set_lines(log, -1, -1, false, data)
@@ -1604,10 +1611,10 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
       server.stopping = true
       return vim.fn.jobstop(server.job)
     else
-      local function _237_()
+      local function _238_()
         return notify("gdb server up")
       end
-      server_start(_237_)
+      server_start(_238_)
       return vim.cmd(("botright sbuffer " .. log))
     end
   end
@@ -1688,14 +1695,14 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
         for _0, l in ipairs(vim.split((periph.text[p.name] or ""), "\n", {trimempty = true})) do
           local reg = l:match("^%S+%.(%S+) @")
           local key = (reg and (p.name .. "." .. reg))
-          local function _247_()
+          local function _248_()
             if key then
               return {key = key}
             else
               return {}
             end
           end
-          add(("    " .. l), _247_())
+          add(("    " .. l), _248_())
           if (key and periph.open[key]) then
             for _1, f in ipairs(vim.split((periph.text[key] or ""), "\n", {trimempty = true})) do
               if f:match("^%s") then
@@ -1724,7 +1731,7 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
     end
   end
   local function periph_read(session, key)
-    local function _252_()
+    local function _253_()
       if (key == "fault") then
         return "show fault"
       elseif key:find(".", 1, true) then
@@ -1733,7 +1740,7 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
         return ("rr -p " .. key)
       end
     end
-    periph.text[key] = monitor(session, _252_())
+    periph.text[key] = monitor(session, _253_())
     return nil
   end
   local function periph_list(session)
@@ -1764,7 +1771,7 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
   local function periph_refresh()
     local session = require("dap").session()
     if (mcu_session_3f(session) and session.stopped_thread_id) then
-      local function _255_()
+      local function _256_()
         if not periph.list then
           periph_list(session)
         else
@@ -1774,7 +1781,7 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
         end
         return periph_render()
       end
-      return coroutine.wrap(_255_)()
+      return coroutine.wrap(_256_)()
     else
       return nil
     end
@@ -1783,13 +1790,13 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
     local row = periph.rows[vim.fn.line(".")]
     local key = (row and row.key)
     if key then
-      local _258_
+      local _259_
       if periph.open[key] then
-        _258_ = nil
+        _259_ = nil
       else
-        _258_ = true
+        _259_ = true
       end
-      periph.open[key] = _258_
+      periph.open[key] = _259_
       if periph.open[key] then
         return periph_refresh()
       else
@@ -1820,27 +1827,27 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
   local function rtt_connect()
     local tcp = vim.uv.new_tcp()
     rtt.tcp = tcp
-    local function _263_(err)
+    local function _264_(err)
       if err then
-        local function _264_()
+        local function _265_()
           return rtt_write(("rtt: " .. err .. "\n"))
         end
-        return vim.schedule(_264_)
+        return vim.schedule(_265_)
       else
-        local function _265_(_, data)
+        local function _266_(_, data)
           if data then
-            local function _266_()
+            local function _267_()
               return rtt_write(data)
             end
-            return vim.schedule(_266_)
+            return vim.schedule(_267_)
           else
             return nil
           end
         end
-        return tcp:read_start(_265_)
+        return tcp:read_start(_266_)
       end
     end
-    return tcp:connect("127.0.0.1", config.rtt.port, _263_)
+    return tcp:connect("127.0.0.1", config.rtt.port, _264_)
   end
   local function rtt_start(session)
     rtt.up = "trying"
@@ -1886,23 +1893,23 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
   local function rtt_buffer()
     local buf = vim.api.nvim_create_buf(false, true)
     rtt.buf = buf
-    local function _274_(_, _0, _1, data)
+    local function _275_(_, _0, _1, data)
       if rtt.tcp then
         return rtt.tcp:write(data)
       else
         return nil
       end
     end
-    rtt.chan = vim.api.nvim_open_term(buf, {on_input = _274_})
+    rtt.chan = vim.api.nvim_open_term(buf, {on_input = _275_})
     return buf
   end
   local function on_stopped(session)
     periph_refresh()
     if (rtt.buf and not rtt.up) then
-      local function _276_()
+      local function _277_()
         return rtt_start(session)
       end
-      return coroutine.wrap(_276_)()
+      return coroutine.wrap(_277_)()
     else
       return nil
     end
@@ -1914,13 +1921,13 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
     dap.adapters.mcu = function(callback, cfg)
       local adapter = {type = "executable", command = config.gdb, args = {"--interpreter=dap", "--eval-command", "set print pretty on"}}
       local start
-      local function _278_()
-        local function _279_()
+      local function _279_()
+        local function _280_()
           return callback(adapter)
         end
-        return server_start(_279_)
+        return server_start(_280_)
       end
-      start = _278_
+      start = _279_
       if cfg.mcu_load then
         return Utils.build(start, config.build)
       else
@@ -1931,7 +1938,7 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
       dap.configurations[ft] = configurations()
     end
     view.register_view("peripherals", {label = "Peripherals", keymap = "P", buffer = periph_buffer, action = periph_refresh})
-    local function _281_()
+    local function _282_()
       local session = dap.session()
       if mcu_session_3f(session) then
         return on_stopped(session)
@@ -1939,7 +1946,7 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
         return nil
       end
     end
-    view.register_view("rtt", {label = "RTT", keymap = "O", buffer = rtt_buffer, action = _281_})
+    view.register_view("rtt", {label = "RTT", keymap = "O", buffer = rtt_buffer, action = _282_})
     if not vim.tbl_contains(sections, "peripherals") then
       view.setup({winbar = {sections = vim.list_extend(vim.deepcopy(sections), {"peripherals", "rtt"})}})
     else
@@ -1947,10 +1954,10 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
     dap.listeners.after.event_stopped.mcu = function(session, body)
       if mcu_session_3f(session) then
         if (body.reason == "attach") then
-          local function _284_()
+          local function _285_()
             return on_attach(session)
           end
-          return coroutine.wrap(_284_)()
+          return coroutine.wrap(_285_)()
         else
           return on_stopped(session)
         end
@@ -1975,45 +1982,45 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
   end
   local function menu()
     local entries
-    local function _288_()
+    local function _289_()
       return Utils.build(nil, config.build)
     end
-    local function _289_()
+    local function _290_()
       return debug(1)
     end
-    local function _290_()
+    local function _291_()
       return debug(2)
     end
-    entries = vim.list_extend(vim.deepcopy((config.actions or {})), {{"Build", _288_}, {"Flash", Utils.run}, {"Flash and debug", _289_}, {"Attach to the running board", _290_}})
+    entries = vim.list_extend(vim.deepcopy((config.actions or {})), {{"Build", _289_}, {"Flash", Utils.run}, {"Flash and debug", _290_}, {"Attach to the running board", _291_}})
     if config.serial then
-      local function _291_()
+      local function _292_()
         return Utils.open_tmp_term(config.serial)
       end
-      table.insert(entries, {"Serial console", _291_})
+      table.insert(entries, {"Serial console", _292_})
     else
     end
-    local function _293_()
+    local function _294_()
       return server_toggle({bang = false})
     end
-    table.insert(entries, {"Gdb server log", _293_})
+    table.insert(entries, {"Gdb server log", _294_})
     if server then
-      local function _294_()
+      local function _295_()
         return server_toggle({bang = true})
       end
-      table.insert(entries, {"Stop the gdb server", _294_})
+      table.insert(entries, {"Stop the gdb server", _295_})
     else
     end
-    local function _296_(_241)
+    local function _297_(_241)
       return _241[1]
     end
-    local function _297_(_241)
+    local function _298_(_241)
       if _241 then
         return _241[2]()
       else
         return nil
       end
     end
-    return vim.ui.select(entries, {prompt = ("mcu " .. vim.fs.relpath(config.root, elf())), format_item = _296_}, _297_)
+    return vim.ui.select(entries, {prompt = ("mcu " .. vim.fs.relpath(config.root, elf())), format_item = _297_}, _298_)
   end
   Mcu.menu = menu
   Mcu.setup = function(opts)
@@ -2028,27 +2035,27 @@ package.preload["fnl.mcu"] = package.preload["fnl.mcu"] or function(...)
     end
     vim.api.nvim_create_user_command("McuServer", server_toggle, {bang = true, desc = "Start the gdb server and show its log, ! stops it"})
     if config.serial then
-      local function _300_()
+      local function _301_()
         return Utils.open_tmp_term(config.serial)
       end
-      vim.api.nvim_create_user_command("McuSerial", _300_, {desc = "Serial console in a terminal"})
+      vim.api.nvim_create_user_command("McuSerial", _301_, {desc = "Serial console in a terminal"})
       vim.keymap.set("n", "<leader>mu", ":McuSerial<CR>", {desc = "Mcu serial"})
     else
     end
     vim.keymap.set("n", "<leader>mm", menu, {desc = "Mcu actions"})
-    local function _302_()
+    local function _303_()
       return debug(1)
     end
-    return vim.keymap.set("n", "<leader>dm", _302_, {desc = "Dap mcu flash and debug"})
+    return vim.keymap.set("n", "<leader>dm", _303_, {desc = "Dap mcu flash and debug"})
   end
   return Mcu.setup
 end
 require("fnl.mcu")
 if Fennel then
-  local function _303_(opts)
+  local function _304_(opts)
     return vim.print(Fennel.eval(opts.args))
   end
-  return vim.api.nvim_create_user_command("Fnl", _303_, {nargs = "+"})
+  return vim.api.nvim_create_user_command("Fnl", _304_, {nargs = "+"})
 else
   return nil
 end
