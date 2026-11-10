@@ -78,7 +78,8 @@
   (local null_ls_formats? (not= nil (. formatters 1)))
   (local filter #(or (not null_ls_formats?) (= $.name :null-ls)))
   ;; nothing to format with: skip instead of the "no matching language servers" warning
-  (local clients (vim.lsp.get_clients {: bufnr :method :textDocument/formatting}))
+  (local clients
+         (vim.lsp.get_clients {: bufnr :method :textDocument/formatting}))
   (when (: (vim.iter clients) :any filter)
     (vim.lsp.buf.format {: bufnr
                          :async (or opts.async false)
