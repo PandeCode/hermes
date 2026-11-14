@@ -114,6 +114,57 @@ When (= ?start ?end), returns an empty iterator
 
 (Utils.bind_term :<leader>to "tmux kill-pane -a")
 
+;; the directory init.lua was loaded from: the nix store copy, or a checkout
+(set Utils.dir (vim.fs.dirname (: (. (debug.getinfo 1 :S) :source) :sub 2)))
+
+;; text that vim.snippet.expand puts in as it is
+(fn Utils.snippet_escape [text]
+  (pick-values 1 (text:gsub "[\\$}]" "\\%0")))
+
+;; the body of snippet name in snippets/<ft>.json, for vim.snippet.expand.
+;; defaults maps a tabstop number to the text it starts with
+(fn Utils.snippet [ft name ?defaults]
+  (let [file (.. Utils.dir :/snippets/ ft :.json)
+        snippets (vim.json.decode (table.concat (vim.fn.readfile file) "\n"))]
+    (var body (table.concat (. snippets name :body) "\n"))
+    (each [n text (pairs (or ?defaults {}))]
+      (set body
+           (body:gsub (.. "%${" n ":[^}]*}")
+                      #(.. "${" n ":" (Utils.snippet_escape text) "}") 1)))
+    ;; vim.snippet leaves variables inside a placeholder empty, blink fills them
+    (pick-values 1
+                 (body:gsub "%$TM_FILENAME_BASE"
+                            #(Utils.snippet_escape (vim.fn.expand "%:t:r"))))))
+
+;; what a new flake in dir comes with: the treefmt.toml it formats with, an
+;; .envrc for direnv and .direnv/ in .gitignore. files already there stay
+(fn Utils.flake_files [dir]
+  (let [path #(.. dir "/" $)
+        missing #(= 0 (vim.fn.filereadable (path $)))
+        made []]
+    (when (= 1 (vim.fn.isdirectory dir))
+      (when (missing :treefmt.toml)
+        (vim.fn.writefile (vim.split (pick-values 1
+                                                  (: (Utils.snippet :toml
+                                                                    :treefmt)
+                                                     :gsub "\n%$0$" ""))
+                                     "\n")
+                          (path :treefmt.toml))
+        (table.insert made :treefmt.toml))
+      (when (missing :.envrc)
+        (vim.fn.writefile ["use flake"] (path :.envrc))
+        (table.insert made :.envrc))
+      ;; written whole, appending would join a last line with no newline
+      (let [lines (if (missing :.gitignore) []
+                      (vim.fn.readfile (path :.gitignore)))]
+        (when (not (or (vim.list_contains lines :.direnv/)
+                       (vim.list_contains lines :.direnv)))
+          (table.insert lines :.direnv/)
+          (vim.fn.writefile lines (path :.gitignore))
+          (table.insert made ".direnv/ in .gitignore")))
+      (when (< 0 (length made))
+        (vim.notify (.. "made " (table.concat made ", ")))))))
+
 (fn table_keys [tbl]
   (local keys [])
   (var n 0)

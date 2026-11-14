@@ -253,8 +253,7 @@
                                             (MiniTrailspace.trim)
                                             (MiniTrailspace.trim_last_lines)))})
 
-;; the directory init.lua was loaded from: the nix store copy, or a checkout
-(local hermes-dir (vim.fs.dirname (: (. (debug.getinfo 1 :S) :source) :sub 2)))
+(local hermes-dir Utils.dir)
 
 ;; inside a graphviz, wavedrom or typst fence the snippets are its language's.
 ;; language_for_range could land on the comment parser's tree instead

@@ -58,30 +58,12 @@ local function createTemplate(pattern, text, pos, ignored)
 	})
 end
 
--- the directory init.lua is in, which also has snippets/
-local hermes_dir = vim.fs.dirname(vim.fs.dirname(debug.getinfo(1, "S").source:sub(2)))
-
-local function escape(text)
-	return (text:gsub("[\\$}]", "\\%0"))
-end
-
 -- a snippet from snippets/<ft>.json, expanded with its tabstops.
 -- defaults(path) gives tabstop number -> default text, for the defaults that
 -- come from where the file is
 local function from_snippet(ft, name, defaults)
 	return function()
-		local file = hermes_dir .. "/snippets/" .. ft .. ".json"
-		local body = table.concat(vim.json.decode(table.concat(vim.fn.readfile(file), "\n"))[name].body, "\n")
-		for n, text in pairs(defaults and defaults(vim.fn.expand("%:p")) or {}) do
-			body = body:gsub("%${" .. n .. ":[^}]*}", function()
-				return "${" .. n .. ":" .. escape(text) .. "}"
-			end, 1)
-		end
-		-- vim.snippet leaves variables inside a placeholder empty, blink fills them
-		body = body:gsub("%$TM_FILENAME_BASE", function()
-			return escape(vim.fn.expand("%:t:r"))
-		end)
-		return { snippet = body }
+		return { snippet = Utils.snippet(ft, name, defaults and defaults(vim.fn.expand("%:p"))) }
 	end
 end
 
@@ -214,7 +196,13 @@ trap exit_trap EXIT
 	{ "default.nix", from_snippet("nix", "imports") },
 	{ "modules/**.nix", from_snippet("nix", "module", module_option) },
 	{ "shell.nix", from_snippet("nix", "shell") },
-	{ "flake.nix", from_snippet("nix", "flake") },
+	{
+		"flake.nix",
+		function()
+			Utils.flake_files(vim.fn.expand("%:p:h"))
+			return from_snippet("nix", "flake")()
+		end,
+	},
 	{
 		"package.nix",
 		from_snippet("nix", "pkg", function(path)

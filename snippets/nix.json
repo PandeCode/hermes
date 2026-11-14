@@ -140,13 +140,12 @@
     },
     "shell": {
         "prefix": "shell",
-        "description": "shell.nix on the nixpkgs pin of nixbuilds",
+        "description": "shell.nix on the nixpkgs channel",
         "body": [
-            "# the same nixpkgs as the system, through nixbuilds",
-            "let",
-            "  nixbuilds = builtins.getFlake \"github:PandeCode/nixbuilds\";",
-            "  pkgs = nixbuilds.inputs.nixpkgs.legacyPackages.\\${builtins.currentSystem};",
-            "in",
+            "{",
+            "  pkgs ? import <nixpkgs> { },",
+            "}:",
+            "",
             "pkgs.mkShell {",
             "  packages = with pkgs; [",
             "    $0",
@@ -269,6 +268,164 @@
             "    platforms = lib.platforms.${6:linux};",
             "  };",
             "})"
+        ]
+    },
+    "pkggo": {
+        "prefix": "pkggo",
+        "description": "package.nix for a go module",
+        "body": [
+            "{",
+            "  lib,",
+            "  buildGoModule,",
+            "  fetchFromGitHub,",
+            "}:",
+            "",
+            "buildGoModule (finalAttrs: {",
+            "  pname = \"${1:name}\";",
+            "  version = \"${2:0.1.0}\";",
+            "",
+            "  src = fetchFromGitHub {",
+            "    owner = \"${3:owner}\";",
+            "    repo = \"$1\";",
+            "    tag = \"v\\${finalAttrs.version}\";",
+            "    hash = lib.fakeHash;",
+            "  };",
+            "",
+            "  # null when the source has a vendor folder",
+            "  vendorHash = lib.fakeHash;",
+            "",
+            "  ldflags = [",
+            "    \"-s\"",
+            "    \"-w\"",
+            "  ];",
+            "",
+            "  meta = {",
+            "    description = \"${4:What it is}\";",
+            "    homepage = \"https://github.com/$3/$1\";",
+            "    license = lib.licenses.${5:mit};",
+            "    mainProgram = \"$1\";",
+            "    platforms = lib.platforms.${6:linux};",
+            "  };",
+            "})"
+        ]
+    },
+    "overlay": {
+        "prefix": "overlay",
+        "description": "overlay",
+        "body": [
+            "final: prev: {",
+            "  $0",
+            "}"
+        ]
+    },
+    "over": {
+        "prefix": "over",
+        "description": "overlay entry with a newer version and src",
+        "body": [
+            "# ${4:why}",
+            "${1:name} = prev.$1.overrideAttrs (",
+            "  finalAttrs: old: {",
+            "    version = \"${2:0.1.0}\";",
+            "",
+            "    src = prev.fetchFromGitHub {",
+            "      owner = \"${3:owner}\";",
+            "      repo = \"$1\";",
+            "      tag = \"v\\${finalAttrs.version}\";",
+            "      hash = prev.lib.fakeHash;",
+            "    };",
+            "  }",
+            ");"
+        ]
+    },
+    "overrust": {
+        "prefix": "overrust",
+        "description": "overlay entry for a rust package that sets cargoHash",
+        "body": [
+            "# ${4:why}",
+            "${1:name} = prev.$1.overrideAttrs (",
+            "  finalAttrs: old: {",
+            "    version = \"${2:0.1.0}\";",
+            "",
+            "    src = prev.fetchFromGitHub {",
+            "      owner = \"${3:owner}\";",
+            "      repo = \"$1\";",
+            "      tag = \"v\\${finalAttrs.version}\";",
+            "      hash = prev.lib.fakeHash;",
+            "    };",
+            "",
+            "    # cargoDeps is made from src and this",
+            "    cargoHash = prev.lib.fakeHash;",
+            "  }",
+            ");"
+        ]
+    },
+    "overrustdeps": {
+        "prefix": "overrustdeps",
+        "description": "overlay entry for a rust package that sets cargoLock or cargoDeps",
+        "body": [
+            "# ${4:why}",
+            "${1:name} = prev.$1.overrideAttrs (",
+            "  finalAttrs: old: {",
+            "    version = \"${2:0.1.0}\";",
+            "",
+            "    src = prev.fetchFromGitHub {",
+            "      owner = \"${3:owner}\";",
+            "      repo = \"$1\";",
+            "      tag = \"v\\${finalAttrs.version}\";",
+            "      hash = prev.lib.fakeHash;",
+            "    };",
+            "",
+            "    # a new cargoHash does nothing when the package set cargoLock or cargoDeps",
+            "    cargoDeps = final.rustPlatform.fetchCargoVendor {",
+            "      inherit (finalAttrs) src pname version;",
+            "      hash = prev.lib.fakeHash;",
+            "    };",
+            "  }",
+            ");"
+        ]
+    },
+    "overgo": {
+        "prefix": "overgo",
+        "description": "overlay entry for a go package",
+        "body": [
+            "# ${4:why}",
+            "${1:name} = prev.$1.overrideAttrs (",
+            "  finalAttrs: old: {",
+            "    version = \"${2:0.1.0}\";",
+            "",
+            "    src = prev.fetchFromGitHub {",
+            "      owner = \"${3:owner}\";",
+            "      repo = \"$1\";",
+            "      tag = \"v\\${finalAttrs.version}\";",
+            "      hash = prev.lib.fakeHash;",
+            "    };",
+            "",
+            "    # null when the source has a vendor folder",
+            "    vendorHash = prev.lib.fakeHash;",
+            "  }",
+            ");"
+        ]
+    },
+    "overzig": {
+        "prefix": "overzig",
+        "description": "overlay entry for a zig package with zigDeps",
+        "body": [
+            "# ${4:why}",
+            "${1:name} = prev.$1.overrideAttrs (",
+            "  finalAttrs: old: {",
+            "    version = \"${2:0.1.0}\";",
+            "",
+            "    src = prev.fetchFromGitHub {",
+            "      owner = \"${3:owner}\";",
+            "      repo = \"$1\";",
+            "      tag = \"v\\${finalAttrs.version}\";",
+            "      hash = prev.lib.fakeHash;",
+            "    };",
+            "",
+            "    # zigDeps already fetches from the new src, only its hash changes",
+            "    zigDeps = old.zigDeps.overrideAttrs { outputHash = prev.lib.fakeHash; };",
+            "  }",
+            ");"
         ]
     }
 }
