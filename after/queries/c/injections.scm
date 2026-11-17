@@ -20,3 +20,19 @@
   (#lua-match? @injection.content "^/%*")
   (#fence! @injection.content)
   (#set! injection.include-children))
+
+; a one-word comment before a string names the string's language
+;   static const char *vs = // glsl
+;       "#version 330 core\n"
+;       "void main() {}\n";
+((comment) @injection.language
+  .
+  [
+    (string_literal) @injection.content
+    (concatenated_string
+      (string_literal) @injection.content)
+  ]
+  (#lua-match? @injection.language "^/[/*]%s*[%w_+-]+%s*[*/]*$")
+  (#gsub! @injection.language "^/[/*]%s*([%w_+-]+).*" "%1")
+  (#offset! @injection.content 0 1 0 -1)
+  (#set! injection.include-children))
