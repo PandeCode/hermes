@@ -54,9 +54,13 @@ vim.api.nvim_create_autocmd("FileType", {
 			buffer = args.buf,
 			callback = function()
 				timer:stop()
-				timer:start(sync_ms, 0, vim.schedule_wrap(function()
-					sync(args.buf)
-				end))
+				timer:start(
+					sync_ms,
+					0,
+					vim.schedule_wrap(function()
+						sync(args.buf)
+					end)
+				)
 			end,
 		})
 	end,
