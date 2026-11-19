@@ -4,11 +4,13 @@ end
 
 -- read by firenvim#run, which the browser calls after startup. <C-e> opens the
 -- editor anywhere; typst.app's editor (CodeMirror 6) opens on its own. the
--- patterns are javascript regexes on the full url
+-- patterns are javascript regexes on the full url, and every match is merged
+-- in priority order. cmdline neovim keeps firenvim off ext_cmdline and
+-- ext_messages, which noice wants for itself
 vim.g.firenvim_config = {
 	globalSettings = vim.empty_dict(),
 	localSettings = {
-		[".*"] = { takeover = "never", priority = 0 },
+		[".*"] = { takeover = "never", cmdline = "neovim", priority = 0 },
 		["^https://typst\\.app/project/"] = {
 			takeover = "always",
 			selector = ".cm-content",

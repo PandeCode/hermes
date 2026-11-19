@@ -248,8 +248,11 @@
 (vim.api.nvim_create_autocmd [:BufWritePre]
                              {:pattern "*"
                               :callback (fn []
-                                          ;; :w file from help or checkhealth
-                                          (when vim.bo.modifiable
+                                          ;; :w file from help or checkhealth. writes
+                                          ;; while typing keep the spaces and blank
+                                          ;; lines that are still being typed
+                                          (when (and vim.bo.modifiable
+                                                     (not vim.b.typst_autosaving))
                                             (MiniTrailspace.trim)
                                             (MiniTrailspace.trim_last_lines)))})
 

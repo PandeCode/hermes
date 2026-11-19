@@ -35,35 +35,47 @@
                                                            :severity vim.diagnostic.severity.WARN}))))
                                       diagnostics)}})
 
-(null_ls.setup {:sources [; Formatting
-                          null_ls.builtins.formatting.fnlfmt
-                          null_ls.builtins.formatting.stylua
-                          null_ls.builtins.formatting.gofmt
-                          null_ls.builtins.formatting.black
-                          null_ls.builtins.formatting.isort
-                          null_ls.builtins.formatting.nixfmt
-                          null_ls.builtins.formatting.clang_format
-                          null_ls.builtins.formatting.typstyle
-                          null_ls.builtins.formatting.just
-                          null_ls.builtins.formatting.gdformat
-                          null_ls.builtins.formatting.dart_format
-                          null_ls.builtins.formatting.prettierd
-                          null_ls.builtins.formatting.cmake_format
-                          null_ls.builtins.diagnostics.gdlint
-                          (null_ls.builtins.diagnostics.glslc.with {:extra_args [:--target-env=opengl]
-                                                                    ; use opengl instead of vulkan1.0
-                                                                    })
-                          null_ls.builtins.diagnostics.qmllint
-                          null_ls.builtins.diagnostics.vale
-                          null_ls.builtins.diagnostics.markdownlint
-                          null_ls.builtins.diagnostics.checkmake
-                          null_ls.builtins.diagnostics.cmake_lint
-                          null_ls.builtins.diagnostics.statix
-                          null_ls.builtins.diagnostics.deadnix
-                          null_ls.builtins.diagnostics.fish
-                          null_ls.builtins.hover.printenv
-                          null_ls.builtins.completion.spell
-                          null_ls.builtins.code_actions.statix]})
+;; a builtin whose command isn't on PATH stays unregistered, instead of
+;; "failed to run generator" on every change. the toolsets profile decides what
+;; is there, vale and markdownlint aren't in any
+(fn when-installed [source]
+  (let [command source._opts.command]
+    (if (= (type command) :string)
+        (source.with {:condition #(= 1 (vim.fn.executable command))})
+        source)))
+
+(local sources [; Formatting
+                null_ls.builtins.formatting.fnlfmt
+                null_ls.builtins.formatting.stylua
+                null_ls.builtins.formatting.gofmt
+                null_ls.builtins.formatting.black
+                null_ls.builtins.formatting.isort
+                null_ls.builtins.formatting.nixfmt
+                null_ls.builtins.formatting.clang_format
+                null_ls.builtins.formatting.typstyle
+                null_ls.builtins.formatting.just
+                null_ls.builtins.formatting.gdformat
+                null_ls.builtins.formatting.dart_format
+                null_ls.builtins.formatting.prettierd
+                null_ls.builtins.formatting.cmake_format
+                null_ls.builtins.diagnostics.gdlint
+                (null_ls.builtins.diagnostics.glslc.with {:extra_args [:--target-env=opengl]
+                                                          ; use opengl instead of vulkan1.0
+                                                          })
+                null_ls.builtins.diagnostics.qmllint
+                null_ls.builtins.diagnostics.vale
+                null_ls.builtins.diagnostics.markdownlint
+                null_ls.builtins.diagnostics.checkmake
+                null_ls.builtins.diagnostics.cmake_lint
+                null_ls.builtins.diagnostics.statix
+                null_ls.builtins.diagnostics.deadnix
+                null_ls.builtins.diagnostics.fish
+                null_ls.builtins.hover.printenv
+                null_ls.builtins.completion.spell
+                null_ls.builtins.code_actions.statix])
+
+(null_ls.setup {:sources (icollect [_ source (ipairs sources)]
+                           (when-installed source))})
 
 (null_ls.register no_problems)
 
