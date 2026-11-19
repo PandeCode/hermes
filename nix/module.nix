@@ -65,6 +65,17 @@ in
     };
 
     defaultEditor = mkEnableOption "hermes as EDITOR";
+
+    firenvimHost = mkOption {
+      type = types.package;
+      readOnly = true;
+      default = import ./firenvim-host.nix {
+        inherit pkgs;
+        editor = cfg.package;
+      };
+      defaultText = lib.literalExpression "firenvim's native messaging host running package";
+      description = "Native messaging host for the firenvim extension, for a browser's nativeMessagingHosts.";
+    };
   };
 
   config = mkIf cfg.enable (mkMerge [
