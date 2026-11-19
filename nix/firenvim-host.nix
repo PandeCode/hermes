@@ -1,6 +1,7 @@
 # the native messaging host the firenvim browser extension starts, what
-# :call firenvim#install() would write, pointed at this editor. browsers find
-# the manifest in lib/mozilla/native-messaging-hosts
+# :call firenvim#install() would write, pointed at this editor. firefox and
+# its forks find the manifest in lib/mozilla/native-messaging-hosts, chromium
+# in etc/chromium/native-messaging-hosts
 { pkgs, editor }:
 
 let
@@ -25,17 +26,27 @@ let
     exec ${editor}/bin/nvim --headless --cmd "source ${prolog}" -c "call firenvim#run()"
   '';
 
-  manifest = builtins.toJSON {
-    name = "firenvim";
-    description = "Turn your browser into a Neovim GUI.";
-    path = "${host}";
-    type = "stdio";
-    allowed_extensions = [ "firenvim@lacamb.re" ];
+  manifest =
+    allowed:
+    builtins.toJSON (
+      {
+        name = "firenvim";
+        description = "Turn your browser into a Neovim GUI.";
+        path = "${host}";
+        type = "stdio";
+      }
+      // allowed
+    );
+
+  # the extension's id on addons.mozilla.org and on the chrome web store
+  firefox = manifest { allowed_extensions = [ "firenvim@lacamb.re" ]; };
+  chromium = manifest {
+    allowed_origins = [ "chrome-extension://egpjdkipkomnmjhjmdamaniclmdlobbo/" ];
   };
 in
 
-pkgs.writeTextFile {
-  name = "firenvim-host";
-  destination = "/lib/mozilla/native-messaging-hosts/firenvim.json";
-  text = manifest;
-}
+pkgs.runCommand "firenvim-host" { inherit firefox chromium; } ''
+  mkdir -p $out/lib/mozilla/native-messaging-hosts $out/etc/chromium/native-messaging-hosts
+  printf '%s' "$firefox" > $out/lib/mozilla/native-messaging-hosts/firenvim.json
+  printf '%s' "$chromium" > $out/etc/chromium/native-messaging-hosts/firenvim.json
+''
