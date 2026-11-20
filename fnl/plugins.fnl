@@ -252,7 +252,7 @@
                                           ;; while typing keep the spaces and blank
                                           ;; lines that are still being typed
                                           (when (and vim.bo.modifiable
-                                                     (not vim.b.typst_autosaving))
+                                                     (not vim.b.autosaving))
                                             (MiniTrailspace.trim)
                                             (MiniTrailspace.trim_last_lines)))})
 

@@ -715,7 +715,7 @@ package.preload["fnl.plugins"] = package.preload["fnl.plugins"] or function(...)
   vim.keymap.set("x", "S", ":<C-u>lua MiniSurround.add('visual')<CR>", {silent = true})
   vim.keymap.set("n", "yss", "ys_", {remap = true})
   local function _100_()
-    if (vim.bo.modifiable and not vim.b.typst_autosaving) then
+    if (vim.bo.modifiable and not vim.b.autosaving) then
       MiniTrailspace.trim()
       return MiniTrailspace.trim_last_lines()
     else
@@ -1437,7 +1437,7 @@ package.preload["fnl.lsp"] = package.preload["fnl.lsp"] or function(...)
     end
   end
   local function _223_(args)
-    if not vim.b[args.buf].typst_autosaving then
+    if not vim.b[args.buf].autosaving then
       return lsp_format_with_fallback({timeout_ms = 500})
     else
       return nil

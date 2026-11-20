@@ -114,9 +114,9 @@ end
 local function autosave(buf)
   if (vim.b[buf].typst_mode and alive_3f(vim.b[buf].typst_watch) and vim.bo[buf].modified and ("" == vim.bo[buf].buftype) and ("" ~= vim.api.nvim_buf_get_name(buf))) then
     hold(buf)
-    vim.b[buf]["typst_autosaving"] = true
+    vim.b[buf]["autosaving"] = true
     vim.cmd("silent! update")
-    vim.b[buf]["typst_autosaving"] = nil
+    vim.b[buf]["autosaving"] = nil
     return nil
   else
     return nil
@@ -222,7 +222,7 @@ vim.api.nvim_clear_autocmds({group = group, buffer = 0})
 vim.api.nvim_create_autocmd({"BufDelete", "BufWipeout"}, {group = group, buffer = 0, callback = quiet(unload)})
 vim.api.nvim_create_autocmd({"TextChanged", "TextChangedI", "InsertLeave"}, {group = group, buffer = 0, callback = quiet(autosave)})
 local function _26_(args)
-  if not vim.b[args.buf].typst_autosaving then
+  if not vim.b[args.buf].autosaving then
     release(args.buf)
   else
   end

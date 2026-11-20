@@ -106,9 +106,9 @@
              (. vim.bo buf :modified) (= "" (. vim.bo buf :buftype))
              (not= "" (vim.api.nvim_buf_get_name buf)))
     (hold buf)
-    (tset vim.b buf :typst_autosaving true)
+    (tset vim.b buf :autosaving true)
     (vim.cmd "silent! update")
-    (tset vim.b buf :typst_autosaving nil)))
+    (tset vim.b buf :autosaving nil)))
 
 (fn start_watch [buf]
   (let [s (st buf)
@@ -194,7 +194,7 @@
                               :buffer 0
                               :callback (fn [args]
                                           (when (not (. vim.b args.buf
-                                                        :typst_autosaving))
+                                                        :autosaving))
                                             (release args.buf))
                                           nil)})
 

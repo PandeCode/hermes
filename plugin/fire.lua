@@ -18,6 +18,14 @@ vim.g.firenvim_config = {
 			filename = "{hostname}_{pathname%32}.typ",
 			priority = 1,
 		},
+		-- the lean game server's editor mode is a plain textarea; the
+		-- typewriter's one line inputs (rows=1) keep the page's own handling
+		["^https://adam\\.math\\.hhu\\.de/"] = {
+			takeover = "always",
+			selector = 'textarea:not([rows="1"])',
+			filename = "{hostname}_{timestamp}.lean",
+			priority = 1,
+		},
 	},
 }
 
@@ -30,9 +38,10 @@ vim.o.showtabline = 0
 vim.o.statusline = ""
 vim.o.laststatus = 0
 
--- firenvim sends the buffer to the page on write, so typst buffers write a
--- moment after each change to keep typst.app's preview live. the autosaving
--- flag keeps format on save from rewriting the text while typing
+-- firenvim sends the buffer to the page on write, so typst and lean buffers
+-- write a moment after each change: typst.app's preview and the lean game's
+-- goals follow the typing. the autosaving flag keeps format on save and the
+-- trailing space trim from rewriting the text while typing
 local sync_ms = 300
 local timer = vim.uv.new_timer()
 
@@ -40,15 +49,15 @@ local function sync(buf)
 	if not vim.api.nvim_buf_is_valid(buf) or not vim.bo[buf].modified then
 		return
 	end
-	vim.b[buf].typst_autosaving = true
+	vim.b[buf].autosaving = true
 	vim.api.nvim_buf_call(buf, function()
 		vim.cmd("silent! write")
 	end)
-	vim.b[buf].typst_autosaving = nil
+	vim.b[buf].autosaving = nil
 end
 
 vim.api.nvim_create_autocmd("FileType", {
-	pattern = "typst",
+	pattern = { "typst", "lean" },
 	callback = function(args)
 		vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
 			buffer = args.buf,
